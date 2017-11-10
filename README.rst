@@ -1,6 +1,12 @@
 Orbit Predictor
 ===============
 
+.. image:: https://travis-ci.org/satellogic/orbit-predictor.svg?branch=master
+    :target: https://travis-ci.org/satellogic/orbit-predictor
+.. image:: https://coveralls.io/repos/github/satellogic/orbit-predictor/badge.svg?branch=master
+:target: https://coveralls.io/github/satellogic/orbit-predictor?branch=master
+
+
 Orbit Predictor is a Python library to propagate orbits of Earth-orbiting objects (satellites, ISS, 
 Santa Claus, etc) using `TLE (Two-Line Elements set) <https://en.wikipedia.org/wiki/Two-line_element_set>`_
 
