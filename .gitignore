@@ -45,3 +45,5 @@ static
 
 # hypothesis
 .hypothesis
+
+.cache

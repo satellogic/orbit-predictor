@@ -39,7 +39,8 @@ setup(
         'sgp4',
         'requests',
     ],
-    tests_require=['logassert', 'flake8', 'hypothesis', 'mock', 'hypothesis[datetime]'],
+    tests_require=['logassert', 'flake8', 'hypothesis', 'mock', 'hypothesis[datetime]',
+                   "pytest", "pytest-cov", "pytz"],
     extras_require={
         "dev": [
             "hypothesis",
@@ -47,6 +48,9 @@ setup(
             "hypothesis[datetime]",
             "mock",
             "logassert",
+            "pytest",
+            "pytest-cov",
+            "pytz",
         ]
     }
 )
