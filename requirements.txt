@@ -1,0 +1,9 @@
+flake8
+hypothesis
+hypothesis[datetime] 
+logassert
+mock
+pytest
+pytest-cov
+requests>=2.9.1
+sgp4>=1.4

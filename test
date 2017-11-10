@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+# Copyright 2017 Satellogic
+set -e 
+FADES='fades -r requirements.txt' 
+FADES2='fades -r requirements.txt -p python2 -d mock'
+
+$FADES -x flake8  
+$FADES -x python3 -m unittest discover -v -b tests
+$FADES2 -x python -m unittest discover -v -b tests
