@@ -20,7 +20,7 @@ To install it
 
 You can install orbit-predictor from pypi::
 
-    pip install orbit-predictor # WIP
+    pip install orbit-predictor
 
 Use example
 -----------
