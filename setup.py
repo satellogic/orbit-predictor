@@ -35,6 +35,7 @@ setup(
         'Programming Language :: Python :: 3',
     ],
     install_requires=[
+        'numpy>=1.8.2',
         'sgp4',
         'requests',
     ],

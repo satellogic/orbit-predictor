@@ -25,6 +25,7 @@ from collections import namedtuple
 from datetime import datetime
 from math import asin, atan2, cos, degrees, floor, radians, sin, sqrt
 
+import numpy as np
 from sgp4.ext import jday
 from sgp4.propagation import _gstime
 
@@ -88,6 +89,66 @@ def cross_product(a, b):
 def vector_norm(a):
     """Returns the norm of a vector"""
     return euclidean_distance(*a)
+
+
+# Inspired by https://github.com/poliastro/poliastro/blob/aaa1bb2/poliastro/util.py
+# and https://github.com/poliastro/poliastro/blob/06ef6ba/poliastro/util.py
+# Copyright (c) 2012-2017 Juan Luis Cano Rodríguez, MIT license
+def rotate(vec, ax, angle):
+    """Rotates the coordinate system around axis x, y or z a CCW angle.
+
+    Parameters
+    ----------
+    vec : array
+        Dimension 3 vector.
+    ax : int
+        Axis to be rotated.
+    angle : float
+        Angle of rotation (rad).
+
+    Notes
+    -----
+    This performs a so-called active or alibi transformation: rotates the
+    vector while the coordinate system remains unchanged. To do the opposite
+    operation (passive or alias transformation) call the function as
+    `rotate(vec, ax, -angle)` or use the convenience function `transform`,
+    see `[1]_`.
+
+    References
+    ----------
+    .. [1] http://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities
+
+    """
+    assert vec.shape == (3,)
+
+    rot = np.eye(3)
+    if ax == 'x':
+        sl = slice(1, 3)
+    elif ax == 'y':
+        sl = slice(0, 3, 2)
+    elif ax == 'z':
+        sl = slice(0, 2)
+    else:
+        raise ValueError("Invalid axis: must be one of 'x', 'y' or 'z'")
+
+    rot[sl, sl] = np.array([
+        [np.cos(angle), -np.sin(angle)],
+        [np.sin(angle), np.cos(angle)]
+    ])
+
+    return np.dot(rot, vec)
+
+
+def transform(vec, ax, angle):
+    """Rotates a coordinate system around axis a positive right-handed angle.
+
+    Notes
+    -----
+    This is a convenience function, equivalent to `rotate(vec, ax, -angle)`.
+    Refer to the documentation of that function for further information.
+
+    """
+    return rotate(vec, ax, -angle)
 
 
 def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
