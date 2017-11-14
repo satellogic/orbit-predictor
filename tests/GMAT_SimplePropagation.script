@@ -1,0 +1,49 @@
+%General Mission Analysis Tool(GMAT) Script
+%Author: Juan Luis Cano <hello@juanlu.space>
+
+%---------- Spacecraft
+
+Create Spacecraft geoSat;
+GMAT geoSat.DateFormat = TAIModJulian;
+GMAT geoSat.Epoch = '21545';
+GMAT geoSat.CoordinateSystem = EarthMJ2000Eq;
+GMAT geoSat.DisplayStateType = Keplerian;
+GMAT geoSat.SMA = 6780;
+GMAT geoSat.ECC = 0.001;
+GMAT geoSat.INC = 28.5;
+GMAT geoSat.RAAN = 67.0;
+GMAT geoSat.AOP = 355.0;
+GMAT geoSat.TA = 250.0;
+GMAT geoSat.Id = 'SatId';
+
+%---------- ForceModels
+
+Create ForceModel AllForces;
+GMAT AllForces.CentralBody = Earth;
+GMAT AllForces.PrimaryBodies = {Earth};
+GMAT AllForces.Drag = None;
+GMAT AllForces.SRP = Off;
+GMAT AllForces.RelativisticCorrection = Off;
+GMAT AllForces.ErrorControl = None;
+GMAT AllForces.GravityField.Earth.Degree = 2;
+GMAT AllForces.GravityField.Earth.Order = 0;
+GMAT AllForces.GravityField.Earth.PotentialFile = 'EGM96.cof';
+GMAT AllForces.GravityField.Earth.EarthTideModel = 'None';
+
+%---------- Propagators
+
+Create Propagator DefaultProp;
+GMAT DefaultProp.FM = AllForces;
+GMAT DefaultProp.Type = PrinceDormand853;
+GMAT DefaultProp.InitialStepSize = 60;
+GMAT DefaultProp.Accuracy = 1.0e-011;
+GMAT DefaultProp.MinStep = 0.0;
+GMAT DefaultProp.MaxStep = 86400;
+GMAT DefaultProp.MaxStepAttempts = 1000;
+GMAT DefaultProp.StopIfAccuracyIsViolated = true;
+
+%---------- Mission Sequence
+
+BeginMissionSequence;
+
+Propagate 'Prop 3 hours' DefaultProp(geoSat) {geoSat.ElapsedDays = 0.125};

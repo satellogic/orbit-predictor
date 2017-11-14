@@ -35,6 +35,7 @@ setup(
         'Programming Language :: Python :: 3',
     ],
     install_requires=[
+        'numpy>=1.8.2',
         'sgp4',
         'requests',
     ],
@@ -48,6 +49,7 @@ setup(
             "pytest",
             "pytest-cov",
             "pytz",
-        ]
+        ],
+        ':python_version=="2.7"': ["backports.functools_lru_cache"],
     }
 )
