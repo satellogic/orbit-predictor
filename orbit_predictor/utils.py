@@ -33,13 +33,7 @@ from sgp4.propagation import _gstime
 try:
     from functools import lru_cache
 except ImportError:
-    class lru_cache(object):
-        """dummy function for python 2"""
-        def __init__(self, *args, **kwargs):
-            pass
-
-        def __call__(self, f):
-            return f
+    from backports.functools_lru_cache import lru_cache
 
 # This function was ported from its Matlab equivalent here:
 # http://www.mathworks.com/matlabcentral/fileexchange/23051-vectorized-solar-azimuth-and-elevation-estimation

@@ -49,6 +49,7 @@ setup(
             "pytest",
             "pytest-cov",
             "pytz",
-        ]
+        ],
+        ':python_version=="2.7"': ["backports.functools_lru_cache"],
     }
 )
