@@ -6,7 +6,11 @@ from unittest import TestCase
 
 from math import radians, degrees
 
+import numpy as np
+from numpy.testing import assert_allclose
+
 from orbit_predictor import angles
+from orbit_predictor.utils import rotate
 
 
 class AnglesTests(TestCase):
@@ -68,3 +72,16 @@ class AnglesTests(TestCase):
             M = angles.ta_to_M(radians(ta), ecc)
 
             self.assertAlmostEqual(degrees(M), expected_M, places=1)
+
+
+class RotateTests(TestCase):
+    def test_rotate_simple(self):
+        vec = np.array([1, 0, 0])
+
+        assert_allclose(rotate(vec, 'x', np.radians(90)), np.array([1, 0, 0]), atol=1e-16)
+        assert_allclose(rotate(vec, 'y', np.radians(90)), np.array([0, 0, -1]), atol=1e-16)
+        assert_allclose(rotate(vec, 'z', np.radians(90)), np.array([0, 1, 0]), atol=1e-16)
+
+    def test_rotate_raises_error(self):
+        vec_unused = np.ones(3)
+        self.assertRaises(ValueError, rotate, vec_unused, "q", 0)

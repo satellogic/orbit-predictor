@@ -94,9 +94,9 @@ def rotate(vec, ax, angle):
 
     Parameters
     ----------
-    vec : array
+    vec : ndarray
         Dimension 3 vector.
-    ax : int
+    ax : str
         Axis to be rotated.
     angle : float
         Angle of rotation (rad).
@@ -130,6 +130,8 @@ def rotate(vec, ax, angle):
         [np.cos(angle), -np.sin(angle)],
         [np.sin(angle), np.cos(angle)]
     ])
+    if ax == 'y':
+        rot = rot.T
 
     return np.dot(rot, vec)
 
