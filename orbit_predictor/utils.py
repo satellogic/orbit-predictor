@@ -25,6 +25,9 @@ from collections import namedtuple
 from datetime import datetime
 from math import asin, atan2, cos, degrees, floor, radians, sin, sqrt
 
+from sgp4.ext import jday
+from sgp4.propagation import _gstime
+
 try:
     from functools import lru_cache
 except ImportError:
@@ -183,6 +186,11 @@ def sidereal_time(utc_tuple, local_lon, sun_lon):
     # Calculate local siderial time
     GMST0 = ((sun_lon + 180) % 360) / 15
     return GMST0 + UTH + local_lon / 15
+
+
+def gstime_from_datetime(when_utc):
+    timetuple = when_utc.timetuple()[:6]
+    return _gstime(jday(*timetuple))
 
 
 class reify(object):
