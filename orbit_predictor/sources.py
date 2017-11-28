@@ -163,3 +163,36 @@ class WSTLESource(TLESource):
             return lines
         else:
             raise ValueError("Error requesting TLE: %s", response.text)
+
+class NoradTLESource(TLESource):
+    '''
+    This source is intended to be used with norad-like multi-line files
+    eg. https://www.celestrak.com/NORAD/elements/resource.txt
+    '''
+    def __init__(self, content):
+        self.content = content
+
+    @classmethod
+    def from_url(cls, url):
+        headers = {'user-agent': 'orbit-predictor', 'Accept': 'text/plain'}
+        try:
+            response = requests.get(url, headers=headers)
+        except requests.exceptions.RequestException as error:
+            logger.error("Exception requesting TLE: %s", error)
+            raise
+        lines = response.content.decode("UTF-8").splitlines()
+        return cls(lines)
+
+    @classmethod
+    def from_file(cls, filename):
+        with open(filename, 'r') as f:
+            lines = f.read().splitlines()
+        return cls(lines)
+
+    def _get_tle(self, sate_id, date):
+        content = iter(self.content)
+        for sate, line_1, line_2 in zip(content, content, content):
+            if sate_id in sate:
+                return tuple([line_1, line_2])
+
+        raise LookupError("Couldn't find it. Wrong file?")
