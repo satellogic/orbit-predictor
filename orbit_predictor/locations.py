@@ -236,9 +236,6 @@ USA = Location("USA", latitude_deg=40.24, longitude_deg=-101.9, elevation_m=1100
 australia = Location('australia', latitude_deg=-25.1, longitude_deg=134.5, elevation_m=290)
 brazil = Location("brazil", latitude_deg=-11.2, longitude_deg=-54.66, elevation_m=310)
 blq_leafline = Location('blq_leafline', latitude_deg=45.59, longitude_deg=9.361, elevation_m=194)
-brc = Location("BRC", latitude_deg=-41.1424, longitude_deg=-71.1530, elevation_m=800)
-cba_conae = Location(
-    'cba_conae', latitude_deg=-31.52407, longitude_deg=-64.46352, elevation_m=730)
 central_america = Location(
     "central_america", latitude_deg=11.17, longitude_deg=-87.23, elevation_m=310)
 central_argentina = Location(
