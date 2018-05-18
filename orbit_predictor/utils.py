@@ -35,6 +35,22 @@ try:
 except ImportError:
     from backports.functools_lru_cache import lru_cache
 
+# Inspired in https://github.com/poliastro/poliastro/blob/88edda8/src/poliastro/jit.py
+try:
+    from numba import njit
+except ImportError:
+    import inspect
+
+    def njit(first=None, *args, **kwargs):
+        """Identity JIT, returns unchanged function."""
+        def _jit(f):
+            return f
+
+        if inspect.isfunction(first):
+            return first
+        else:
+            return _jit
+
 # This function was ported from its Matlab equivalent here:
 # http://www.mathworks.com/matlabcentral/fileexchange/23051-vectorized-solar-azimuth-and-elevation-estimation
 
@@ -86,9 +102,22 @@ def vector_norm(a):
     return euclidean_distance(*a)
 
 
+@njit
+def cross(a, b):
+    """Computes cross product between two vectors"""
+    # np.cross is not supported in numba nopython mode, see
+    # https://github.com/numba/numba/issues/2978
+    return np.array((
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0]
+    ))
+
+
 # Inspired by https://github.com/poliastro/poliastro/blob/aaa1bb2/poliastro/util.py
 # and https://github.com/poliastro/poliastro/blob/06ef6ba/poliastro/util.py
 # Copyright (c) 2012-2017 Juan Luis Cano Rodríguez, MIT license
+@njit
 def rotate(vec, ax, angle):
     """Rotates the coordinate system around axis x, y or z a CCW angle.
 
@@ -96,7 +125,7 @@ def rotate(vec, ax, angle):
     ----------
     vec : ndarray
         Dimension 3 vector.
-    ax : str
+    ax : int
         Axis to be rotated.
     angle : float
         Angle of rotation (rad).
@@ -117,25 +146,27 @@ def rotate(vec, ax, angle):
     assert vec.shape == (3,)
 
     rot = np.eye(3)
-    if ax == 'x':
-        sl = slice(1, 3)
-    elif ax == 'y':
+    if ax == 0:
+        sl = slice(1, 3, 1)
+    elif ax == 1:
         sl = slice(0, 3, 2)
-    elif ax == 'z':
-        sl = slice(0, 2)
+    elif ax == 2:
+        sl = slice(0, 2, 1)
     else:
-        raise ValueError("Invalid axis: must be one of 'x', 'y' or 'z'")
+        raise ValueError("Invalid axis: must be one of 0, 1 or 2")
 
-    rot[sl, sl] = np.array([
-        [np.cos(angle), -np.sin(angle)],
-        [np.sin(angle), np.cos(angle)]
-    ])
-    if ax == 'y':
+    rot[sl, sl] = np.array((
+        (cos(angle), -sin(angle)),
+        (sin(angle), cos(angle))
+    ))
+    if ax == 1:
         rot = rot.T
 
-    return np.dot(rot, vec)
+    # np.dot() arguments must all have the same dtype
+    return np.dot(rot, vec.astype(rot.dtype))
 
 
+@njit
 def transform(vec, ax, angle):
     """Rotates a coordinate system around axis a positive right-handed angle.
 

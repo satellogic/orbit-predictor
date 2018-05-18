@@ -28,17 +28,20 @@
 """
 from math import sin, cos, tan, atan, sqrt
 
-from numpy import isclose
+from orbit_predictor.utils import njit
 
 
+@njit
 def _kepler_equation(E, M, ecc):
     return E - ecc * sin(E) - M
 
 
+@njit
 def _kepler_equation_prime(E, _, ecc):
     return 1 - ecc * cos(E)
 
 
+@njit
 def ta_to_E(ta, ecc):
     """Eccentric anomaly from true anomaly.
 
@@ -59,6 +62,7 @@ def ta_to_E(ta, ecc):
     return E
 
 
+@njit
 def E_to_ta(E, ecc):
     """True anomaly from eccentric anomaly.
 
@@ -79,6 +83,7 @@ def E_to_ta(E, ecc):
     return ta
 
 
+@njit
 def M_to_E(M, ecc):
     """Eccentric anomaly from mean anomaly.
 
@@ -102,7 +107,7 @@ def M_to_E(M, ecc):
     E = M
     while True:
         E_new = E + (M - E + ecc * sin(E)) / (1 - ecc * cos(E))
-        if isclose(E_new, E, rtol=1e-15):
+        if (E_new == E) or (abs((E_new - E) / E) < 1e-15):
             break
         else:
             E = E_new
@@ -110,6 +115,7 @@ def M_to_E(M, ecc):
     return E_new
 
 
+@njit
 def E_to_M(E, ecc):
     """Mean anomaly from eccentric anomaly.
 
@@ -130,6 +136,7 @@ def E_to_M(E, ecc):
     return M
 
 
+@njit
 def M_to_ta(M, ecc):
     """True anomaly from mean anomaly.
 
@@ -157,6 +164,7 @@ def M_to_ta(M, ecc):
     return ta
 
 
+@njit
 def ta_to_M(ta, ecc):
     """Mean anomaly from true anomaly.
 
