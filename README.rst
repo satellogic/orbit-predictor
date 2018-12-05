@@ -60,8 +60,27 @@ When will be the ISS over Argentina?
     Out[13]: <PredictedPass ISS over ARG on 2017-11-11 23:31:36.878827>
 
 
-`WSTLESource` needs the tle.satellogic.com service to be working. We are doing changes to have it public available.
+Simplified creation of predictor from TLE lines:
 
+::
+
+    In [1]: import datetime
+
+    In [2]: from orbit_predictor.sources import get_predictor_from_tle_lines
+
+    In [3]: TLE_LINES = (
+                "1 43204U 18015K   18339.11168986  .00000941  00000-0  42148-4 0  9999",
+                "2 43204  97.3719 104.7825 0016180 271.1347 174.4597 15.23621941 46156")
+
+    In [4]: predictor = get_predictor_from_tle_lines(TLE_LINES)
+
+    In [5]: predictor.get_position(datetime.datetime(2019, 1, 1))
+    Out[5]: Position(when_utc=datetime.datetime(2019, 1, 1, 0, 0),
+        position_ecef=(-5280.795613274576, -3977.487633239489, -2061.43227648734),
+        velocity_ecef=(-2.4601788971676903, -0.47182217472755117, 7.167517631852518),
+        error_estimate=None)
+
+`WSTLESource` needs the tle.satellogic.com service to be working. We are doing changes to have it public available.
 
 Currently you have available these sources
 ------------------------------------------
