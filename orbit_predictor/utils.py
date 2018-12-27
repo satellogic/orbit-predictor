@@ -178,6 +178,8 @@ def raan_from_ltan(when, ltan=12.0):
     # TODO: Avoid code duplication
     # compute apparent right ascension of the sun (radians)
     utc_time_tuple = when.timetuple()
+    utc_time_tuple = list(utc_time_tuple[:6])
+    utc_time_tuple[5] = utc_time_tuple[5] + when.microsecond * 1e-6
     jd = juliandate(utc_time_tuple)
     date = jd - DECEMBER_31TH_1999_MIDNIGHT_JD
 
@@ -232,7 +234,9 @@ def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
         when = datetime.utcnow()
 
     utc_time_tuple = when.timetuple()
-    jd = juliandate(utc_time_tuple)
+    utc_time_list = list(utc_time_tuple[:6])
+    utc_time_list[5] = utc_time_list[5] + when.microsecond * 1e-6
+    jd = juliandate(utc_time_list)
     date = jd - DECEMBER_31TH_1999_MIDNIGHT_JD
 
     w = 282.9404 + 4.70935e-5 * date    # longitude of perihelion degrees
@@ -317,8 +321,9 @@ def sidereal_time(utc_tuple, local_lon, sun_lon):
 
 
 def gstime_from_datetime(when_utc):
-    timetuple = when_utc.timetuple()[:6]
-    return _gstime(jday(*timetuple))
+    timelist = list(when_utc.timetuple()[:6])
+    timelist[5] = timelist[5] + when_utc.microsecond * 1e-6
+    return _gstime(jday(*timelist))
 
 
 def float_to_hms(hour):

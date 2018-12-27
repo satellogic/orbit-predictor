@@ -44,7 +44,7 @@ ONE_SECOND = dt.timedelta(seconds=1)
 
 
 def round_datetime(dt_):
-    return dt.datetime(*dt_.timetuple()[:6])
+    return dt_
 
 
 class Position(namedtuple(
