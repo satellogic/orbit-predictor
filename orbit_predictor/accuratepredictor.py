@@ -118,7 +118,7 @@ class HighAccuracyTLEPredictor(TLEPredictor):
     def _propagate_ecef(self, when_utc):
         """Return position and velocity in the given date using ECEF coordinate system."""
         timetuple = (when_utc.year, when_utc.month, when_utc.day,
-                     when_utc.hour, when_utc.minute, when_utc.second)
+                     when_utc.hour, when_utc.minute, when_utc.second + when_utc.microsecond * 1e-6)
 
         position_eci, velocity_eci = self.propagator.propagate(*timetuple)
         gmst = _gstime(jday(*timetuple))
@@ -132,7 +132,7 @@ class HighAccuracyTLEPredictor(TLEPredictor):
         Code is optimized, dont complain too much!
         """
         timetuple = (when_utc.year, when_utc.month, when_utc.day,
-                     when_utc.hour, when_utc.minute, when_utc.second)
+                     when_utc.hour, when_utc.minute, when_utc.second + when_utc.microsecond * 1e-6)
         return self._propagate_only_position_ecef(timetuple)
 
     def passes_over(self, location, when_utc, limit_date=None, max_elevation_gt=0, aos_at_dg=0):

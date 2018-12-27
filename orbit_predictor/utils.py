@@ -192,8 +192,9 @@ def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
     if when is None:
         when = datetime.utcnow()
 
-    utc_time_tuple = when.timetuple()
-    jd = juliandate(utc_time_tuple)
+    utc_time_list = list(when.timetuple()[:6])
+    utc_time_list[5] = utc_time_list[5] + when.microsecond * 1e-6
+    jd = juliandate(utc_time_list)
     date = jd - DECEMBER_31TH_1999_MIDNIGHT_JD
 
     w = 282.9404 + 4.70935e-5 * date    # longitude of perihelion degrees
@@ -234,7 +235,7 @@ def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
     # Following the RA DEC to Az Alt conversion sequence explained here:
     # http://www.stargazing.net/kepler/altaz.html
 
-    sidereal = sidereal_time(utc_time_tuple, longitude_deg, L)
+    sidereal = sidereal_time(utc_time_list, longitude_deg, L)
 
     # Replace RA with hour angle HA
     HA = sidereal * 15 - RA
@@ -278,8 +279,9 @@ def sidereal_time(utc_tuple, local_lon, sun_lon):
 
 
 def gstime_from_datetime(when_utc):
-    timetuple = when_utc.timetuple()[:6]
-    return _gstime(jday(*timetuple))
+    timelist = list(when_utc.timetuple()[:6])
+    timelist[5] = timelist[5] + when_utc.microsecond * 1e-6
+    return _gstime(jday(*timelist))
 
 
 class reify(object):

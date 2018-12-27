@@ -40,6 +40,7 @@ class TLEPredictor(CartesianPredictor):
                      self.sate_id, when_utc, tle)
         tle_line_1, tle_line_2 = tle.lines
         sgp4_sate = twoline2rv(tle_line_1, tle_line_2, wgs84)
-        timetuple = when_utc.timetuple()[:6]
-        position_eci, velocity_eci = sgp4_sate.propagate(*timetuple)
+        timelist = list(when_utc.timetuple()[:6])
+        timelist[5] = timelist[5] + when_utc.microsecond * 1e-6
+        position_eci, velocity_eci = sgp4_sate.propagate(*timelist)
         return position_eci, velocity_eci
