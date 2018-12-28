@@ -239,4 +239,11 @@ class TestNoradTLESource(unittest.TestCase):
         self.assertRaises(LookupError,
                           source._get_tle, 'INEXISTENT-SAT', None)
 
+    def test_get_predictor_from_lines(self):
+        BUGSAT1_TLE_LINES = (
+            "1 40014U 14033E   14294.41438078  .00003468  00000-0  34565-3 0  3930",
+            "2 40014  97.9781 190.6418 0032692 299.0467  60.7524 14.91878099 18425")
 
+        predictor = sources.get_predictor_from_tle_lines(BUGSAT1_TLE_LINES)
+        position = predictor.get_position(datetime.datetime(2019, 1, 1))
+        self.assertEqual(position.position_ecef, (-5280.795613274576, -3977.487633239489, -2061.43227648734))

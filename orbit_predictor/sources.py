@@ -26,6 +26,9 @@ from collections import defaultdict, namedtuple
 
 import requests
 
+from sgp4.earth_gravity import wgs84
+from sgp4.io import twoline2rv
+
 from orbit_predictor.accuratepredictor import HighAccuracyTLEPredictor
 from orbit_predictor.predictors import TLEPredictor
 
@@ -196,3 +199,11 @@ class NoradTLESource(TLESource):
                 return tuple([line_1, line_2])
 
         raise LookupError("Couldn't find it. Wrong file?")
+
+
+def get_predictor_from_tle_lines(tle_lines):
+    db = MemoryTLESource()
+    sgp4_sat = twoline2rv(tle_lines[0], tle_lines[1], wgs84)
+    db.add_tle(sgp4_sat.satnum, tuple(tle_lines), sgp4_sat.epoch)
+    predictor = TLEPredictor(sgp4_sat.satnum, db)
+    return predictor
