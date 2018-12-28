@@ -47,7 +47,7 @@ setup(
             "mock",
             "logassert",
             "pytest",
-            "pytest-cov",
+            "pytest-cov==2.5.0",
             "pytz",
         ],
         ':python_version=="2.7"': ["backports.functools_lru_cache"],
