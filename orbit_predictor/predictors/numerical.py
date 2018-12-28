@@ -28,12 +28,15 @@ from sgp4.earth_gravity import wgs84
 from orbit_predictor.predictors.keplerian import KeplerianPredictor
 from orbit_predictor.angles import ta_to_M, M_to_ta
 from orbit_predictor.keplerian import coe2rv
+from orbit_predictor.utils import njit
+
 
 MU_E = wgs84.mu
 R_E_KM = wgs84.radiusearthkm
 J2 = wgs84.j2
 
 
+@njit
 def pkepler(argp, delta_t_sec, ecc, inc, p, raan, sma, ta):
     """Perturbed Kepler problem (only J2)
 
@@ -87,7 +90,6 @@ class J2Predictor(KeplerianPredictor):
         """Return position and velocity in the given date using ECI coordinate system.
 
         """
-        # TODO: Remove duplicated code
         # Orbit parameters
         sma = self._sma
         ecc = self._ecc

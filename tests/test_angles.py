@@ -78,10 +78,10 @@ class RotateTests(TestCase):
     def test_rotate_simple(self):
         vec = np.array([1, 0, 0])
 
-        assert_allclose(rotate(vec, 'x', np.radians(90)), np.array([1, 0, 0]), atol=1e-16)
-        assert_allclose(rotate(vec, 'y', np.radians(90)), np.array([0, 0, -1]), atol=1e-16)
-        assert_allclose(rotate(vec, 'z', np.radians(90)), np.array([0, 1, 0]), atol=1e-16)
+        assert_allclose(rotate(vec, 0, np.radians(90)), np.array([1, 0, 0]), atol=1e-16)
+        assert_allclose(rotate(vec, 1, np.radians(90)), np.array([0, 0, -1]), atol=1e-16)
+        assert_allclose(rotate(vec, 2, np.radians(90)), np.array([0, 1, 0]), atol=1e-16)
 
     def test_rotate_raises_error(self):
         vec_unused = np.ones(3)
-        self.assertRaises(ValueError, rotate, vec_unused, "q", 0)
+        self.assertRaises(ValueError, rotate, vec_unused, 3, 0)

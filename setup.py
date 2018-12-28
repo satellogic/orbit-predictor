@@ -40,6 +40,9 @@ setup(
         'requests',
     ],
     extras_require={
+        "fast": [
+            "numba>=0.38"
+        ],
         "dev": [
             "hypothesis",
             "flake8",
@@ -48,6 +51,7 @@ setup(
             "logassert",
             "pytest",
             "pytest-cov==2.5.0",
+            "pytest-benchmark",
             "pytz",
         ],
         ':python_version=="2.7"': ["backports.functools_lru_cache"],
