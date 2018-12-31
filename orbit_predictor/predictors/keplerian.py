@@ -107,12 +107,7 @@ class KeplerianPredictor(CartesianPredictor):
 
         # Retrieve TLE epoch and corresponding position
         epoch = twoline2rv(tle.lines[0], tle.lines[1], wgs84).epoch
-        pos = TLEPredictor(sate_id, source).get_position(epoch)
-
-        # Convert position from ECEF to ECI
-        gmst = gstime_from_datetime(epoch)
-        position_eci = coordinate_systems.ecef_to_eci(pos.position_ecef, gmst)
-        velocity_eci = coordinate_systems.ecef_to_eci(pos.velocity_ecef, gmst)
+        position_eci, velocity_eci = TLEPredictor(sate_id, source)._propagate_eci(epoch)
 
         # Convert position to Keplerian osculating elements
         p, ecc, inc, raan, argp, ta = rv2coe(

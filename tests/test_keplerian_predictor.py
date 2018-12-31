@@ -101,7 +101,7 @@ class TLEConversionTests(TestCase):
     )
 
     def test_from_tle_returns_same_initial_conditions_on_epoch(self):
-        start = datetime(2017, 3, 6, 7, 51)
+        start = datetime(2017, 3, 6, 5, 4, 16, 120415)
         db = MemoryTLESource()
         db.add_tle(self.SATE_ID, self.LINES, start)
 
@@ -113,5 +113,5 @@ class TLEConversionTests(TestCase):
         pos_keplerian = keplerian_predictor.get_position(epoch)
         pos_tle = tle_predictor.get_position(epoch)
 
-        assert_allclose(pos_keplerian.position_ecef, pos_tle.position_ecef, rtol=1e-11)
-        assert_allclose(pos_keplerian.velocity_ecef, pos_tle.velocity_ecef, rtol=1e-13)
+        assert_allclose(pos_keplerian.position_ecef, pos_tle.position_ecef, rtol=1e-10)
+        assert_allclose(pos_keplerian.velocity_ecef, pos_tle.velocity_ecef, rtol=1e-12)
