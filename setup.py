@@ -50,7 +50,7 @@ setup(
             "mock",
             "logassert",
             "pytest",
-            "pytest-cov==2.5.0",
+            "pytest-cov",
             "pytest-benchmark",
             "pytz",
         ],
