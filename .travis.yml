@@ -15,7 +15,7 @@ matrix:
 
 install:
     - "pip install --editable .[dev]"
-    - "pip install python-coveralls"
+    - "pip install coveralls"
 script:
     - "pytest -v  --cov-report= --cov=orbit_predictor tests/"
 after_script:
