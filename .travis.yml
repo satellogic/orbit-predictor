@@ -16,7 +16,7 @@ matrix:
 before_install:
     - "pip install -U 'pip<19'"
 install:
-    - "pip install -U --upgrade-strategy eager --editable .[dev]"
+    - "pip install -U --upgrade-strategy eager --prefer-binary --editable .[dev]"
     - "pip install coveralls"
 script:
     - "pytest -v  --cov-report= --cov=orbit_predictor tests/"
