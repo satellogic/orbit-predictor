@@ -26,8 +26,7 @@ from unittest import TestCase
 
 import logassert
 from hypothesis import example, given, settings
-from hypothesis.extra.datetime import datetimes
-from hypothesis.strategies import floats, tuples
+from hypothesis.strategies import floats, tuples, datetimes
 
 from orbit_predictor.accuratepredictor import (
     ONE_SECOND,
@@ -143,13 +142,16 @@ class AccuratePredictorTests(TestCase):
         pass_ = self.predictor.get_next_pass(location, when_utc=start, limit_date=end)
         self.assertGreaterEqual(0, pass_.off_nadir_deg)
 
-    @given(start=datetimes(min_year=2017, max_year=2020, timezones=[]),
+    @given(start=datetimes(
+               min_value=datetime(2017, 1, 1),
+               max_value=datetime(2020, 12, 31),
+           ),
            location=tuples(
                floats(min_value=-90, max_value=90),
                floats(min_value=0, max_value=180),
                floats(min_value=-200, max_value=9000)
            ))
-    @settings(max_examples=1000000, timeout=200)
+    @settings(max_examples=10000)
     @example(start=datetime(2017, 1, 26, 11, 51, 51),
              location=(-37.69358328273305, 153.96875, 0.0))
     def test_pass_is_always_returned(self, start, location):
