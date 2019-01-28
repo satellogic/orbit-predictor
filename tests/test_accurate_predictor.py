@@ -151,7 +151,7 @@ class AccuratePredictorTests(TestCase):
                floats(min_value=0, max_value=180),
                floats(min_value=-200, max_value=9000)
            ))
-    @settings(max_examples=10000)
+    @settings(max_examples=10000, deadline=None)
     @example(start=datetime(2017, 1, 26, 11, 51, 51),
              location=(-37.69358328273305, 153.96875, 0.0))
     def test_pass_is_always_returned(self, start, location):
