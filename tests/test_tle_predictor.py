@@ -175,7 +175,7 @@ class TLEPredictorTestCase(unittest.TestCase):
                                    0, delta=25)
             self.assertAlmostEqual((pass_.los - los).total_seconds(), 0, delta=25)
             self.assertAlmostEqual(pass_.max_elevation_deg, max_elev_deg, delta=1)
-            self.assertAlmostEqual(pass_.duration_s, duration_s, delta=10)
+            self.assertAlmostEqual(pass_.duration_s, duration_s, delta=25)
 
     def test_get_next_pass(self):
         date = datetime.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')

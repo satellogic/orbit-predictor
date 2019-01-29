@@ -242,10 +242,10 @@ class AccurateVsGpredictTests(TestCase):
                     "2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
 
             pass_ = self.predictor.get_next_pass(tortu1, date)
-            self.assertAlmostEqual(pass_.aos, aos, delta=ONE_SECOND)
-            self.assertAlmostEqual(pass_.los, los, delta=ONE_SECOND)
-            self.assertAlmostEqual(pass_.max_elevation_date, max_elevation_date, delta=ONE_SECOND)
-            self.assertAlmostEqual(pass_.duration_s, duration_s, delta=1)
+            self.assertAlmostEqual(pass_.aos, aos, delta=2*ONE_SECOND)
+            self.assertAlmostEqual(pass_.los, los, delta=2*ONE_SECOND)
+            self.assertAlmostEqual(pass_.max_elevation_date, max_elevation_date, delta=2*ONE_SECOND)
+            self.assertAlmostEqual(pass_.duration_s, duration_s, delta=2)
             self.assertAlmostEqual(pass_.max_elevation_deg, max_elev_deg, delta=0.05)
 
 
