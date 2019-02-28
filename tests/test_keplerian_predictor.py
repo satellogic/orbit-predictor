@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -44,6 +44,12 @@ class KeplerianPredictorTests(TestCase):
 
         assert_allclose(position_eci, expected_position, rtol=1e-5)
         assert_allclose(velocity_eci, expected_velocity, rtol=1e-5)
+
+    def test_propagate_tz_aware(self):
+        when_utc = self.epoch.replace(tzinfo=timezone.utc)
+
+        # Does not raise
+        self.predictor.get_position(when_utc)
 
 
 class KeplerianPredictorOneDayTests(TestCase):

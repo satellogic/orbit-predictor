@@ -31,7 +31,6 @@ setup(
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Utilities',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
     ],
     install_requires=[
@@ -41,7 +40,8 @@ setup(
     ],
     extras_require={
         "fast": [
-            "numba>=0.38"
+            "numba>=0.38",
+            "scipy>=0.16",
         ],
         "dev": [
             "hypothesis",
@@ -54,6 +54,5 @@ setup(
             "pytest-benchmark",
             "pytz",
         ],
-        ':python_version=="2.7"': ["backports.functools_lru_cache"],
     }
 )
