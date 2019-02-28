@@ -149,6 +149,9 @@ class CartesianPredictor(Predictor):
         """Return a Position namedtuple in ECEF coordinate system"""
         if when_utc is None:
             when_utc = datetime.datetime.utcnow()
+        elif when_utc.tzinfo is not None:
+            when_utc = when_utc.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+
         position_ecef, velocity_ecef = self._propagate_ecef(when_utc)
 
         return Position(when_utc=when_utc, position_ecef=position_ecef,
