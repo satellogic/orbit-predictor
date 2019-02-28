@@ -14,7 +14,7 @@ matrix:
       sudo: true
 
 before_install:
-    - "pip install -U 'pip<19'"
+    - "pip install -U pip"
 install:
     - "pip install -U --upgrade-strategy eager --prefer-binary --editable .[dev]"
     - "pip install coveralls"
