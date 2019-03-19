@@ -22,7 +22,10 @@
 # SOFTWARE.
 
 from math import radians, sqrt, cos, sin
+from datetime import datetime, timezone
 
+import numpy as np
+from numpy import radians, degrees
 from sgp4.earth_gravity import wgs84
 
 from orbit_predictor.predictors.keplerian import KeplerianPredictor
@@ -31,6 +34,7 @@ from orbit_predictor.keplerian import coe2rv
 from orbit_predictor.utils import njit
 
 
+OMEGA = 2 * np.pi / (86400 * 365.2421897)  # rad / s
 MU_E = wgs84.mu
 R_E_KM = wgs84.radiusearthkm
 J2 = wgs84.j2
@@ -86,6 +90,62 @@ class J2Predictor(KeplerianPredictor):
     """Propagator that uses secular variations due to J2.
 
     """
+    @classmethod
+    def sun_synchronous(cls, *, alt=None, ecc=None, inc=None, ltan=12, date=None):
+        """Creates Sun synchronous predictor instance.
+
+        Parameters
+        ----------
+        alt : float, optional
+            Altitude, in km.
+        ecc : float, optional
+            Eccentricity.
+        inc : float, optional
+            Inclination, in degrees.
+        ltan : int, optional
+            Local Time of the Ascending Node, in hours (default to noon).
+        date : datetime.date, optional
+            Reference date for the orbit, (default to today).
+
+        """
+        if date is None:
+            date = datetime.today().date()
+
+        # epoch = datetime(date.year, date.month, date.day, hour=ltan, tzinfo=timezone.utc)  # FIXME: Use UTC
+        # FIXME: Allow non-integer LTAN
+        epoch = datetime(date.year, date.month, date.day, hour=ltan)
+        raan = 0  # FIXME: Depends on LTAN
+
+        if alt is not None and ecc is not None:
+            # Normal case, solve for inclination
+            sma = R_E_KM + alt
+            inc = np.arccos(
+                (-2 * sma ** (7 / 2) * OMEGA * (1 - ecc ** 2) ** 2)
+                / (3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E))
+            )
+
+        elif alt is not None and inc is not None:
+            # Not so normal case, solve for eccentricity
+            sma = R_E_KM + alt
+            ecc = np.sqrt(
+                1
+                - np.sqrt(
+                    (-3 * R_E_KM ** 2 * J2 * sma ** (7 / 2) * np.sqrt(MU_E) * np.cos(radians(inc)))
+                    / (2 * OMEGA)
+                )
+            )
+
+        elif ecc is not None and inc is not None:
+            # Rare case, solve for altitude
+            raise NotImplementedError
+
+        else:
+            raise ValueError(
+                "Exactly two of altitude, eccentricity and inclination must be given"
+            )
+
+        return cls(sma, ecc, degrees(inc), degrees(raan), 0, 0, epoch)
+
     def _propagate_eci(self, when_utc=None):
         """Return position and velocity in the given date using ECI coordinate system.
 
