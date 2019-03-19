@@ -179,6 +179,49 @@ def transform(vec, ax, angle):
     return rotate(vec, ax, -angle)
 
 
+def raan_from_ltan(when, ltan=12.0):
+    # TODO: Avoid code duplication
+    # compute apparent right ascension of the sun (radians)
+    utc_time_tuple = when.timetuple()
+    jd = juliandate(utc_time_tuple)
+    date = jd - DECEMBER_31TH_1999_MIDNIGHT_JD
+
+    w = 282.9404 + 4.70935e-5 * date  # longitude of perihelion degrees
+    eccentricity = 0.016709 - 1.151e-9 * date  # eccentricity
+    M = (356.0470 + 0.9856002585 * date) % 360  # mean anomaly degrees
+    oblecl = 23.4393 - 3.563e-7 * date  # Sun's obliquity of the ecliptic
+
+    # auxiliary angle
+    auxiliary_angle = M + degrees(eccentricity * sin_d(M) * (1 + eccentricity * cos_d(M)))
+
+    # rectangular coordinates in the plane of the ecliptic (x axis toward perhilion)
+    x = cos_d(auxiliary_angle) - eccentricity
+    y = sin_d(auxiliary_angle) * sqrt(1 - eccentricity ** 2)
+
+    # find the distance and true anomaly
+    r = euclidean_distance(x, y)
+    v = atan2_d(y, x)
+
+    # find the longitude of the sun
+    sun_lon = v + w
+
+    # compute the ecliptic rectangular coordinates
+    xeclip = r * cos_d(sun_lon)
+    yeclip = r * sin_d(sun_lon)
+    zeclip = 0.0
+
+    # rotate these coordinates to equitorial rectangular coordinates
+    xequat = xeclip
+    yequat = yeclip * cos_d(oblecl) + zeclip * sin_d(oblecl)
+
+    # convert equatorial rectangular coordinates to RA and Decl:
+    RA = atan2_d(yequat, xequat)
+
+    # Idea from https://www.mathworks.com/matlabcentral/fileexchange/39085-mean-local-time-of-the-ascending-node
+    raan = (RA + 15.0 * np.pi / 180 * (ltan - 12.0)) % (2 * np.pi)
+    return raan
+
+
 def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
     """
     Return (azimuth, elevation) of the Sun at ground point
