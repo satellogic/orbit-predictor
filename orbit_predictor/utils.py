@@ -210,7 +210,7 @@ def raan_from_ltan(when, ltan=12.0):
     yeclip = r * sin_d(sun_lon)
     zeclip = 0.0
 
-    # rotate these coordinates to equitorial rectangular coordinates
+    # rotate these coordinates to equatorial rectangular coordinates
     xequat = xeclip
     yequat = yeclip * cos_d(oblecl) + zeclip * sin_d(oblecl)
 

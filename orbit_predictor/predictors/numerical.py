@@ -22,7 +22,7 @@
 # SOFTWARE.
 
 from math import radians, sqrt, cos, sin
-from datetime import datetime, timezone
+import datetime as dt
 
 import numpy as np
 from numpy import radians, degrees
@@ -109,11 +109,10 @@ class J2Predictor(KeplerianPredictor):
 
         """
         if date is None:
-            date = datetime.today().date()
+            date = dt.datetime.today().date()
 
-        # FIXME: Allow non-integer LTAN
-        # FIXME: Use UTC
-        epoch = datetime(date.year, date.month, date.day, hour=ltan)
+        # TODO: Allow change in time or location
+        epoch = dt.datetime(date.year, date.month, date.day, hour=12, tzinfo=dt.timezone.utc)
         raan = raan_from_ltan(epoch, ltan)
 
         if alt is not None and ecc is not None:
@@ -160,7 +159,12 @@ class J2Predictor(KeplerianPredictor):
         ta = radians(self._ta)
 
         # Time increment
-        delta_t_sec = (when_utc - self._epoch).total_seconds()
+        if self._epoch.tzinfo is not None:
+            epoch = self._epoch.astimezone(dt.timezone.utc).replace(tzinfo=None)
+        else:
+            epoch = self._epoch
+
+        delta_t_sec = (when_utc - epoch).total_seconds()
 
         # Propagate
         position_eci, velocity_eci = pkepler(argp, delta_t_sec, ecc, inc, p, raan, sma, ta)
