@@ -129,8 +129,8 @@ class J2Predictor(KeplerianPredictor):
             ecc = np.sqrt(
                 1
                 - np.sqrt(
-                    (-3 * R_E_KM ** 2 * J2 * sma ** (7 / 2) * np.sqrt(MU_E) * np.cos(radians(inc)))
-                    / (2 * OMEGA)
+                    (-3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E) * np.cos(radians(inc)))
+                    / (2 * OMEGA * sma ** (7 / 2))
                 )
             )
 
