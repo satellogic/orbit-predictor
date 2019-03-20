@@ -118,10 +118,10 @@ class J2Predictor(KeplerianPredictor):
         if alt is not None and ecc is not None:
             # Normal case, solve for inclination
             sma = R_E_KM + alt
-            inc = np.arccos(
+            inc = np.degrees(np.arccos(
                 (-2 * sma ** (7 / 2) * OMEGA * (1 - ecc ** 2) ** 2)
                 / (3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E))
-            )
+            ))
 
         elif alt is not None and inc is not None:
             # Not so normal case, solve for eccentricity
@@ -143,7 +143,7 @@ class J2Predictor(KeplerianPredictor):
                 "Exactly two of altitude, eccentricity and inclination must be given"
             )
 
-        return cls(sma, ecc, degrees(inc), degrees(raan), 0, 0, epoch)
+        return cls(sma, ecc, inc, raan, 0, 0, epoch)
 
     def _propagate_eci(self, when_utc=None):
         """Return position and velocity in the given date using ECI coordinate system.
