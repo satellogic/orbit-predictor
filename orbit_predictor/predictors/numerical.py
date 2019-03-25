@@ -31,7 +31,7 @@ from sgp4.earth_gravity import wgs84
 from orbit_predictor.predictors.keplerian import KeplerianPredictor
 from orbit_predictor.angles import ta_to_M, M_to_ta
 from orbit_predictor.keplerian import coe2rv
-from orbit_predictor.utils import njit, raan_from_ltan
+from orbit_predictor.utils import njit, raan_from_ltan, float_to_hms
 
 
 OMEGA = 2 * np.pi / (86400 * 365.2421897)  # rad / s
@@ -112,7 +112,7 @@ class J2Predictor(KeplerianPredictor):
             date = dt.datetime.today().date()
 
         # TODO: Allow change in time or location
-        epoch = dt.datetime(date.year, date.month, date.day, hour=12, tzinfo=dt.timezone.utc)
+        epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan), tzinfo=dt.timezone.utc)
         raan = raan_from_ltan(epoch, ltan)
 
         if alt is not None and ecc is not None:

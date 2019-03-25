@@ -24,7 +24,7 @@
 import functools
 from collections import namedtuple
 from datetime import datetime
-from math import asin, atan2, cos, degrees, floor, radians, sin, sqrt
+from math import asin, atan2, cos, degrees, floor, radians, sin, sqrt, modf
 
 import numpy as np
 from sgp4.ext import jday
@@ -323,6 +323,14 @@ def sidereal_time(utc_tuple, local_lon, sun_lon):
 def gstime_from_datetime(when_utc):
     timetuple = when_utc.timetuple()[:6]
     return _gstime(jday(*timetuple))
+
+
+def float_to_hms(hour):
+    rem, hour = modf(hour)
+    rem, minute = modf(rem * 60)
+    rem, second = modf(rem * 60)
+
+    return int(hour), int(minute), int(second), int(rem * 1e6)
 
 
 class reify(object):
