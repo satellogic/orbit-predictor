@@ -86,6 +86,10 @@ def pkepler(argp, delta_t_sec, ecc, inc, p, raan, sma, ta):
     return position_eci, velocity_eci
 
 
+class InvalidOrbitError(Exception):
+    pass
+
+
 class J2Predictor(KeplerianPredictor):
     """Propagator that uses secular variations due to J2.
 
@@ -115,33 +119,38 @@ class J2Predictor(KeplerianPredictor):
         epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan), tzinfo=dt.timezone.utc)
         raan = raan_from_ltan(epoch, ltan)
 
-        if alt is not None and ecc is not None:
-            # Normal case, solve for inclination
-            sma = R_E_KM + alt
-            inc = np.degrees(np.arccos(
-                (-2 * sma ** (7 / 2) * OMEGA * (1 - ecc ** 2) ** 2)
-                / (3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E))
-            ))
+        try:
+            with np.errstate(invalid="raise"):
+                if alt is not None and ecc is not None:
+                    # Normal case, solve for inclination
+                    sma = R_E_KM + alt
+                    inc = np.degrees(np.arccos(
+                        (-2 * sma ** (7 / 2) * OMEGA * (1 - ecc ** 2) ** 2)
+                        / (3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E))
+                    ))
 
-        elif alt is not None and inc is not None:
-            # Not so normal case, solve for eccentricity
-            sma = R_E_KM + alt
-            ecc = np.sqrt(
-                1
-                - np.sqrt(
-                    (-3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E) * np.cos(radians(inc)))
-                    / (2 * OMEGA * sma ** (7 / 2))
-                )
-            )
+                elif alt is not None and inc is not None:
+                    # Not so normal case, solve for eccentricity
+                    sma = R_E_KM + alt
+                    ecc = np.sqrt(
+                        1
+                        - np.sqrt(
+                            (-3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E) * np.cos(radians(inc)))
+                            / (2 * OMEGA * sma ** (7 / 2))
+                        )
+                    )
 
-        elif ecc is not None and inc is not None:
-            # Rare case, solve for altitude
-            raise NotImplementedError
+                elif ecc is not None and inc is not None:
+                    # Rare case, solve for altitude
+                    raise NotImplementedError
 
-        else:
-            raise ValueError(
-                "Exactly two of altitude, eccentricity and inclination must be given"
-            )
+                else:
+                    raise ValueError(
+                        "Exactly two of altitude, eccentricity and inclination must be given"
+                    )
+
+        except FloatingPointError:
+            raise InvalidOrbitError("Cannot find Sun-synchronous orbit with given parameters")
 
         return cls(sma, ecc, inc, raan, 0, 0, epoch)
 

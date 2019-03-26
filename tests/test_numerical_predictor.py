@@ -5,7 +5,7 @@ from unittest import TestCase
 import numpy as np
 from numpy.testing import assert_allclose
 
-from orbit_predictor.predictors.numerical import J2Predictor
+from orbit_predictor.predictors.numerical import J2Predictor, InvalidOrbitError
 
 
 class J2PredictorTests(TestCase):
@@ -33,3 +33,11 @@ class J2PredictorTests(TestCase):
 
         assert_allclose(position_eci, expected_position, rtol=1e-2)
         assert_allclose(velocity_eci, expected_velocity, rtol=1e-2)
+
+
+class SunsynchronousTests(TestCase):
+    def test_invalid_parameters_raises_error(self):
+        self.assertRaises(
+            InvalidOrbitError, J2Predictor.sun_synchronous, alt=400, inc=90)
+        self.assertRaises(
+            InvalidOrbitError, J2Predictor.sun_synchronous, alt=10000, ecc=0)
