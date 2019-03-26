@@ -142,7 +142,8 @@ class J2Predictor(KeplerianPredictor):
 
                 elif ecc is not None and inc is not None:
                     # Rare case, solve for altitude
-                    raise NotImplementedError
+                    sma = (-np.cos(np.radians(inc)) * (3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E))
+                           / (2 * OMEGA * (1 - ecc ** 2) ** 2)) ** (2 / 7)
 
                 else:
                     raise ValueError(
