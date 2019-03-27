@@ -47,6 +47,7 @@ import datetime
 import logging
 import math
 from datetime import timedelta
+from functools import lru_cache
 from math import degrees
 
 from sgp4 import ext, model
@@ -57,7 +58,7 @@ from sgp4.propagation import _gstime
 from orbit_predictor import coordinate_systems
 from orbit_predictor.exceptions import NotReachable, PropagationError
 from orbit_predictor.predictors import PredictedPass, TLEPredictor
-from orbit_predictor.utils import lru_cache, reify
+from orbit_predictor.utils import reify
 
 logger = logging.getLogger(__name__)
 

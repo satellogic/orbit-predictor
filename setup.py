@@ -54,5 +54,6 @@ setup(
             "pytest-benchmark",
             "pytz",
         ],
-    }
+    },
+    python_requires=">=3.4",
 )
