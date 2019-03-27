@@ -80,7 +80,7 @@ class KeplerianPredictor(CartesianPredictor):
         :param epoch: Epoch, datetime
         """
         if ecc >= 1.0:
-            raise NotImplementedError("Parabolic and elliptic orbits"
+            raise NotImplementedError("Parabolic and elliptic orbits "
                                       "are not implemented")
         self._sma = sma
         self._ecc = ecc
@@ -135,7 +135,12 @@ class KeplerianPredictor(CartesianPredictor):
         ta = radians(self._ta)
 
         # Time increment
-        delta_t_sec = (when_utc - self._epoch).total_seconds()
+        if self._epoch.tzinfo is not None:
+            epoch = self._epoch.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+        else:
+            epoch = self._epoch
+
+        delta_t_sec = (when_utc - epoch).total_seconds()
 
         # Propagate
         position_eci, velocity_eci = kepler(argp, delta_t_sec, ecc, inc, p, raan, sma, ta)

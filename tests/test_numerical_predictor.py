@@ -5,7 +5,7 @@ from unittest import TestCase
 import numpy as np
 from numpy.testing import assert_allclose
 
-from orbit_predictor.predictors.numerical import J2Predictor
+from orbit_predictor.predictors.numerical import J2Predictor, InvalidOrbitError
 
 
 class J2PredictorTests(TestCase):
@@ -33,3 +33,32 @@ class J2PredictorTests(TestCase):
 
         assert_allclose(position_eci, expected_position, rtol=1e-2)
         assert_allclose(velocity_eci, expected_velocity, rtol=1e-2)
+
+
+class SunSynchronousTests(TestCase):
+    def test_invalid_parameters_raises_error(self):
+        self.assertRaises(
+            InvalidOrbitError, J2Predictor.sun_synchronous, alt_km=400, inc_deg=90)
+        self.assertRaises(
+            InvalidOrbitError, J2Predictor.sun_synchronous, alt_km=10000, ecc=0)
+
+    def test_sun_sync_from_altitude_and_eccentricity(self):
+        # Vallado 3rd edition, example 11-2
+        expected_inc = 98.6
+
+        pred = J2Predictor.sun_synchronous(alt_km=800, ecc=0)
+        self.assertAlmostEqual(pred._inc, expected_inc, places=2)
+
+    def test_sun_sync_from_altitude_and_inclination(self):
+        # Hardcoded from our implementation
+        expected_ecc = 0.14546153131334466
+
+        pred = J2Predictor.sun_synchronous(alt_km=475, inc_deg=97)
+        self.assertAlmostEqual(pred._ecc, expected_ecc, places=16)
+
+    def test_sun_sync_from_eccentricity_and_inclination(self):
+        # Vallado 3rd edition, example 11-2
+        expected_sma = 7346.846
+
+        pred = J2Predictor.sun_synchronous(ecc=0.2, inc_deg=98.6)
+        self.assertAlmostEqual(pred._sma, expected_sma, places=1)
