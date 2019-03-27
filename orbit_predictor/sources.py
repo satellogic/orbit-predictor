@@ -167,11 +167,12 @@ class WSTLESource(TLESource):
         else:
             raise ValueError("Error requesting TLE: %s", response.text)
 
+
 class NoradTLESource(TLESource):
-    '''
+    """
     This source is intended to be used with norad-like multi-line files
     eg. https://www.celestrak.com/NORAD/elements/resource.txt
-    '''
+    """
     def __init__(self, content):
         self.content = content
 

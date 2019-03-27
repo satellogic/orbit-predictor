@@ -42,11 +42,11 @@ class Location(object):
         self.position_llh = latitude_deg, longitude_deg, elevation_m
 
     def __eq__(self, other):
-            return all([issubclass(other.__class__, Location),
-                        self.name == other.name,
-                        self.latitude_deg == other.latitude_deg,
-                        self.longitude_deg == other.longitude_deg,
-                        self.elevation_m == other.elevation_m])
+        return all([issubclass(other.__class__, Location),
+                    self.name == other.name,
+                    self.latitude_deg == other.latitude_deg,
+                    self.longitude_deg == other.longitude_deg,
+                    self.elevation_m == other.elevation_m])
 
     def __repr__(self):
         return "<Location {}>".format(self.name)

@@ -148,7 +148,7 @@ class HighAccuracyTLEPredictor(TLEPredictor):
         for pass_ in self.passes_over(location, when_utc, limit_date,
                                       max_elevation_gt=max_elevation_gt,
                                       aos_at_dg=aos_at_dg):
-                return pass_
+            return pass_
         else:
             raise NotReachable('Propagation limit date exceded')
 

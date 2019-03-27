@@ -217,7 +217,8 @@ def raan_from_ltan(when, ltan=12.0):
     # convert equatorial rectangular coordinates to RA and Decl:
     RA = atan2_d(yequat, xequat)  # degrees
 
-    # Idea from https://www.mathworks.com/matlabcentral/fileexchange/39085-mean-local-time-of-the-ascending-node
+    # Idea from
+    # https://www.mathworks.com/matlabcentral/fileexchange/39085-mean-local-time-of-the-ascending-node
     raan = (RA + 15.0 * (ltan - 12.0)) % 360
     return raan
 

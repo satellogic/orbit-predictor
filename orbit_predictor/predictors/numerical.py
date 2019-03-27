@@ -21,11 +21,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from math import radians, sqrt, cos, sin
+from math import degrees, radians, sqrt, cos, sin
 import datetime as dt
 
 import numpy as np
-from numpy import radians, degrees
 from sgp4.earth_gravity import wgs84
 
 from orbit_predictor.predictors.keplerian import KeplerianPredictor
@@ -116,7 +115,8 @@ class J2Predictor(KeplerianPredictor):
             date = dt.datetime.today().date()
 
         # TODO: Allow change in time or location
-        epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan_h), tzinfo=dt.timezone.utc)
+        epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan_h),
+                            tzinfo=dt.timezone.utc)
         raan = raan_from_ltan(epoch, ltan_h)
 
         try:
@@ -124,7 +124,7 @@ class J2Predictor(KeplerianPredictor):
                 if alt_km is not None and ecc is not None:
                     # Normal case, solve for inclination
                     sma = R_E_KM + alt_km
-                    inc_deg = np.degrees(np.arccos(
+                    inc_deg = degrees(np.arccos(
                         (-2 * sma ** (7 / 2) * OMEGA * (1 - ecc ** 2) ** 2)
                         / (3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E))
                     ))
@@ -142,7 +142,7 @@ class J2Predictor(KeplerianPredictor):
 
                 elif ecc is not None and inc_deg is not None:
                     # Rare case, solve for altitude
-                    sma = (-np.cos(np.radians(inc_deg)) * (3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E))
+                    sma = (-np.cos(radians(inc_deg)) * (3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E))
                            / (2 * OMEGA * (1 - ecc ** 2) ** 2)) ** (2 / 7)
 
                 else:
