@@ -95,18 +95,18 @@ class J2Predictor(KeplerianPredictor):
 
     """
     @classmethod
-    def sun_synchronous(cls, *, alt=None, ecc=None, inc=None, ltan=12, date=None):
+    def sun_synchronous(cls, *, alt_km=None, ecc=None, inc_deg=None, ltan_h=12, date=None):
         """Creates Sun synchronous predictor instance.
 
         Parameters
         ----------
-        alt : float, optional
+        alt_km : float, optional
             Altitude, in km.
         ecc : float, optional
             Eccentricity.
-        inc : float, optional
+        inc_deg : float, optional
             Inclination, in degrees.
-        ltan : int, optional
+        ltan_h : int, optional
             Local Time of the Ascending Node, in hours (default to noon).
         date : datetime.date, optional
             Reference date for the orbit, (default to today).
@@ -116,33 +116,33 @@ class J2Predictor(KeplerianPredictor):
             date = dt.datetime.today().date()
 
         # TODO: Allow change in time or location
-        epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan), tzinfo=dt.timezone.utc)
-        raan = raan_from_ltan(epoch, ltan)
+        epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan_h), tzinfo=dt.timezone.utc)
+        raan = raan_from_ltan(epoch, ltan_h)
 
         try:
             with np.errstate(invalid="raise"):
-                if alt is not None and ecc is not None:
+                if alt_km is not None and ecc is not None:
                     # Normal case, solve for inclination
-                    sma = R_E_KM + alt
-                    inc = np.degrees(np.arccos(
+                    sma = R_E_KM + alt_km
+                    inc_deg = np.degrees(np.arccos(
                         (-2 * sma ** (7 / 2) * OMEGA * (1 - ecc ** 2) ** 2)
                         / (3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E))
                     ))
 
-                elif alt is not None and inc is not None:
+                elif alt_km is not None and inc_deg is not None:
                     # Not so normal case, solve for eccentricity
-                    sma = R_E_KM + alt
+                    sma = R_E_KM + alt_km
                     ecc = np.sqrt(
                         1
                         - np.sqrt(
-                            (-3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E) * np.cos(radians(inc)))
+                            (-3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E) * np.cos(radians(inc_deg)))
                             / (2 * OMEGA * sma ** (7 / 2))
                         )
                     )
 
-                elif ecc is not None and inc is not None:
+                elif ecc is not None and inc_deg is not None:
                     # Rare case, solve for altitude
-                    sma = (-np.cos(np.radians(inc)) * (3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E))
+                    sma = (-np.cos(np.radians(inc_deg)) * (3 * R_E_KM ** 2 * J2 * np.sqrt(MU_E))
                            / (2 * OMEGA * (1 - ecc ** 2) ** 2)) ** (2 / 7)
 
                 else:
@@ -153,7 +153,7 @@ class J2Predictor(KeplerianPredictor):
         except FloatingPointError:
             raise InvalidOrbitError("Cannot find Sun-synchronous orbit with given parameters")
 
-        return cls(sma, ecc, inc, raan, 0, 0, epoch)
+        return cls(sma, ecc, inc_deg, raan, 0, 0, epoch)
 
     def _propagate_eci(self, when_utc=None):
         """Return position and velocity in the given date using ECI coordinate system.
