@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 from numpy.testing import assert_allclose
 
+from orbit_predictor.locations import ARG
 from orbit_predictor.predictors import TLEPredictor
 from orbit_predictor.predictors.keplerian import KeplerianPredictor
 from orbit_predictor.sources import MemoryTLESource
@@ -50,6 +51,11 @@ class KeplerianPredictorTests(TestCase):
 
         # Does not raise
         self.predictor.get_position(when_utc)
+
+    def test_get_next_pass(self):
+        pass_ = self.predictor.get_next_pass(ARG)
+
+        assert pass_.sate_id == "<custom>"
 
 
 class KeplerianPredictorOneDayTests(TestCase):

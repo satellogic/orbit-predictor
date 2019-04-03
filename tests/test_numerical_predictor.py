@@ -5,6 +5,7 @@ from unittest import TestCase
 import numpy as np
 from numpy.testing import assert_allclose
 
+from orbit_predictor.locations import ARG
 from orbit_predictor.predictors.numerical import J2Predictor, InvalidOrbitError
 
 
@@ -33,6 +34,11 @@ class J2PredictorTests(TestCase):
 
         assert_allclose(position_eci, expected_position, rtol=1e-2)
         assert_allclose(velocity_eci, expected_velocity, rtol=1e-2)
+
+    def test_get_next_pass(self):
+        pass_ = self.predictor.get_next_pass(ARG)
+
+        assert pass_.sate_id == "<custom>"
 
 
 class SunSynchronousTests(TestCase):
