@@ -90,6 +90,11 @@ class KeplerianPredictor(CartesianPredictor):
         self._ta = ta
         self._epoch = epoch
 
+    @property
+    def sate_id(self):
+        # Keplerian predictors are not made of actual observations
+        return "<custom>"
+
     @classmethod
     def from_tle(cls, sate_id, source, date=None):
         """Returns approximate keplerian elements from TLE.
