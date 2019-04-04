@@ -115,8 +115,7 @@ class J2Predictor(KeplerianPredictor):
             date = dt.datetime.today().date()
 
         # TODO: Allow change in time or location
-        epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan_h),
-                            tzinfo=dt.timezone.utc)
+        epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan_h))
         raan = raan_from_ltan(epoch, ltan_h)
 
         try:
@@ -169,10 +168,7 @@ class J2Predictor(KeplerianPredictor):
         ta = radians(self._ta)
 
         # Time increment
-        if self._epoch.tzinfo is not None:
-            epoch = self._epoch.astimezone(dt.timezone.utc).replace(tzinfo=None)
-        else:
-            epoch = self._epoch
+        epoch = self._epoch
 
         delta_t_sec = (when_utc - epoch).total_seconds()
 

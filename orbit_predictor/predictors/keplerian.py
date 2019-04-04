@@ -140,10 +140,7 @@ class KeplerianPredictor(CartesianPredictor):
         ta = radians(self._ta)
 
         # Time increment
-        if self._epoch.tzinfo is not None:
-            epoch = self._epoch.astimezone(datetime.timezone.utc).replace(tzinfo=None)
-        else:
-            epoch = self._epoch
+        epoch = self._epoch
 
         delta_t_sec = (when_utc - epoch).total_seconds()
 
