@@ -206,6 +206,8 @@ class LocationPredictor(object):
                 descending_date = self._find_nearest_descending(ascending_date)
                 pass_ = self._refine_pass(ascending_date, descending_date)
                 if pass_.valid:
+                    if self.limit_date is not None and pass_.aos > self.limit_date:
+                        break
                     yield self._build_predicted_pass(pass_)
 
                 if self.limit_date is not None and current_date > self.limit_date:
