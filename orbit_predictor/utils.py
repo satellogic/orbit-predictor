@@ -30,6 +30,11 @@ import numpy as np
 from sgp4.ext import jday
 from sgp4.propagation import _gstime
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from backports.functools_lru_cache import lru_cache
+
 # Inspired in https://github.com/poliastro/poliastro/blob/88edda8/src/poliastro/jit.py
 try:
     from numba import njit
