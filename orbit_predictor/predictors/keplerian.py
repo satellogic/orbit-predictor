@@ -95,6 +95,10 @@ class KeplerianPredictor(CartesianPredictor):
         # Keplerian predictors are not made of actual observations
         return "<custom>"
 
+    @property
+    def mean_motion(self):
+        return sqrt(wgs84.mu / self._sma ** 3) * 60  # this speed is in radians/minute
+
     @classmethod
     def from_tle(cls, sate_id, source, date=None):
         """Returns approximate keplerian elements from TLE.

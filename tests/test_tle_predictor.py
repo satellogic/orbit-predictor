@@ -182,8 +182,6 @@ class TLEPredictorTestCase(unittest.TestCase):
         pass_ = self.predictor.get_next_pass(tortu1, date, max_elevation_gt=15)
         for i in range(20):
             pass_ = self.predictor.get_next_pass(tortu1, pass_.los, max_elevation_gt=15)
-            self.assertLess(self.predictor._iterations, 200)
-            self.assertGreater(self.predictor._iterations, 30)
             self.assertGreaterEqual(pass_.max_elevation_deg, 15)
 
     def test_get_next_pass_with_limit_exception(self):
@@ -202,7 +200,7 @@ class TLEPredictorTestCase(unittest.TestCase):
         self.assertEqual(pass_, new_pass)
 
     def test_get_next_pass_while_passing(self):
-        date = datetime.datetime.strptime("2014/10/23 01:32:09", '%Y/%m/%d %H:%M:%S')
+        date = datetime.datetime.strptime("2014/10/23 01:27:10", '%Y/%m/%d %H:%M:%S')
         pass_ = self.predictor.get_next_pass(tortu1, date)
         self.assertEqual(pass_.aos, date)
         self.assertTrue(date < pass_.los)
