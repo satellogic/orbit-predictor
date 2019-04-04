@@ -23,7 +23,7 @@
 import unittest
 from datetime import datetime, timedelta
 
-from orbit_predictor.locations import tortu1
+from orbit_predictor.locations import ARG
 from orbit_predictor.predictors import PredictedPass
 
 
@@ -34,7 +34,7 @@ class PredictedPassTests(unittest.TestCase):
         max_elevation_date = aos + timedelta(minutes=5)
         los = aos + timedelta(minutes=10)
         pass_ = PredictedPass(sate_id=1,
-                              location=tortu1,
+                              location=ARG,
                               aos=aos,
                               los=los,
                               duration_s=600,

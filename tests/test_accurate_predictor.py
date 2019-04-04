@@ -33,7 +33,7 @@ from orbit_predictor.accuratepredictor import (
     HighAccuracyTLEPredictor
 )
 from orbit_predictor.exceptions import PropagationError
-from orbit_predictor.locations import Location, svalbard, tortu1
+from orbit_predictor.locations import Location, ARG, EUROPA1
 from orbit_predictor.predictors import TLEPredictor
 from orbit_predictor.sources import MemoryTLESource
 
@@ -79,10 +79,10 @@ class AccuratePredictorTests(TestCase):
 
     def test_predicted_passes_have_elevation_positive_and_visible_on_date(self):
         end = self.start + timedelta(days=60)
-        for pass_ in self.predictor.passes_over(svalbard, self.start, end):
+        for pass_ in self.predictor.passes_over(ARG, self.start, end):
             self.assertGreater(pass_.max_elevation_deg, 0)
             position = self.predictor.get_position(pass_.max_elevation_date)
-            svalbard.is_visible(position)
+            ARG.is_visible(position)
             self.assertGreaterEqual(pass_.off_nadir_deg, -90)
             self.assertLessEqual(pass_.off_nadir_deg, 90)
 
@@ -145,10 +145,10 @@ class AccuratePredictorTests(TestCase):
 
     def test_predicted_passes_whit_aos(self):
         end = self.start + timedelta(days=60)
-        for pass_ in self.predictor.passes_over(svalbard, self.start, end, aos_at_dg=5):
+        for pass_ in self.predictor.passes_over(ARG, self.start, end, aos_at_dg=5):
             self.assertGreater(pass_.max_elevation_deg, 5)
             position = self.predictor.get_position(pass_.aos)
-            _, elev = svalbard.get_azimuth_elev_deg(position)
+            _, elev = ARG.get_azimuth_elev_deg(position)
             self.assertAlmostEqual(elev, 5, delta=0.1)
 
 
@@ -194,7 +194,7 @@ class AccurateVsGpredictTests(TestCase):
                 date = datetime.strptime(
                     "2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
 
-            pass_ = self.predictor.get_next_pass(tortu1, date)
+            pass_ = self.predictor.get_next_pass(ARG, date)
             self.assertAlmostEqual(pass_.aos, aos, delta=ONE_SECOND)
             self.assertAlmostEqual(pass_.los, los, delta=ONE_SECOND)
             self.assertAlmostEqual(pass_.max_elevation_date, max_elevation_date, delta=ONE_SECOND)
@@ -224,13 +224,13 @@ class AccuratePredictorCalculationErrorTests(TestCase):
     def test_ascending_failure(self):
         self.is_ascending_mock.return_value = False
         with self.assertRaises(PropagationError):
-            self.predictor.get_next_pass(svalbard, self.start)
+            self.predictor.get_next_pass(ARG, self.start)
 
-        self.assertLoggedError(str(svalbard), str(self.start), *BUGSAT1_TLE_LINES)
+        self.assertLoggedError(str(ARG), str(self.start), *BUGSAT1_TLE_LINES)
 
     def test_descending_failure(self):
         self.is_ascending_mock.return_value = True
         with self.assertRaises(PropagationError):
-            self.predictor.get_next_pass(svalbard, self.start)
+            self.predictor.get_next_pass(ARG, self.start)
 
-        self.assertLoggedError(str(svalbard), str(self.start), *BUGSAT1_TLE_LINES)
+        self.assertLoggedError(str(ARG), str(self.start), *BUGSAT1_TLE_LINES)
