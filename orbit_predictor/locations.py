@@ -21,7 +21,9 @@
 # SOFTWARE.
 
 import datetime
+import importlib
 from math import asin, cos, degrees, radians, sin, sqrt
+import os
 
 from orbit_predictor import coordinate_systems
 from orbit_predictor.utils import reify, sun_azimuth_elevation
@@ -248,3 +250,13 @@ india = Location('india', latitude_deg=23.5, longitude_deg=78.5, elevation_m=550
 moscu = Location('moscu', latitude_deg=55.7, longitude_deg=37.5, elevation_m=137)
 niger = Location('niger', latitude_deg=20, longitude_deg=12.5, elevation_m=430)
 riogrande = Location("RIOGRANDE", latitude_deg=-53.8, longitude_deg=-67.75, elevation_m=30)
+
+
+def extend_from_module(module, vars):
+    mod = importlib.import_module(module)
+    vars.update(mod.__dict__)
+
+
+# Load custom locations, if the variable is specified
+if os.getenv("ORBIT_PREDICTOR_CUSTOM_LOCATIONS"):
+    extend_from_module(os.environ["ORBIT_PREDICTOR_CUSTOM_LOCATIONS"], locals())
