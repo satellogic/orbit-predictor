@@ -182,8 +182,6 @@ class TLEPredictorTestCase(unittest.TestCase):
         pass_ = self.predictor.get_next_pass(tortu1, date, max_elevation_gt=15)
         for i in range(20):
             pass_ = self.predictor.get_next_pass(tortu1, pass_.los, max_elevation_gt=15)
-            self.assertLess(self.predictor._iterations, 200)
-            self.assertGreater(self.predictor._iterations, 30)
             self.assertGreaterEqual(pass_.max_elevation_deg, 15)
 
     def test_get_next_pass_with_limit_exception(self):

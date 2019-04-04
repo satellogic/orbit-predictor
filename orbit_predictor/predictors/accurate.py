@@ -91,10 +91,6 @@ def round_datetime(dt):
 class HighAccuracyTLEPredictor(CartesianPredictor):
     """A pass predictor with high accuracy on estimations"""
 
-    def __init__(self, sate_id, source):
-        super(HighAccuracyTLEPredictor, self).__init__(sate_id, source)
-        self._iterations = 0
-
     @reify
     def tle(self):
         return self.source.get_tle(self.sate_id, datetime.datetime.utcnow())
