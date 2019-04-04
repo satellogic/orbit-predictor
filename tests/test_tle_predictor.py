@@ -200,7 +200,7 @@ class TLEPredictorTestCase(unittest.TestCase):
         self.assertEqual(pass_, new_pass)
 
     def test_get_next_pass_while_passing(self):
-        date = datetime.datetime.strptime("2014/10/23 01:32:09", '%Y/%m/%d %H:%M:%S')
+        date = datetime.datetime.strptime("2014/10/23 01:27:10", '%Y/%m/%d %H:%M:%S')
         pass_ = self.predictor.get_next_pass(tortu1, date)
         self.assertEqual(pass_.aos, date)
         self.assertTrue(date < pass_.los)
