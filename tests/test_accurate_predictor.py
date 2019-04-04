@@ -64,54 +64,7 @@ class AccuratePredictorTests(TestCase):
         self.db.add_tle(SATE_ID, LINES, self.start)
         # Predictor
         self.predictor = HighAccuracyTLEPredictor(SATE_ID, self.db)
-        self.old_predictor = TLEPredictor(SATE_ID, self.db)
         self.end = self.start + timedelta(days=5)
-
-    def all_passes_old_predictor(self, location, start, end):
-        while True:
-            try:
-                pass_ = self.old_predictor.get_next_pass(location,
-                                                         when_utc=start,
-                                                         limit_date=end)
-                start = pass_.los
-                yield pass_
-            except Exception:
-                break
-
-    def assertEqualOrGreaterPassesAmount(self, location):
-        """Compare propagators and check no passes lost and no performance degradation"""
-        t0 = time.time()
-        old_passes = list(
-            self.all_passes_old_predictor(location, self.start, self.end)
-        )
-        t1 = time.time()
-        predicted_passes = list(
-            self.predictor.passes_over(location, self.start, self.end)
-        )
-        t2 = time.time()
-        self.assertGreaterEqual(len(predicted_passes), len(old_passes),
-                                'We are loosing passes')
-        self.assertLessEqual(t2 - t1, t1 - t0, 'Performance is degraded')
-
-    def test_accurate_predictor_find_more_or_equal_passes_amount(self):
-        self.assertEqualOrGreaterPassesAmount(
-            Location('bad-case-1', 11.937501570612568,
-                     -55.35189435098657, 1780.674044538666)
-        )
-        self.assertEqualOrGreaterPassesAmount(tortu1)
-        self.assertEqualOrGreaterPassesAmount(svalbard)
-        self.assertEqualOrGreaterPassesAmount(
-            Location('bad-case-2', -11.011509137116818,
-                     123.29554733688798, 1451.5695915302097)
-        )
-        self.assertEqualOrGreaterPassesAmount(
-            Location('bad-case-3', 10.20803236163988,
-                     138.01236517021056, 4967.661890730469)
-        )
-        self.assertEqualOrGreaterPassesAmount(
-            Location('less passes', -82.41515032683046,
-                     -33.712555446065664, 4417.427841452149)
-        )
 
     def test_predicted_passes_are_equal_between_executions(self):
         location = Location('bad-case-1', 11.937501570612568,
@@ -128,7 +81,7 @@ class AccuratePredictorTests(TestCase):
         end = self.start + timedelta(days=60)
         for pass_ in self.predictor.passes_over(svalbard, self.start, end):
             self.assertGreater(pass_.max_elevation_deg, 0)
-            position = self.old_predictor.get_position(pass_.max_elevation_date)
+            position = self.predictor.get_position(pass_.max_elevation_date)
             svalbard.is_visible(position)
             self.assertGreaterEqual(pass_.off_nadir_deg, -90)
             self.assertLessEqual(pass_.off_nadir_deg, 90)
@@ -180,12 +133,12 @@ class AccuratePredictorTests(TestCase):
         self.assertGreater(pass_with_aos.los, complete_pass.max_elevation_date)
         self.assertLess(pass_with_aos.los, complete_pass.los)
 
-        position = self.old_predictor.get_position(pass_with_aos.aos)
+        position = self.predictor.get_position(pass_with_aos.aos)
         _, elev = location.get_azimuth_elev_deg(position)
 
         self.assertAlmostEqual(elev, 5, delta=0.1)
 
-        position = self.old_predictor.get_position(pass_with_aos.los)
+        position = self.predictor.get_position(pass_with_aos.los)
         _, elev = location.get_azimuth_elev_deg(position)
 
         self.assertAlmostEqual(elev, 5, delta=0.1)
@@ -194,7 +147,7 @@ class AccuratePredictorTests(TestCase):
         end = self.start + timedelta(days=60)
         for pass_ in self.predictor.passes_over(svalbard, self.start, end, aos_at_dg=5):
             self.assertGreater(pass_.max_elevation_deg, 5)
-            position = self.old_predictor.get_position(pass_.aos)
+            position = self.predictor.get_position(pass_.aos)
             _, elev = svalbard.get_azimuth_elev_deg(position)
             self.assertAlmostEqual(elev, 5, delta=0.1)
 
