@@ -94,7 +94,7 @@ class J2Predictor(KeplerianPredictor):
 
     """
     @classmethod
-    def sun_synchronous(cls, *, alt_km=None, ecc=None, inc_deg=None, ltan_h=12, date=None):
+    def sun_synchronous(cls, alt_km=None, ecc=None, inc_deg=None, ltan_h=12, date=None):
         """Creates Sun synchronous predictor instance.
 
         Parameters
