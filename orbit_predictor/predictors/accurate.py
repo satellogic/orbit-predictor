@@ -44,7 +44,6 @@ Some stuff won't be trivial to understand, but comments and fixes are welcome
 
 """
 import datetime
-import logging
 import math
 from datetime import timedelta
 from functools import lru_cache
@@ -57,10 +56,9 @@ from sgp4.propagation import _gstime
 
 from orbit_predictor import coordinate_systems
 from orbit_predictor.exceptions import NotReachable, PropagationError
-from orbit_predictor.predictors import PredictedPass, TLEPredictor
 from orbit_predictor.utils import reify
 
-logger = logging.getLogger(__name__)
+from .base import PredictedPass, CartesianPredictor, logger
 
 ONE_SECOND = datetime.timedelta(seconds=1)
 
@@ -90,11 +88,12 @@ def round_datetime(dt):
     return datetime.datetime(*dt.timetuple()[:6])
 
 
-class HighAccuracyTLEPredictor(TLEPredictor):
+class HighAccuracyTLEPredictor(CartesianPredictor):
     """A pass predictor with high accuracy on estimations"""
 
     def __init__(self, sate_id, source):
         super(HighAccuracyTLEPredictor, self).__init__(sate_id, source)
+        self._iterations = 0
 
     @reify
     def tle(self):
@@ -115,6 +114,17 @@ class HighAccuracyTLEPredictor(TLEPredictor):
         position_eci, _ = self.propagator.propagate(*timetuple)
         gmst = _gstime(jday(*timetuple))
         return coordinate_systems.eci_to_ecef(position_eci, gmst)
+
+    def _propagate_eci(self, when_utc=None):
+        """Return position and velocity in the given date using ECI coordinate system."""
+        tle = self.source.get_tle(self.sate_id, when_utc)
+        logger.debug("Propagating using ECI. sate_id: %s, when_utc: %s, tle: %s",
+                     self.sate_id, when_utc, tle)
+        tle_line_1, tle_line_2 = tle.lines
+        sgp4_sate = twoline2rv(tle_line_1, tle_line_2, wgs84)
+        timetuple = when_utc.timetuple()[:6]
+        position_eci, velocity_eci = sgp4_sate.propagate(*timetuple)
+        return position_eci, velocity_eci
 
     def _propagate_ecef(self, when_utc):
         """Return position and velocity in the given date using ECEF coordinate system."""

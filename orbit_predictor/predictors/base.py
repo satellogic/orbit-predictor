@@ -127,9 +127,9 @@ class PredictedPass(object):
 
 class Predictor(object):
 
-    def __init__(self, source, sate_id):
-        self.source = source
+    def __init__(self, sate_id, source):
         self.sate_id = sate_id
+        self.source = source
 
     def get_position(self, when_utc=None):
         raise NotImplementedError("You have to implement it!")

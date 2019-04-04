@@ -30,7 +30,7 @@ from orbit_predictor.predictors.base import CartesianPredictor, logger
 class TLEPredictor(CartesianPredictor):
 
     def __init__(self, sate_id, source):
-        super(TLEPredictor, self).__init__(source, sate_id)
+        super(TLEPredictor, self).__init__(sate_id, source)
         self._iterations = 0
 
     def _propagate_eci(self, when_utc=None):
