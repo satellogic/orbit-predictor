@@ -44,10 +44,7 @@ Some stuff won't be trivial to understand, but comments and fixes are welcome
 
 """
 import datetime
-import math
-from datetime import timedelta
 from functools import lru_cache
-from math import degrees
 
 from sgp4 import ext, model
 from sgp4.earth_gravity import wgs84
@@ -55,10 +52,9 @@ from sgp4.io import twoline2rv
 from sgp4.propagation import _gstime
 
 from orbit_predictor import coordinate_systems
-from orbit_predictor.exceptions import NotReachable, PropagationError
 from orbit_predictor.utils import reify
 
-from .base import PredictedPass, CartesianPredictor, logger
+from .base import CartesianPredictor, logger
 
 ONE_SECOND = datetime.timedelta(seconds=1)
 
@@ -82,10 +78,6 @@ ext.jday = jday
 model.jday = jday
 
 # finish hack zone
-
-
-def round_datetime(dt):
-    return datetime.datetime(*dt.timetuple()[:6])
 
 
 class HighAccuracyTLEPredictor(CartesianPredictor):
@@ -141,198 +133,3 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
         timetuple = (when_utc.year, when_utc.month, when_utc.day,
                      when_utc.hour, when_utc.minute, when_utc.second)
         return self._propagate_only_position_ecef(timetuple)
-
-    def passes_over(self, location, when_utc, limit_date=None, max_elevation_gt=0, aos_at_dg=0):
-        return LocationPredictor(location, self, when_utc, limit_date,
-                                 max_elevation_gt, aos_at_dg)
-
-    def get_next_pass(self, location, when_utc=None, max_elevation_gt=5,
-                      aos_at_dg=0, limit_date=None):
-        """Implements same api as standard predictor"""
-        if when_utc is None:
-            when_utc = datetime.datetime.utcnow()
-
-        for pass_ in self.passes_over(location, when_utc, limit_date,
-                                      max_elevation_gt=max_elevation_gt,
-                                      aos_at_dg=aos_at_dg):
-            return pass_
-        else:
-            raise NotReachable('Propagation limit date exceded')
-
-
-class AccuratePredictedPass:
-
-    def __init__(self, aos, tca, los, max_elevation):
-        self.aos = round_datetime(aos) if aos is not None else None
-        self.tca = round_datetime(tca)
-        self.los = round_datetime(los) if los is not None else None
-        self.max_elevation = max_elevation
-
-    @property
-    def valid(self):
-        return self.max_elevation > 0 and self.aos is not None and self.los is not None
-
-    @reify
-    def max_elevation_deg(self):
-        return degrees(self.max_elevation)
-
-    @reify
-    def duration(self):
-        return self.los - self.aos
-
-
-class LocationPredictor(object):
-    """Predicts passes over a given location
-    Exposes an iterable interface
-    """
-
-    def __init__(self, location, propagator, start_date, limit_date=None,
-                 max_elevation_gt=0, aos_at_dg=0):
-        self.location = location
-        self.propagator = propagator
-        self.start_date = start_date
-        self.limit_date = limit_date
-
-        self.max_elevation_gt = math.radians(max([max_elevation_gt, aos_at_dg]))
-        self.aos_at = math.radians(aos_at_dg)
-
-    def __iter__(self):
-        """Returns one pass each time"""
-        current_date = self.start_date
-        while True:
-            if self.is_ascending(current_date):
-                # we need a descending point
-                ascending_date = current_date
-                descending_date = self._find_nearest_descending(ascending_date)
-                pass_ = self._refine_pass(ascending_date, descending_date)
-                if pass_.valid:
-                    if self.limit_date is not None and pass_.aos > self.limit_date:
-                        break
-                    yield self._build_predicted_pass(pass_)
-
-                if self.limit_date is not None and current_date > self.limit_date:
-                    break
-
-                current_date = pass_.tca + self._orbit_step(0.6)
-
-            else:
-                current_date = self._find_nearest_ascending(current_date)
-
-    def _build_predicted_pass(self, accuratepass):
-        """Returns a classic predicted pass"""
-        tca_position = self.propagator.get_position(accuratepass.tca)
-
-        return PredictedPass(self.location, self.propagator.sate_id,
-                             max_elevation_deg=accuratepass.max_elevation_deg,
-                             aos=accuratepass.aos,
-                             los=accuratepass.los,
-                             duration_s=accuratepass.duration.total_seconds(),
-                             max_elevation_position=tca_position,
-                             max_elevation_date=accuratepass.tca,
-                             )
-
-    def _find_nearest_descending(self, ascending_date):
-        for candidate in self._sample_points(ascending_date):
-            if not self.is_ascending(candidate):
-                return candidate
-        else:
-            logger.error('Could not find a descending pass over %s start date: %s - TLE: %s',
-                         self.location, ascending_date, self.propagator.tle)
-            raise PropagationError("Can not find an descending phase")
-
-    def _find_nearest_ascending(self, descending_date):
-        for candidate in self._sample_points(descending_date):
-            if self.is_ascending(candidate):
-                return candidate
-        else:
-            logger.error('Could not find an ascending pass over %s start date: %s - TLE: %s',
-                         self.location, descending_date, self.propagator.tle)
-            raise PropagationError('Can not find an ascending phase')
-
-    def _sample_points(self, date):
-        """Helper method to found ascending or descending phases of elevation"""
-        start = date
-        end = date + self._orbit_step(0.99)
-        mid = self.midpoint(start, end)
-        mid_right = self.midpoint(mid, end)
-        mid_left = self.midpoint(start, mid)
-
-        return [end, mid, mid_right, mid_left]
-
-    def _refine_pass(self, ascending_date, descending_date):
-        tca = self._find_tca(ascending_date, descending_date)
-        elevation = self._elevation_at(tca)
-
-        if elevation > self.max_elevation_gt:
-            aos = self._find_aos(tca)
-            los = self._find_los(tca)
-        else:
-            aos = los = None
-
-        return AccuratePredictedPass(aos, tca, los, elevation)
-
-    def _find_tca(self, ascending_date, descending_date):
-        while not self._precision_reached(ascending_date, descending_date):
-            midpoint = self.midpoint(ascending_date, descending_date)
-            if self.is_ascending(midpoint):
-                ascending_date = midpoint
-            else:
-                descending_date = midpoint
-
-        return ascending_date
-
-    def _precision_reached(self, start, end):
-        return end - start <= ONE_SECOND
-
-    @staticmethod
-    def midpoint(start, end):
-        """Returns the midpoint between two dates"""
-        return start + (end - start) / 2
-
-    def _elevation_at(self, when_utc):
-        position = self.propagator.get_only_position(when_utc)
-        return self.location.elevation_for(position)
-
-    def is_passing(self, when_utc):
-        """Returns a boolean indicating if satellite is actually visible"""
-        return bool(self._elevation_at(when_utc))
-
-    def is_ascending(self, when_utc):
-        """Check is elevation is ascending or descending on a given point"""
-        elevation = self._elevation_at(when_utc)
-        next_elevation = self._elevation_at(when_utc + ONE_SECOND)
-        return elevation <= next_elevation
-
-    def _orbit_step(self, size):
-        """Returns a time step, that will make the satellite advance a given number of orbits"""
-        step_in_radians = size * 2 * math.pi
-        seconds = (step_in_radians / self.propagator.mean_motion) * 60
-        return timedelta(seconds=seconds)
-
-    def _find_aos(self, tca):
-        end = tca
-        start = tca - self._orbit_step(0.34)  # On third of the orbit
-        elevation = self._elevation_at(start)
-        assert elevation < 0
-        while not self._precision_reached(start, end):
-            midpoint = self.midpoint(start, end)
-            elevation = self._elevation_at(midpoint)
-            if elevation < self.aos_at:
-                start = midpoint
-            else:
-                end = midpoint
-        return end
-
-    def _find_los(self, tca):
-        start = tca
-        end = tca + self._orbit_step(0.34)
-        while not self._precision_reached(start, end):
-            midpoint = self.midpoint(start, end)
-            elevation = self._elevation_at(midpoint)
-
-            if elevation < self.aos_at:
-                end = midpoint
-            else:
-                start = midpoint
-
-        return start

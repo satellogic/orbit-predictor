@@ -259,7 +259,7 @@ class AccuratePredictorCalculationErrorTests(TestCase):
         # Predictor
         self.predictor = HighAccuracyTLEPredictor(BUGSAT_SATE_ID, self.db)
         self.is_ascending_mock = self._patch(
-            'orbit_predictor.predictors.accurate.LocationPredictor.is_ascending')
+            'orbit_predictor.predictors.base.LocationPredictor.is_ascending')
         self.start = datetime(2017, 3, 6, 7, 51)
         logassert.setup(self,  'orbit_predictor.predictors.base')
 
