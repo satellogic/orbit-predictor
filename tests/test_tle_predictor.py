@@ -206,7 +206,7 @@ class OffNadirAngleTests(unittest.TestCase):
                                  elevation_m=0)
 
     def test_off_nadir_satellite_exactly_over(self):
-        position_ecef = llh_to_ecef(0, 0, 500 * 1000)  # A satellite exactyl over the point
+        position_ecef = llh_to_ecef(0, 0, 500 * 1000)  # A satellite exactly over the point
         velocity_ecef = (0, 0, 1)
         max_elevation_position = Position(None, position_ecef, velocity_ecef, None)
 
@@ -218,7 +218,7 @@ class OffNadirAngleTests(unittest.TestCase):
         self.assertAlmostEqual(pass_.off_nadir_deg, 0, delta=0.02)
 
     def test_off_nadir_satellite_passing_left_means_positive_sign(self):
-        position_ecef = llh_to_ecef(0, -10, 500 * 1000)  # A satellite exactyl over the point
+        position_ecef = llh_to_ecef(0, -10, 500 * 1000)
         velocity_ecef = (0, 0, -1)
         max_elevation_position = Position(None, position_ecef, velocity_ecef, None)
 
@@ -230,7 +230,7 @@ class OffNadirAngleTests(unittest.TestCase):
         self.assertGreaterEqual(pass_.off_nadir_deg, 0)
 
     def test_off_nadir_satellite_passing_right_means_negative_sign(self):
-        position_ecef = llh_to_ecef(0, 10, 500 * 1000)  # A satellite exactyl over the point
+        position_ecef = llh_to_ecef(0, 10, 500 * 1000)
         velocity_ecef = (0, 0, -1)
         max_elevation_position = Position(None, position_ecef, velocity_ecef, None)
 

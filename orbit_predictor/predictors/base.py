@@ -117,7 +117,7 @@ class PredictedPass(object):
         target = self.location.position_ecef
         t2b = vector_diff(sate_pos, target)
         angle = acos(
-            dot_product(target, t2b) / (vector_norm(target) * vector_norm(t2b))
+            dot_product(sate_pos, t2b) / (vector_norm(sate_pos) * vector_norm(t2b))
         )
 
         cross = cross_product(target, sate_pos)
