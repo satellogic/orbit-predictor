@@ -75,7 +75,10 @@ class AccuratePredictorTests(TestCase):
             self.predictor.passes_over(location, self.start + timedelta(seconds=3), self.end)
         )
 
-        self.assertEqual(first_set, second_set)
+        # We use delta=ONE_SECOND because
+        # that's the hardcoded value for the precision
+        self.assertAlmostEqual(first_set[0].aos, second_set[0].aos, delta=ONE_SECOND)
+        self.assertAlmostEqual(first_set[0].los, second_set[0].los, delta=ONE_SECOND)
 
     def test_predicted_passes_have_elevation_positive_and_visible_on_date(self):
         end = self.start + timedelta(days=60)

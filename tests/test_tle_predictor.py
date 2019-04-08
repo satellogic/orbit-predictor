@@ -29,8 +29,9 @@ from orbit_predictor.predictors import (
     NotReachable,
     Position,
     PredictedPass,
-    TLEPredictor
+    TLEPredictor,
 )
+from orbit_predictor.predictors.base import ONE_SECOND
 from orbit_predictor.sources import MemoryTLESource
 
 try:
@@ -160,22 +161,26 @@ class TLEPredictorTestCase(unittest.TestCase):
         self.assertEqual(pass_, new_pass)
 
     def test_get_next_pass_while_passing(self):
-        date = datetime.datetime.strptime("2014/10/23 01:27:10", '%Y/%m/%d %H:%M:%S')
+        date = datetime.datetime.strptime("2014/10/23 01:27:33.224", '%Y/%m/%d %H:%M:%S.%f')
         pass_ = self.predictor.get_next_pass(ARG, date)
-        self.assertEqual(pass_.aos, date)
+        self.assertAlmostEqual(pass_.aos, date, delta=ONE_SECOND)
         self.assertTrue(date < pass_.los)
 
         position = self.predictor.get_position(date)
         self.assertTrue(ARG.is_visible(position))
 
-    def test_grater_than_deg(self):
+    def test_greater_than_deg(self):
         date = datetime.datetime.strptime("2014/10/23 01:25:09", '%Y/%m/%d %H:%M:%S')
         pass5 = self.predictor.get_next_pass(ARG, date, aos_at_dg=5)
         pass10 = self.predictor.get_next_pass(ARG, date, aos_at_dg=10)
-        pass15 = self.predictor.get_next_pass(ARG, date, aos_at_dg=15)
-        self.assertTrue(pass5.aos < pass10.aos < pass15.aos)
-        self.assertTrue(pass5.los > pass10.los > pass15.los)
-        self.assertTrue(pass5.max_elevation_deg == pass10.max_elevation_deg)
+        pass12 = self.predictor.get_next_pass(ARG, date, aos_at_dg=12)
+        self.assertTrue(pass5.aos < pass10.aos < pass12.aos)
+        self.assertTrue(pass5.los > pass10.los > pass12.los)
+        self.assertTrue(
+            pass5.max_elevation_deg
+            == pass10.max_elevation_deg
+            == pass12.max_elevation_deg
+        )
 
     @patch("orbit_predictor.predictors.TLEPredictor._propagate_ecef")
     def test_get_position(self, mocked_propagate):
