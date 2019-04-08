@@ -137,46 +137,6 @@ class TLEPredictorTestCase(unittest.TestCase):
         self.assertEqual(p1, p2)
         self.assertEqual(p2, p1)
 
-    def test_get_next_pass_with_gpredict_data(self):
-        GPREDICT_DATA = """
-        -------------------------------------------------------------------------------------------------
-         AOS                  TCA                  LOS                  Duration  Max El  AOS Az  LOS Az
-        -------------------------------------------------------------------------------------------------
-         2014/10/23 01:27:09  2014/10/23 01:33:03  2014/10/23 01:38:57  00:11:47   25.85   40.28  177.59
-         2014/10/23 03:02:44  2014/10/23 03:08:31  2014/10/23 03:14:17  00:11:32   20.55  341.35  209.65
-         2014/10/23 14:48:23  2014/10/23 14:54:39  2014/10/23 15:00:55  00:12:31   75.31  166.30  350.27
-         2014/10/23 16:25:19  2014/10/23 16:29:32  2014/10/23 16:33:46  00:08:27    7.14  200.60  287.00
-         2014/10/24 01:35:34  2014/10/24 01:41:37  2014/10/24 01:47:39  00:12:05   32.20   34.97  180.38
-         2014/10/24 03:11:40  2014/10/24 03:17:11  2014/10/24 03:22:42  00:11:02   16.30  335.44  213.21
-         2014/10/24 14:57:00  2014/10/24 15:03:16  2014/10/24 15:09:32  00:12:32   84.30  169.06  345.11
-         2014/10/24 16:34:18  2014/10/24 16:38:02  2014/10/24 16:41:45  00:07:27    5.09  205.18  279.57
-         2014/10/25 01:44:01  2014/10/25 01:50:11  2014/10/25 01:56:20  00:12:19   40.61   29.75  183.12
-         2014/10/25 03:20:39  2014/10/25 03:25:51  2014/10/25 03:31:04  00:10:25   12.78  329.21  217.10"""  # NOQA
-
-        for line in GPREDICT_DATA.splitlines()[4:]:
-            line_parts = line.split()
-            aos = datetime.datetime.strptime(" ".join(line_parts[:2]), '%Y/%m/%d %H:%M:%S')
-            max_elevation_date = datetime.datetime.strptime(" ".join(line_parts[2:4]),
-                                                            '%Y/%m/%d %H:%M:%S')
-            los = datetime.datetime.strptime(" ".join(line_parts[4:6]), '%Y/%m/%d %H:%M:%S')
-            duration = datetime.datetime.strptime(line_parts[6], '%H:%M:%S')
-            duration_s = datetime.timedelta(
-                minutes=duration.minute, seconds=duration.second).total_seconds()
-            max_elev_deg = float(line_parts[7])
-
-            try:
-                date = pass_.los  # NOQA
-            except UnboundLocalError:
-                date = datetime.datetime.strptime(
-                    "2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
-            pass_ = self.predictor.get_next_pass(ARG, date)
-            self.assertAlmostEqual((pass_.aos - aos).total_seconds(), 0, delta=25)
-            self.assertAlmostEqual((pass_.max_elevation_date - max_elevation_date).total_seconds(),
-                                   0, delta=25)
-            self.assertAlmostEqual((pass_.los - los).total_seconds(), 0, delta=25)
-            self.assertAlmostEqual(pass_.max_elevation_deg, max_elev_deg, delta=1)
-            self.assertAlmostEqual(pass_.duration_s, duration_s, delta=10)
-
     def test_get_next_pass(self):
         date = datetime.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
         pass_ = self.predictor.get_next_pass(ARG, date, max_elevation_gt=15)
