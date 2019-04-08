@@ -302,6 +302,7 @@ class LocationPredictor(object):
         return ascending_date
 
     def _precision_reached(self, start, end):
+        # TODO: Allow the precision to change from the outside
         return end - start <= ONE_SECOND
 
     @staticmethod
