@@ -125,5 +125,5 @@ class TLEConversionTests(TestCase):
         pos_keplerian = keplerian_predictor.get_position(epoch)
         pos_tle = tle_predictor.get_position(epoch)
 
-        assert_allclose(pos_keplerian.position_ecef, pos_tle.position_ecef, rtol=1e-11)
+        assert_allclose(pos_keplerian.position_ecef, pos_tle.position_ecef, rtol=1e-9)
         assert_allclose(pos_keplerian.velocity_ecef, pos_tle.velocity_ecef, rtol=1e-13)

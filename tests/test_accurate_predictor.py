@@ -33,7 +33,7 @@ from orbit_predictor.accuratepredictor import (
     HighAccuracyTLEPredictor
 )
 from orbit_predictor.exceptions import PropagationError
-from orbit_predictor.locations import Location, svalbard, tortu1
+from orbit_predictor.locations import Location, ARG, EUROPA1
 from orbit_predictor.predictors import TLEPredictor
 from orbit_predictor.sources import MemoryTLESource
 
@@ -43,7 +43,7 @@ except ImportError:
     import mock  # py2
 
 
-SATE_ID = '41558U'  # newsat 1
+SATE_ID = '41558U'  # newsat 2
 LINES = (
     '1 41558U 16033C   17065.21129769  .00002236  00000-0  88307-4 0  9995',
     '2 41558  97.4729 144.7611 0014207  16.2820 343.8872 15.26500433 42718',
@@ -75,14 +75,17 @@ class AccuratePredictorTests(TestCase):
             self.predictor.passes_over(location, self.start + timedelta(seconds=3), self.end)
         )
 
-        self.assertEqual(first_set, second_set)
+        # We use delta=ONE_SECOND because
+        # that's the hardcoded value for the precision
+        self.assertAlmostEqual(first_set[0].aos, second_set[0].aos, delta=ONE_SECOND)
+        self.assertAlmostEqual(first_set[0].los, second_set[0].los, delta=ONE_SECOND)
 
     def test_predicted_passes_have_elevation_positive_and_visible_on_date(self):
         end = self.start + timedelta(days=60)
-        for pass_ in self.predictor.passes_over(svalbard, self.start, end):
+        for pass_ in self.predictor.passes_over(ARG, self.start, end):
             self.assertGreater(pass_.max_elevation_deg, 0)
             position = self.predictor.get_position(pass_.max_elevation_date)
-            svalbard.is_visible(position)
+            ARG.is_visible(position)
             self.assertGreaterEqual(pass_.off_nadir_deg, -90)
             self.assertLessEqual(pass_.off_nadir_deg, 90)
 
@@ -145,10 +148,10 @@ class AccuratePredictorTests(TestCase):
 
     def test_predicted_passes_whit_aos(self):
         end = self.start + timedelta(days=60)
-        for pass_ in self.predictor.passes_over(svalbard, self.start, end, aos_at_dg=5):
+        for pass_ in self.predictor.passes_over(ARG, self.start, end, aos_at_dg=5):
             self.assertGreater(pass_.max_elevation_deg, 5)
             position = self.predictor.get_position(pass_.aos)
-            _, elev = svalbard.get_azimuth_elev_deg(position)
+            _, elev = ARG.get_azimuth_elev_deg(position)
             self.assertAlmostEqual(elev, 5, delta=0.1)
 
 
@@ -161,29 +164,29 @@ class AccurateVsGpredictTests(TestCase):
         # Predictor
         self.predictor = HighAccuracyTLEPredictor(BUGSAT_SATE_ID, self.db)
 
-    def test_get_next_pass_with_gpredict_data(self):
-        GPREDICT_DATA = """
-        -------------------------------------------------------------------------------------------------
-         AOS                  TCA                  LOS                  Duration  Max El  AOS Az  LOS Az
-        -------------------------------------------------------------------------------------------------
-         2014/10/23 01:27:09  2014/10/23 01:33:03  2014/10/23 01:38:57  00:11:47   25.85   40.28  177.59
-         2014/10/23 03:02:44  2014/10/23 03:08:31  2014/10/23 03:14:17  00:11:32   20.55  341.35  209.65
-         2014/10/23 14:48:23  2014/10/23 14:54:39  2014/10/23 15:00:55  00:12:31   75.31  166.30  350.27
-         2014/10/23 16:25:19  2014/10/23 16:29:32  2014/10/23 16:33:46  00:08:27    7.14  200.60  287.00
-         2014/10/24 01:35:34  2014/10/24 01:41:37  2014/10/24 01:47:39  00:12:05   32.20   34.97  180.38
-         2014/10/24 03:11:40  2014/10/24 03:17:11  2014/10/24 03:22:42  00:11:02   16.30  335.44  213.21
-         2014/10/24 14:57:00  2014/10/24 15:03:16  2014/10/24 15:09:32  00:12:32   84.30  169.06  345.11
-         2014/10/24 16:34:18  2014/10/24 16:38:02  2014/10/24 16:41:45  00:07:27    5.09  205.18  279.57
-         2014/10/25 01:44:01  2014/10/25 01:50:11  2014/10/25 01:56:20  00:12:19   40.61   29.75  183.12
-         2014/10/25 03:20:39  2014/10/25 03:25:51  2014/10/25 03:31:04  00:10:25   12.78  329.21  217.10"""  # NOQA
+    def test_get_next_pass_with_stk_data(self):
+        STK_DATA = """
+        ------------------------------------------------------------------------------------------------
+         AOS                      TCA                      LOS                      Duration      Max El
+        ------------------------------------------------------------------------------------------------
+         2014/10/23 01:27:33.224  2014/10/23 01:32:41.074  2014/10/23 01:37:47.944  00:10:14.720   12.76
+         2014/10/23 03:01:37.007  2014/10/23 03:07:48.890  2014/10/23 03:14:01.451  00:12:24.000   39.32
+         2014/10/23 14:49:34.783  2014/10/23 14:55:44.394  2014/10/23 15:01:51.154  00:12:16.000   41.75
+         2014/10/23 16:25:54.939  2014/10/23 16:30:50.152  2014/10/23 16:35:44.984  00:09:50.000   11.45
+         2014/10/24 01:35:47.889  2014/10/24 01:41:13.181  2014/10/24 01:46:37.548  00:10:50.000   16.07
+         2014/10/24 03:10:23.486  2014/10/24 03:16:27.230  2014/10/24 03:22:31.865  00:12:08.000   30.62
+         2014/10/24 14:58:07.378  2014/10/24 15:04:21.721  2014/10/24 15:10:33.546  00:12:26.000   54.83
+         2014/10/24 16:34:48.635  2014/10/24 16:39:20.960  2014/10/24 16:43:53.204  00:09:04.000    8.78
+         2014/10/25 01:44:05.771  2014/10/25 01:49:45.487  2014/10/25 01:55:24.414  00:11:18.000   20.07
+         2014/10/25 03:19:12.611  2014/10/25 03:25:05.674  2014/10/25 03:30:59.815  00:11:47.000   24.09"""  # NOQA
 
-        for line in GPREDICT_DATA.splitlines()[4:]:
+        for line in STK_DATA.splitlines()[4:]:
             line_parts = line.split()
-            aos = datetime.strptime(" ".join(line_parts[:2]), '%Y/%m/%d %H:%M:%S')
+            aos = datetime.strptime(" ".join(line_parts[:2]), '%Y/%m/%d %H:%M:%S.%f')
             max_elevation_date = datetime.strptime(" ".join(line_parts[2:4]),
-                                                   '%Y/%m/%d %H:%M:%S')
-            los = datetime.strptime(" ".join(line_parts[4:6]), '%Y/%m/%d %H:%M:%S')
-            duration = datetime.strptime(line_parts[6], '%H:%M:%S')
+                                                   '%Y/%m/%d %H:%M:%S.%f')
+            los = datetime.strptime(" ".join(line_parts[4:6]), '%Y/%m/%d %H:%M:%S.%f')
+            duration = datetime.strptime(line_parts[6], '%H:%M:%S.%f')
             duration_s = timedelta(
                 minutes=duration.minute, seconds=duration.second).total_seconds()
             max_elev_deg = float(line_parts[7])
@@ -194,11 +197,11 @@ class AccurateVsGpredictTests(TestCase):
                 date = datetime.strptime(
                     "2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
 
-            pass_ = self.predictor.get_next_pass(tortu1, date)
+            pass_ = self.predictor.get_next_pass(ARG, date)
             self.assertAlmostEqual(pass_.aos, aos, delta=ONE_SECOND)
             self.assertAlmostEqual(pass_.los, los, delta=ONE_SECOND)
             self.assertAlmostEqual(pass_.max_elevation_date, max_elevation_date, delta=ONE_SECOND)
-            self.assertAlmostEqual(pass_.duration_s, duration_s, delta=1)
+            self.assertAlmostEqual(pass_.duration_s, duration_s, delta=2 * 1)
             self.assertAlmostEqual(pass_.max_elevation_deg, max_elev_deg, delta=0.05)
 
 
@@ -224,13 +227,13 @@ class AccuratePredictorCalculationErrorTests(TestCase):
     def test_ascending_failure(self):
         self.is_ascending_mock.return_value = False
         with self.assertRaises(PropagationError):
-            self.predictor.get_next_pass(svalbard, self.start)
+            self.predictor.get_next_pass(ARG, self.start)
 
-        self.assertLoggedError(str(svalbard), str(self.start), *BUGSAT1_TLE_LINES)
+        self.assertLoggedError(str(ARG), str(self.start), *BUGSAT1_TLE_LINES)
 
     def test_descending_failure(self):
         self.is_ascending_mock.return_value = True
         with self.assertRaises(PropagationError):
-            self.predictor.get_next_pass(svalbard, self.start)
+            self.predictor.get_next_pass(ARG, self.start)
 
-        self.assertLoggedError(str(svalbard), str(self.start), *BUGSAT1_TLE_LINES)
+        self.assertLoggedError(str(ARG), str(self.start), *BUGSAT1_TLE_LINES)

@@ -111,13 +111,14 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
         tle_line_1, tle_line_2 = tle.lines
         sgp4_sate = twoline2rv(tle_line_1, tle_line_2, wgs84)
         timetuple = when_utc.timetuple()[:6]
+        timetuple[5] = timetuple[5] + when_utc.microsecond * 1e-6
         position_eci, velocity_eci = sgp4_sate.propagate(*timetuple)
         return position_eci, velocity_eci
 
     def _propagate_ecef(self, when_utc):
         """Return position and velocity in the given date using ECEF coordinate system."""
         timetuple = (when_utc.year, when_utc.month, when_utc.day,
-                     when_utc.hour, when_utc.minute, when_utc.second)
+                     when_utc.hour, when_utc.minute, when_utc.second + when_utc.microsecond * 1e-6)
 
         position_eci, velocity_eci = self.propagator.propagate(*timetuple)
         gmst = _gstime(jday(*timetuple))
@@ -131,5 +132,5 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
         Code is optimized, dont complain too much!
         """
         timetuple = (when_utc.year, when_utc.month, when_utc.day,
-                     when_utc.hour, when_utc.minute, when_utc.second)
+                     when_utc.hour, when_utc.minute, when_utc.second + when_utc.microsecond * 1e-6)
         return self._propagate_only_position_ecef(timetuple)

@@ -44,7 +44,7 @@ ONE_SECOND = dt.timedelta(seconds=1)
 
 
 def round_datetime(dt_):
-    return dt.datetime(*dt_.timetuple()[:6])
+    return dt_
 
 
 class Position(namedtuple(
@@ -117,7 +117,7 @@ class PredictedPass(object):
         target = self.location.position_ecef
         t2b = vector_diff(sate_pos, target)
         angle = acos(
-            dot_product(target, t2b) / (vector_norm(target) * vector_norm(t2b))
+            dot_product(sate_pos, t2b) / (vector_norm(sate_pos) * vector_norm(t2b))
         )
 
         cross = cross_product(target, sate_pos)
@@ -302,6 +302,7 @@ class LocationPredictor(object):
         return ascending_date
 
     def _precision_reached(self, start, end):
+        # TODO: Allow the precision to change from the outside
         return end - start <= ONE_SECOND
 
     @staticmethod

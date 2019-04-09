@@ -24,13 +24,14 @@ import datetime
 import unittest
 
 from orbit_predictor.coordinate_systems import llh_to_ecef
-from orbit_predictor.locations import Location, tortu1
+from orbit_predictor.locations import Location, ARG
 from orbit_predictor.predictors import (
     NotReachable,
     Position,
     PredictedPass,
-    TLEPredictor
+    TLEPredictor,
 )
+from orbit_predictor.predictors.base import ONE_SECOND
 from orbit_predictor.sources import MemoryTLESource
 
 try:
@@ -66,13 +67,13 @@ class TLEPredictorTestCase(unittest.TestCase):
             error_estimate=0)
 
         p1 = PredictedPass(
-            sate_id=1, location=tortu1,
+            sate_id=1, location=ARG,
             aos=aos, los=los, duration_s=600,
             max_elevation_date=max_elevation_date,
             max_elevation_position=max_elevation_position,
             max_elevation_deg=10)
         p2 = PredictedPass(
-            sate_id=1, location=tortu1,
+            sate_id=1, location=ARG,
             aos=aos, los=los, duration_s=600,
             max_elevation_date=max_elevation_date,
             max_elevation_position=max_elevation_position,
@@ -92,13 +93,13 @@ class TLEPredictorTestCase(unittest.TestCase):
             error_estimate=0)
 
         p1 = PredictedPass(
-            sate_id=1, location=tortu1,
+            sate_id=1, location=ARG,
             aos=aos, los=los, duration_s=600,
             max_elevation_date=max_elevation_date,
             max_elevation_position=max_elevation_position,
             max_elevation_deg=10)
         p2 = PredictedPass(
-            sate_id=1, location=tortu1,
+            sate_id=1, location=ARG,
             aos=aos, los=los, duration_s=600,
             max_elevation_date=max_elevation_date,
             max_elevation_position=max_elevation_position,
@@ -122,13 +123,13 @@ class TLEPredictorTestCase(unittest.TestCase):
             error_estimate=0)
 
         p1 = PredictedPass(
-            sate_id=1, location=tortu1,
+            sate_id=1, location=ARG,
             aos=aos, los=los, duration_s=600,
             max_elevation_date=max_elevation_date,
             max_elevation_position=max_elevation_position,
             max_elevation_deg=10)
         p2 = SubPredictedPass(
-            sate_id=1, location=tortu1,
+            sate_id=1, location=ARG,
             aos=aos, los=los, duration_s=600,
             max_elevation_date=max_elevation_date,
             max_elevation_position=max_elevation_position,
@@ -137,85 +138,49 @@ class TLEPredictorTestCase(unittest.TestCase):
         self.assertEqual(p1, p2)
         self.assertEqual(p2, p1)
 
-    def test_get_next_pass_with_gpredict_data(self):
-        GPREDICT_DATA = """
-        -------------------------------------------------------------------------------------------------
-         AOS                  TCA                  LOS                  Duration  Max El  AOS Az  LOS Az
-        -------------------------------------------------------------------------------------------------
-         2014/10/23 01:27:09  2014/10/23 01:33:03  2014/10/23 01:38:57  00:11:47   25.85   40.28  177.59
-         2014/10/23 03:02:44  2014/10/23 03:08:31  2014/10/23 03:14:17  00:11:32   20.55  341.35  209.65
-         2014/10/23 14:48:23  2014/10/23 14:54:39  2014/10/23 15:00:55  00:12:31   75.31  166.30  350.27
-         2014/10/23 16:25:19  2014/10/23 16:29:32  2014/10/23 16:33:46  00:08:27    7.14  200.60  287.00
-         2014/10/24 01:35:34  2014/10/24 01:41:37  2014/10/24 01:47:39  00:12:05   32.20   34.97  180.38
-         2014/10/24 03:11:40  2014/10/24 03:17:11  2014/10/24 03:22:42  00:11:02   16.30  335.44  213.21
-         2014/10/24 14:57:00  2014/10/24 15:03:16  2014/10/24 15:09:32  00:12:32   84.30  169.06  345.11
-         2014/10/24 16:34:18  2014/10/24 16:38:02  2014/10/24 16:41:45  00:07:27    5.09  205.18  279.57
-         2014/10/25 01:44:01  2014/10/25 01:50:11  2014/10/25 01:56:20  00:12:19   40.61   29.75  183.12
-         2014/10/25 03:20:39  2014/10/25 03:25:51  2014/10/25 03:31:04  00:10:25   12.78  329.21  217.10"""  # NOQA
-
-        for line in GPREDICT_DATA.splitlines()[4:]:
-            line_parts = line.split()
-            aos = datetime.datetime.strptime(" ".join(line_parts[:2]), '%Y/%m/%d %H:%M:%S')
-            max_elevation_date = datetime.datetime.strptime(" ".join(line_parts[2:4]),
-                                                            '%Y/%m/%d %H:%M:%S')
-            los = datetime.datetime.strptime(" ".join(line_parts[4:6]), '%Y/%m/%d %H:%M:%S')
-            duration = datetime.datetime.strptime(line_parts[6], '%H:%M:%S')
-            duration_s = datetime.timedelta(
-                minutes=duration.minute, seconds=duration.second).total_seconds()
-            max_elev_deg = float(line_parts[7])
-
-            try:
-                date = pass_.los  # NOQA
-            except UnboundLocalError:
-                date = datetime.datetime.strptime(
-                    "2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
-            pass_ = self.predictor.get_next_pass(tortu1, date)
-            self.assertAlmostEqual((pass_.aos - aos).total_seconds(), 0, delta=25)
-            self.assertAlmostEqual((pass_.max_elevation_date - max_elevation_date).total_seconds(),
-                                   0, delta=25)
-            self.assertAlmostEqual((pass_.los - los).total_seconds(), 0, delta=25)
-            self.assertAlmostEqual(pass_.max_elevation_deg, max_elev_deg, delta=1)
-            self.assertAlmostEqual(pass_.duration_s, duration_s, delta=10)
-
     def test_get_next_pass(self):
         date = datetime.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
-        pass_ = self.predictor.get_next_pass(tortu1, date, max_elevation_gt=15)
+        pass_ = self.predictor.get_next_pass(ARG, date, max_elevation_gt=15)
         for i in range(20):
-            pass_ = self.predictor.get_next_pass(tortu1, pass_.los, max_elevation_gt=15)
+            pass_ = self.predictor.get_next_pass(ARG, pass_.los, max_elevation_gt=15)
             self.assertGreaterEqual(pass_.max_elevation_deg, 15)
 
     def test_get_next_pass_with_limit_exception(self):
         date = datetime.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
-        pass_ = self.predictor.get_next_pass(tortu1, date, max_elevation_gt=15)
+        pass_ = self.predictor.get_next_pass(ARG, date, max_elevation_gt=15)
         with self.assertRaises(NotReachable):
-            self.predictor.get_next_pass(tortu1, date, max_elevation_gt=15,
+            self.predictor.get_next_pass(ARG, date, max_elevation_gt=15,
                                          limit_date=pass_.aos - datetime.timedelta(minutes=1))
 
     def test_get_next_pass_with_limit(self):
         date = datetime.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
-        pass_ = self.predictor.get_next_pass(tortu1, date, max_elevation_gt=15)
+        pass_ = self.predictor.get_next_pass(ARG, date, max_elevation_gt=15)
         new_pass = self.predictor.get_next_pass(
-            tortu1, date, max_elevation_gt=15,
+            ARG, date, max_elevation_gt=15,
             limit_date=pass_.los + datetime.timedelta(seconds=1))
         self.assertEqual(pass_, new_pass)
 
     def test_get_next_pass_while_passing(self):
-        date = datetime.datetime.strptime("2014/10/23 01:27:10", '%Y/%m/%d %H:%M:%S')
-        pass_ = self.predictor.get_next_pass(tortu1, date)
-        self.assertEqual(pass_.aos, date)
+        date = datetime.datetime.strptime("2014/10/23 01:27:33.224", '%Y/%m/%d %H:%M:%S.%f')
+        pass_ = self.predictor.get_next_pass(ARG, date)
+        self.assertAlmostEqual(pass_.aos, date, delta=ONE_SECOND)
         self.assertTrue(date < pass_.los)
 
         position = self.predictor.get_position(date)
-        self.assertTrue(tortu1.is_visible(position))
+        self.assertTrue(ARG.is_visible(position))
 
-    def test_grater_than_deg(self):
+    def test_greater_than_deg(self):
         date = datetime.datetime.strptime("2014/10/23 01:25:09", '%Y/%m/%d %H:%M:%S')
-        pass5 = self.predictor.get_next_pass(tortu1, date, aos_at_dg=5)
-        pass10 = self.predictor.get_next_pass(tortu1, date, aos_at_dg=10)
-        pass15 = self.predictor.get_next_pass(tortu1, date, aos_at_dg=15)
-        self.assertTrue(pass5.aos < pass10.aos < pass15.aos)
-        self.assertTrue(pass5.los > pass10.los > pass15.los)
-        self.assertTrue(pass5.max_elevation_deg == pass10.max_elevation_deg)
+        pass5 = self.predictor.get_next_pass(ARG, date, aos_at_dg=5)
+        pass10 = self.predictor.get_next_pass(ARG, date, aos_at_dg=10)
+        pass12 = self.predictor.get_next_pass(ARG, date, aos_at_dg=12)
+        self.assertTrue(pass5.aos < pass10.aos < pass12.aos)
+        self.assertTrue(pass5.los > pass10.los > pass12.los)
+        self.assertTrue(
+            pass5.max_elevation_deg
+            == pass10.max_elevation_deg
+            == pass12.max_elevation_deg
+        )
 
     @patch("orbit_predictor.predictors.TLEPredictor._propagate_ecef")
     def test_get_position(self, mocked_propagate):
@@ -231,7 +196,7 @@ class TLEPredictorTestCase(unittest.TestCase):
 
     def test_off_nadir_computable_and_reasonable(self):
         date = datetime.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
-        pass_ = self.predictor.get_next_pass(tortu1, date)
+        pass_ = self.predictor.get_next_pass(ARG, date)
         self.assertLessEqual(abs(pass_.off_nadir_deg), 90)
 
 
@@ -241,7 +206,7 @@ class OffNadirAngleTests(unittest.TestCase):
                                  elevation_m=0)
 
     def test_off_nadir_satellite_exactly_over(self):
-        position_ecef = llh_to_ecef(0, 0, 500 * 1000)  # A satellite exactyl over the point
+        position_ecef = llh_to_ecef(0, 0, 500 * 1000)  # A satellite exactly over the point
         velocity_ecef = (0, 0, 1)
         max_elevation_position = Position(None, position_ecef, velocity_ecef, None)
 
@@ -253,7 +218,7 @@ class OffNadirAngleTests(unittest.TestCase):
         self.assertAlmostEqual(pass_.off_nadir_deg, 0, delta=0.02)
 
     def test_off_nadir_satellite_passing_left_means_positive_sign(self):
-        position_ecef = llh_to_ecef(0, -10, 500 * 1000)  # A satellite exactyl over the point
+        position_ecef = llh_to_ecef(0, -10, 500 * 1000)
         velocity_ecef = (0, 0, -1)
         max_elevation_position = Position(None, position_ecef, velocity_ecef, None)
 
@@ -265,7 +230,7 @@ class OffNadirAngleTests(unittest.TestCase):
         self.assertGreaterEqual(pass_.off_nadir_deg, 0)
 
     def test_off_nadir_satellite_passing_right_means_negative_sign(self):
-        position_ecef = llh_to_ecef(0, 10, 500 * 1000)  # A satellite exactyl over the point
+        position_ecef = llh_to_ecef(0, 10, 500 * 1000)
         velocity_ecef = (0, 0, -1)
         max_elevation_position = Position(None, position_ecef, velocity_ecef, None)
 
