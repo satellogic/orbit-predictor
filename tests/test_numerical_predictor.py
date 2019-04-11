@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta
-
+import datetime as dt
 from unittest import TestCase
 
 import numpy as np
@@ -19,7 +18,7 @@ class J2PredictorTests(TestCase):
         argp = 355.0
         ta = 250.0
 
-        self.epoch = datetime(2000, 1, 1, 12, 0)
+        self.epoch = dt.datetime(2000, 1, 1, 12, 0)
 
         self.predictor = J2Predictor(sma, ecc, inc, raan, argp, ta, self.epoch)
 
@@ -28,7 +27,7 @@ class J2PredictorTests(TestCase):
         expected_position = np.array([2085.9287615146, -6009.5713894563, -2357.3802307070])
         expected_velocity = np.array([6.4787522759177, 3.2366136616580, -2.5063420188165])
 
-        when_utc = self.epoch + timedelta(hours=3)
+        when_utc = self.epoch + dt.timedelta(hours=3)
 
         position_eci, velocity_eci = self.predictor._propagate_eci(when_utc)
 
