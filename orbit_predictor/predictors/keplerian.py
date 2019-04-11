@@ -33,7 +33,7 @@ from orbit_predictor.angles import ta_to_M, M_to_ta
 from orbit_predictor.keplerian import rv2coe, coe2rv
 from orbit_predictor.predictors import TLEPredictor
 from orbit_predictor.predictors.base import CartesianPredictor
-from orbit_predictor.utils import gstime_from_datetime
+from orbit_predictor.utils import gstime_from_datetime, mean_motion
 
 MU_E = wgs84.mu
 
@@ -97,7 +97,7 @@ class KeplerianPredictor(CartesianPredictor):
 
     @property
     def mean_motion(self):
-        return sqrt(wgs84.mu / self._sma ** 3) * 60  # this speed is in radians/minute
+        return mean_motion(self._sma) * 60  # this speed is in radians/minute
 
     @classmethod
     def from_tle(cls, sate_id, source, date=None):
