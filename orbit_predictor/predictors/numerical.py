@@ -152,7 +152,7 @@ class J2Predictor(KeplerianPredictor):
         except FloatingPointError:
             raise InvalidOrbitError("Cannot find Sun-synchronous orbit with given parameters")
 
-        delta_time_s = radians(delta_ta_deg) / mean_motion(sma)
+        delta_time_s = ta_to_M(radians(delta_ta_deg), ecc) / mean_motion(sma)
 
         # TODO: Allow change in time or location
         epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan_h),
