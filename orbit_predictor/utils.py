@@ -27,6 +27,7 @@ from datetime import datetime
 from math import asin, atan2, cos, degrees, floor, radians, sin, sqrt, modf
 
 import numpy as np
+from sgp4.earth_gravity import wgs84
 from sgp4.ext import jday
 from sgp4.propagation import _gstime
 
@@ -332,6 +333,10 @@ def float_to_hms(hour):
     rem, second = modf(rem * 60)
 
     return int(hour), int(minute), int(second), int(rem * 1e6)
+
+
+def mean_motion(sma_km):
+    return sqrt(wgs84.mu / sma_km ** 3)  # rad / s
 
 
 class reify(object):

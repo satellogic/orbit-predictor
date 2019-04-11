@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta
-
+import datetime as dt
 from unittest import TestCase
 
 import numpy as np
@@ -19,7 +18,7 @@ class J2PredictorTests(TestCase):
         argp = 355.0
         ta = 250.0
 
-        self.epoch = datetime(2000, 1, 1, 12, 0)
+        self.epoch = dt.datetime(2000, 1, 1, 12, 0)
 
         self.predictor = J2Predictor(sma, ecc, inc, raan, argp, ta, self.epoch)
 
@@ -28,7 +27,7 @@ class J2PredictorTests(TestCase):
         expected_position = np.array([2085.9287615146, -6009.5713894563, -2357.3802307070])
         expected_velocity = np.array([6.4787522759177, 3.2366136616580, -2.5063420188165])
 
-        when_utc = self.epoch + timedelta(hours=3)
+        when_utc = self.epoch + dt.timedelta(hours=3)
 
         position_eci, velocity_eci = self.predictor._propagate_eci(when_utc)
 
@@ -68,3 +67,29 @@ class SunSynchronousTests(TestCase):
 
         pred = J2Predictor.sun_synchronous(ecc=0.2, inc_deg=98.6)
         self.assertAlmostEqual(pred._sma, expected_sma, places=1)
+
+    def test_sun_sync_delta_true_anomaly_has_expected_anomaly_and_epoch(self):
+        date = dt.datetime.today().date()
+        ltan_h = 12
+        expected_ref_epoch = dt.datetime(date.year, date.month, date.day, 12)
+
+        for ta_deg in [-30, 0, 30]:
+            pred = J2Predictor.sun_synchronous(
+                alt_km=800, ecc=0, date=date, ltan_h=ltan_h, ta_deg=ta_deg
+            )
+
+            self.assertEqual(pred._ta, ta_deg)
+            self.assertEqual(pred._epoch, expected_ref_epoch)
+
+    def test_sun_sync_delta_true_anomaly_non_circular(self):
+        date = dt.datetime.today().date()
+        ltan_h = 12
+        expected_ref_epoch = dt.datetime(date.year, date.month, date.day, 12)
+
+        for ta_deg in [-30, 30]:
+            pred = J2Predictor.sun_synchronous(
+                alt_km=475, ecc=0.1455, date=date, ltan_h=ltan_h, ta_deg=ta_deg
+            )
+
+            self.assertEqual(pred._ta, ta_deg)
+            self.assertEqual(pred._epoch, expected_ref_epoch)

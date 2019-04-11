@@ -39,6 +39,32 @@ R_E_KM = wgs84.radiusearthkm
 J2 = wgs84.j2
 
 
+def sun_sync_plane_constellation(num_satellites, *,
+                                 alt_km=None, ecc=None, inc_deg=None, ltan_h=12, date=None):
+    """Creates num_satellites in the same Sun-synchronous plane, uniformly spaced.
+
+    Parameters
+    ----------
+    num_satellites : int
+        Number of satellites.
+    alt_km : float, optional
+        Altitude, in km.
+    ecc : float, optional
+        Eccentricity.
+    inc_deg : float, optional
+        Inclination, in degrees.
+    ltan_h : int, optional
+        Local Time of the Ascending Node, in hours (default to noon).
+    date : datetime.date, optional
+        Reference date for the orbit, (default to today).
+
+    """
+    for ta_deg in np.linspace(0, 360, num_satellites, endpoint=False):
+        yield J2Predictor.sun_synchronous(
+            alt_km=alt_km, ecc=ecc, inc_deg=inc_deg, ltan_h=ltan_h, date=date, ta_deg=ta_deg
+        )
+
+
 @njit
 def pkepler(argp, delta_t_sec, ecc, inc, p, raan, sma, ta):
     """Perturbed Kepler problem (only J2)
@@ -94,7 +120,8 @@ class J2Predictor(KeplerianPredictor):
 
     """
     @classmethod
-    def sun_synchronous(cls, *, alt_km=None, ecc=None, inc_deg=None, ltan_h=12, date=None):
+    def sun_synchronous(cls, *, alt_km=None, ecc=None, inc_deg=None, ltan_h=12, date=None,
+                        ta_deg=0):
         """Creates Sun synchronous predictor instance.
 
         Parameters
@@ -109,15 +136,13 @@ class J2Predictor(KeplerianPredictor):
             Local Time of the Ascending Node, in hours (default to noon).
         date : datetime.date, optional
             Reference date for the orbit, (default to today).
+        ta_deg : float
+            Increment or decrement of true anomaly, will adjust the epoch
+            accordingly.
 
         """
         if date is None:
             date = dt.datetime.today().date()
-
-        # TODO: Allow change in time or location
-        epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan_h),
-                            tzinfo=dt.timezone.utc)
-        raan = raan_from_ltan(epoch, ltan_h)
 
         try:
             with np.errstate(invalid="raise"):
@@ -153,7 +178,12 @@ class J2Predictor(KeplerianPredictor):
         except FloatingPointError:
             raise InvalidOrbitError("Cannot find Sun-synchronous orbit with given parameters")
 
-        return cls(sma, ecc, inc_deg, raan, 0, 0, epoch)
+        # TODO: Allow change in time or location
+        # Right the epoch is fixed given the LTAN, as well as the sub-satellite point
+        epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan_h))
+        raan = raan_from_ltan(epoch, ltan_h)
+
+        return cls(sma, ecc, inc_deg, raan, 0, ta_deg, epoch)
 
     def _propagate_eci(self, when_utc=None):
         """Return position and velocity in the given date using ECI coordinate system.
@@ -168,13 +198,7 @@ class J2Predictor(KeplerianPredictor):
         argp = radians(self._argp)
         ta = radians(self._ta)
 
-        # Time increment
-        if self._epoch.tzinfo is not None:
-            epoch = self._epoch.astimezone(dt.timezone.utc).replace(tzinfo=None)
-        else:
-            epoch = self._epoch
-
-        delta_t_sec = (when_utc - epoch).total_seconds()
+        delta_t_sec = (when_utc - self._epoch).total_seconds()
 
         # Propagate
         position_eci, velocity_eci = pkepler(argp, delta_t_sec, ecc, inc, p, raan, sma, ta)
