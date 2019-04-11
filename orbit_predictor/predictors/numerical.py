@@ -39,6 +39,32 @@ R_E_KM = wgs84.radiusearthkm
 J2 = wgs84.j2
 
 
+def sun_sync_plane_constellation(num_satellites, *,
+                                 alt_km=None, ecc=None, inc_deg=None, ltan_h=12, date=None):
+    """Creates num_satellites in the same Sun-synchronous plane, uniformly spaced.
+
+    Parameters
+    ----------
+    num_satellites : int
+        Number of satellites.
+    alt_km : float, optional
+        Altitude, in km.
+    ecc : float, optional
+        Eccentricity.
+    inc_deg : float, optional
+        Inclination, in degrees.
+    ltan_h : int, optional
+        Local Time of the Ascending Node, in hours (default to noon).
+    date : datetime.date, optional
+        Reference date for the orbit, (default to today).
+
+    """
+    for ta_deg in np.linspace(0, 360, num_satellites, endpoint=False):
+        yield J2Predictor.sun_synchronous(
+            alt_km=alt_km, ecc=ecc, inc_deg=inc_deg, ltan_h=ltan_h, date=date, ta_deg=ta_deg
+        )
+
+
 @njit
 def pkepler(argp, delta_t_sec, ecc, inc, p, raan, sma, ta):
     """Perturbed Kepler problem (only J2)
