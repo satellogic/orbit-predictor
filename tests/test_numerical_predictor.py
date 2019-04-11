@@ -73,31 +73,23 @@ class SunSynchronousTests(TestCase):
         ltan_h = 12
         expected_ref_epoch = dt.datetime(date.year, date.month, date.day, 12)
 
-        for delta_ta_deg in [-30, 0, 30]:
+        for ta_deg in [-30, 0, 30]:
             pred = J2Predictor.sun_synchronous(
-                alt_km=800, ecc=0, date=date, ltan_h=ltan_h, delta_ta_deg=delta_ta_deg
+                alt_km=800, ecc=0, date=date, ltan_h=ltan_h, ta_deg=ta_deg
             )
 
-            expected_epoch = expected_ref_epoch + dt.timedelta(
-                minutes=np.radians(delta_ta_deg) / pred.mean_motion
-            )
-
-            self.assertEqual(pred._ta, delta_ta_deg)
-            self.assertEqual(pred._epoch, expected_epoch)
+            self.assertEqual(pred._ta, ta_deg)
+            self.assertEqual(pred._epoch, expected_ref_epoch)
 
     def test_sun_sync_delta_true_anomaly_non_circular(self):
         date = dt.datetime.today().date()
         ltan_h = 12
         expected_ref_epoch = dt.datetime(date.year, date.month, date.day, 12)
 
-        for delta_ta_deg in [-30, 30]:
+        for ta_deg in [-30, 30]:
             pred = J2Predictor.sun_synchronous(
-                alt_km=475, ecc=0.1455, date=date, ltan_h=ltan_h, delta_ta_deg=delta_ta_deg
+                alt_km=475, ecc=0.1455, date=date, ltan_h=ltan_h, ta_deg=ta_deg
             )
 
-            expected_epoch = expected_ref_epoch + dt.timedelta(
-                minutes=np.radians(delta_ta_deg) / pred.mean_motion
-            )
-
-            self.assertEqual(pred._ta, delta_ta_deg)
-            self.assertNotEqual(pred._epoch, expected_epoch)
+            self.assertEqual(pred._ta, ta_deg)
+            self.assertEqual(pred._epoch, expected_ref_epoch)
