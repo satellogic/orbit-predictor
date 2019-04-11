@@ -155,8 +155,9 @@ class J2Predictor(KeplerianPredictor):
         delta_time_s = ta_to_M(radians(delta_ta_deg), ecc) / mean_motion(sma)
 
         # TODO: Allow change in time or location
-        epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan_h),
-                            tzinfo=dt.timezone.utc) + dt.timedelta(seconds=delta_time_s)
+        epoch = dt.datetime(
+            date.year, date.month, date.day, *float_to_hms(ltan_h)
+        ) + dt.timedelta(seconds=delta_time_s)
         raan = raan_from_ltan(epoch, ltan_h)
 
         return cls(sma, ecc, inc_deg, raan, 0, delta_ta_deg, epoch)
@@ -174,13 +175,7 @@ class J2Predictor(KeplerianPredictor):
         argp = radians(self._argp)
         ta = radians(self._ta)
 
-        # Time increment
-        if self._epoch.tzinfo is not None:
-            epoch = self._epoch.astimezone(dt.timezone.utc).replace(tzinfo=None)
-        else:
-            epoch = self._epoch
-
-        delta_t_sec = (when_utc - epoch).total_seconds()
+        delta_t_sec = (when_utc - self._epoch).total_seconds()
 
         # Propagate
         position_eci, velocity_eci = pkepler(argp, delta_t_sec, ecc, inc, p, raan, sma, ta)

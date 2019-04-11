@@ -71,7 +71,7 @@ class SunSynchronousTests(TestCase):
     def test_sun_sync_delta_true_anomaly_has_expected_anomaly_and_epoch(self):
         date = dt.datetime.today().date()
         ltan_h = 12
-        expected_ref_epoch = dt.datetime(date.year, date.month, date.day, 12, tzinfo=dt.timezone.utc)
+        expected_ref_epoch = dt.datetime(date.year, date.month, date.day, 12)
 
         for delta_ta_deg in [-30, 0, 30]:
             pred = J2Predictor.sun_synchronous(
@@ -88,7 +88,7 @@ class SunSynchronousTests(TestCase):
     def test_sun_sync_delta_true_anomaly_non_circular(self):
         date = dt.datetime.today().date()
         ltan_h = 12
-        expected_ref_epoch = dt.datetime(date.year, date.month, date.day, 12, tzinfo=dt.timezone.utc)
+        expected_ref_epoch = dt.datetime(date.year, date.month, date.day, 12)
 
         for delta_ta_deg in [-30, 30]:
             pred = J2Predictor.sun_synchronous(
