@@ -30,7 +30,7 @@ from sgp4.earth_gravity import wgs84
 from orbit_predictor.predictors.keplerian import KeplerianPredictor
 from orbit_predictor.angles import ta_to_M, M_to_ta
 from orbit_predictor.keplerian import coe2rv
-from orbit_predictor.utils import njit, raan_from_ltan, float_to_hms
+from orbit_predictor.utils import njit, raan_from_ltan, float_to_hms, mean_motion
 
 
 OMEGA = 2 * np.pi / (86400 * 365.2421897)  # rad / s
@@ -94,7 +94,8 @@ class J2Predictor(KeplerianPredictor):
 
     """
     @classmethod
-    def sun_synchronous(cls, *, alt_km=None, ecc=None, inc_deg=None, ltan_h=12, date=None):
+    def sun_synchronous(cls, *, alt_km=None, ecc=None, inc_deg=None, ltan_h=12, date=None,
+                        delta_ta_deg=0):
         """Creates Sun synchronous predictor instance.
 
         Parameters
@@ -109,15 +110,13 @@ class J2Predictor(KeplerianPredictor):
             Local Time of the Ascending Node, in hours (default to noon).
         date : datetime.date, optional
             Reference date for the orbit, (default to today).
+        delta_ta_deg : float
+            Increment or decrement of true anomaly, will adjust the epoch
+            accordingly.
 
         """
         if date is None:
             date = dt.datetime.today().date()
-
-        # TODO: Allow change in time or location
-        epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan_h),
-                            tzinfo=dt.timezone.utc)
-        raan = raan_from_ltan(epoch, ltan_h)
 
         try:
             with np.errstate(invalid="raise"):
@@ -153,7 +152,14 @@ class J2Predictor(KeplerianPredictor):
         except FloatingPointError:
             raise InvalidOrbitError("Cannot find Sun-synchronous orbit with given parameters")
 
-        return cls(sma, ecc, inc_deg, raan, 0, 0, epoch)
+        delta_time_s = radians(delta_ta_deg) / mean_motion(sma)
+
+        # TODO: Allow change in time or location
+        epoch = dt.datetime(date.year, date.month, date.day, *float_to_hms(ltan_h),
+                            tzinfo=dt.timezone.utc) + dt.timedelta(seconds=delta_time_s)
+        raan = raan_from_ltan(epoch, ltan_h)
+
+        return cls(sma, ecc, inc_deg, raan, 0, delta_ta_deg, epoch)
 
     def _propagate_eci(self, when_utc=None):
         """Return position and velocity in the given date using ECI coordinate system.
