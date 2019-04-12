@@ -28,10 +28,7 @@ import logassert
 from hypothesis import example, given, settings
 from hypothesis.strategies import floats, tuples, datetimes
 
-from orbit_predictor.accuratepredictor import (
-    ONE_SECOND,
-    HighAccuracyTLEPredictor
-)
+from orbit_predictor.predictors.base import ONE_SECOND
 from orbit_predictor.exceptions import PropagationError
 from orbit_predictor.locations import Location, ARG, EUROPA1
 from orbit_predictor.predictors import TLEPredictor
@@ -63,7 +60,7 @@ class AccuratePredictorTests(TestCase):
         self.start = datetime(2017, 3, 6, 7, 51)
         self.db.add_tle(SATE_ID, LINES, self.start)
         # Predictor
-        self.predictor = HighAccuracyTLEPredictor(SATE_ID, self.db)
+        self.predictor = TLEPredictor(SATE_ID, self.db)
         self.end = self.start + timedelta(days=5)
 
     def test_predicted_passes_are_equal_between_executions(self):
@@ -162,7 +159,7 @@ class AccurateVsGpredictTests(TestCase):
         self.db = MemoryTLESource()
         self.db.add_tle(BUGSAT_SATE_ID, BUGSAT1_TLE_LINES, datetime.now())
         # Predictor
-        self.predictor = HighAccuracyTLEPredictor(BUGSAT_SATE_ID, self.db)
+        self.predictor = TLEPredictor(BUGSAT_SATE_ID, self.db)
 
     def test_get_next_pass_with_stk_data(self):
         STK_DATA = """
@@ -213,7 +210,7 @@ class AccuratePredictorCalculationErrorTests(TestCase):
         self.db = MemoryTLESource()
         self.db.add_tle(BUGSAT_SATE_ID, BUGSAT1_TLE_LINES, datetime.now())
         # Predictor
-        self.predictor = HighAccuracyTLEPredictor(BUGSAT_SATE_ID, self.db)
+        self.predictor = TLEPredictor(BUGSAT_SATE_ID, self.db)
         self.is_ascending_mock = self._patch(
             'orbit_predictor.predictors.base.LocationPredictor.is_ascending')
         self.start = datetime(2017, 3, 6, 7, 51)

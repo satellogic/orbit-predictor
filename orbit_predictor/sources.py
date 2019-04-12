@@ -23,13 +23,13 @@
 
 import logging
 from collections import defaultdict, namedtuple
+import warnings
 
 import requests
 
 from sgp4.earth_gravity import wgs84
 from sgp4.io import twoline2rv
 
-from orbit_predictor.accuratepredictor import HighAccuracyTLEPredictor
 from orbit_predictor.predictors import TLEPredictor
 
 try:
@@ -64,10 +64,14 @@ class TLESource(object):
         lines = self._get_tle(sate_id, date)
         return TLE(sate_id=sate_id, date=date, lines=lines)
 
-    def get_predictor(self, sate_id, precise=False):
+    def get_predictor(self, sate_id, precise=True):
         """Return a Predictor instance using the current storage."""
-        if precise:
-            return HighAccuracyTLEPredictor(sate_id, self)
+        if not precise:
+            warnings.warn(
+                "There is no `precise=False` predictor anymore "
+                "and the parameter will be removed in the future",
+                FutureWarning,
+            )
 
         return TLEPredictor(sate_id, self)
 

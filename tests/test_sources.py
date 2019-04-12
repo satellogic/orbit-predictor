@@ -28,7 +28,6 @@ import unittest
 from requests.exceptions import RequestException
 
 from orbit_predictor import sources
-from orbit_predictor.accuratepredictor import HighAccuracyTLEPredictor
 from orbit_predictor.predictors import TLEPredictor
 
 try:
@@ -88,12 +87,6 @@ class TestMemoryTLESource(unittest.TestCase):
         predictor = self.db.get_predictor(SATE_ID)
 
         self.assertIsInstance(predictor, TLEPredictor)
-        self.assertEqual(predictor.sate_id, SATE_ID)
-        self.assertEqual(predictor.source, self.db)
-
-    def test_get_predictor_precise(self):
-        predictor = self.db.get_predictor(SATE_ID, precise=True)
-        self.assertIsInstance(predictor, HighAccuracyTLEPredictor)
         self.assertEqual(predictor.sate_id, SATE_ID)
         self.assertEqual(predictor.source, self.db)
 
