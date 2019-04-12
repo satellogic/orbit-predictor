@@ -1,6 +1,6 @@
-# coding: utf-8
 # Inspired by
 # Copyright (c) 2012-2017 Juan Luis Cano Rodríguez, MIT license
+
 from unittest import TestCase
 
 from math import radians

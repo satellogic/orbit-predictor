@@ -43,7 +43,7 @@ small as posible.
 Some stuff won't be trivial to understand, but comments and fixes are welcome
 
 """
-import datetime
+import datetime as dt
 from functools import lru_cache
 
 from sgp4 import ext, model
@@ -55,8 +55,6 @@ from orbit_predictor import coordinate_systems
 from orbit_predictor.utils import reify
 
 from .base import CartesianPredictor, logger
-
-ONE_SECOND = datetime.timedelta(seconds=1)
 
 # Hack Zone be warned
 
@@ -85,7 +83,7 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
 
     @reify
     def tle(self):
-        return self.source.get_tle(self.sate_id, datetime.datetime.utcnow())
+        return self.source.get_tle(self.sate_id, dt.datetime.utcnow())
 
     @reify
     def propagator(self):

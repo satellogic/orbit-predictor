@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 import unittest
-from datetime import datetime, timedelta
+import datetime as dt
 
 from orbit_predictor.locations import ARG
 from orbit_predictor.predictors import PredictedPass
@@ -30,9 +30,9 @@ from orbit_predictor.predictors import PredictedPass
 class PredictedPassTests(unittest.TestCase):
 
     def test_midpoint(self):
-        aos = datetime.utcnow()
-        max_elevation_date = aos + timedelta(minutes=5)
-        los = aos + timedelta(minutes=10)
+        aos = dt.datetime.utcnow()
+        max_elevation_date = aos + dt.timedelta(minutes=5)
+        los = aos + dt.timedelta(minutes=10)
         pass_ = PredictedPass(sate_id=1,
                               location=ARG,
                               aos=aos,
@@ -42,4 +42,4 @@ class PredictedPassTests(unittest.TestCase):
                               max_elevation_position=None,
                               max_elevation_deg=10)
 
-        self.assertEqual(pass_.midpoint, aos + timedelta(minutes=5))
+        self.assertEqual(pass_.midpoint, aos + dt.timedelta(minutes=5))

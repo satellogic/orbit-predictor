@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # MIT License
 #
 # Copyright (c) 2017 Satellogic SA
@@ -23,7 +22,7 @@
 
 import functools
 from collections import namedtuple
-from datetime import datetime
+import datetime as dt
 from math import asin, atan2, cos, degrees, floor, radians, sin, sqrt, modf
 
 import numpy as np
@@ -232,7 +231,7 @@ def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
     :returns: an ``AzimuthElevation`` namedtuple
     """
     if when is None:
-        when = datetime.utcnow()
+        when = dt.datetime.utcnow()
 
     utc_time_tuple = when.timetuple()
     utc_time_list = list(utc_time_tuple[:6])
@@ -339,7 +338,7 @@ def mean_motion(sma_km):
     return sqrt(wgs84.mu / sma_km ** 3)  # rad / s
 
 
-class reify(object):
+class reify:
     """
     Use as a class method decorator.  It operates almost exactly like the
     Python ``@property`` decorator, but it puts the result of the method it

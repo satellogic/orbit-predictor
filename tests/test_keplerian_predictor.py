@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from datetime import datetime, timedelta, timezone
+import datetime as dt
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -22,7 +22,7 @@ class KeplerianPredictorTests(TestCase):
         argp = 70.87958362589532
         ta = 0.004121614893481961
 
-        self.epoch = datetime(2000, 1, 1, 12, 0)
+        self.epoch = dt.datetime(2000, 1, 1, 12, 0)
 
         self.predictor = KeplerianPredictor(sma, ecc, inc, raan, argp, ta, self.epoch)
 
@@ -39,7 +39,7 @@ class KeplerianPredictorTests(TestCase):
         expected_position = np.array([-4219.7527, 4363.0292, -3958.7666])
         expected_velocity = np.array([3.689866, -1.916735, -6.112511])
 
-        when_utc = self.epoch + timedelta(minutes=40)
+        when_utc = self.epoch + dt.timedelta(minutes=40)
 
         position_eci, velocity_eci = self.predictor._propagate_eci(when_utc)
 
@@ -62,7 +62,7 @@ class KeplerianPredictorOneDayTests(TestCase):
         argp = 355.0
         ta = 250.0
 
-        self.epoch = datetime(2000, 1, 1, 12, 0)
+        self.epoch = dt.datetime(2000, 1, 1, 12, 0)
 
         self.predictor = KeplerianPredictor(sma, ecc, inc, raan, argp, ta, self.epoch)
 
@@ -79,7 +79,7 @@ class KeplerianPredictorOneDayTests(TestCase):
         expected_position = np.array([-5154.02724044, 3011.19175291, 3214.77198183])
         expected_velocity = np.array([-3.67652279, -6.71613987, 0.41267465])
 
-        when_utc = self.epoch + timedelta(hours=23.999999999)
+        when_utc = self.epoch + dt.timedelta(hours=23.999999999)
 
         position_eci, velocity_eci = self.predictor._propagate_eci(when_utc)
 
@@ -90,7 +90,7 @@ class KeplerianPredictorOneDayTests(TestCase):
         expected_position = np.array([-5154.02724044, 3011.19175291, 3214.77198183])
         expected_velocity = np.array([-3.67652279, -6.71613987, 0.41267465])
 
-        when_utc = self.epoch + timedelta(hours=24)
+        when_utc = self.epoch + dt.timedelta(hours=24)
 
         position_eci, velocity_eci = self.predictor._propagate_eci(when_utc)
 
@@ -107,7 +107,7 @@ class TLEConversionTests(TestCase):
     )
 
     def test_from_tle_returns_same_initial_conditions_on_epoch(self):
-        start = datetime(2017, 3, 6, 7, 51)
+        start = dt.datetime(2017, 3, 6, 7, 51)
         db = MemoryTLESource()
         db.add_tle(self.SATE_ID, self.LINES, start)
 

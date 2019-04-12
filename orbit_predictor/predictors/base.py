@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # MIT License
 #
 # Copyright (c) 2017 Satellogic SA
@@ -36,7 +35,8 @@ from orbit_predictor.utils import (
     reify,
     vector_diff,
     vector_norm,
-    gstime_from_datetime)
+    gstime_from_datetime
+)
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class Position(namedtuple(
         return coordinate_systems.ecef_to_llh(self.position_ecef)
 
 
-class PredictedPass(object):
+class PredictedPass:
     def __init__(self, location, sate_id,
                  max_elevation_deg,
                  aos, los, duration_s,
@@ -101,9 +101,9 @@ class PredictedPass(object):
         location ``target`` in a common frame, off-nadir angle ``off_nadir_angle``
         is given by:
             t2b = sate_pos - target
-            cos(off_nadir_angle) =     (target  · t2b)     # Vectorial dot product
-                                    _____________________
-                                    || target || || t2b||
+            cos(off_nadir_angle) =     (sate_pos  · t2b)     # Vectorial dot product
+                                    _______________________
+                                    || sate_pos || || t2b||
 
         Sign for the rotation is calculated this way
 
@@ -130,7 +130,7 @@ class PredictedPass(object):
         return degrees(angle) * sign
 
 
-class Predictor(object):
+class Predictor:
 
     def __init__(self, sate_id, source):
         self.sate_id = sate_id
@@ -199,7 +199,7 @@ class GPSPredictor(Predictor):
     pass
 
 
-class LocationPredictor(object):
+class LocationPredictor:
     """Predicts passes over a given location
     Exposes an iterable interface
     """

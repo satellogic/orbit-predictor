@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datetime
+import datetime as dt
 import importlib
 from math import asin, cos, degrees, radians, sin, sqrt
 import os
@@ -31,7 +31,7 @@ from orbit_predictor.utils import reify, sun_azimuth_elevation
 LIGHT_SPEED_KMS = 299792.458
 
 
-class Location(object):
+class Location:
     def __init__(self, name, latitude_deg, longitude_deg, elevation_m):
         self.name = name
         self.latitude_deg = latitude_deg
