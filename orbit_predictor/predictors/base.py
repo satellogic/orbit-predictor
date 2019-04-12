@@ -101,9 +101,9 @@ class PredictedPass:
         location ``target`` in a common frame, off-nadir angle ``off_nadir_angle``
         is given by:
             t2b = sate_pos - target
-            cos(off_nadir_angle) =     (target  · t2b)     # Vectorial dot product
-                                    _____________________
-                                    || target || || t2b||
+            cos(off_nadir_angle) =     (sate_pos  · t2b)     # Vectorial dot product
+                                    _______________________
+                                    || sate_pos || || t2b||
 
         Sign for the rotation is calculated this way
 
