@@ -80,15 +80,12 @@ Simplified creation of predictor from TLE lines:
         velocity_ecef=(-2.4601788971676903, -0.47182217472755117, 7.167517631852518),
         error_estimate=None)
 
-`WSTLESource` needs the tle.satellogic.com service to be working. We are doing changes to have it public available.
-
 Currently you have available these sources
 ------------------------------------------
 
 - Memorytlesource: in memory storage.
 - EtcTLESource: a uniq TLE is stored in `/etc/latest_tle`
-- WSTLESource: It source is using the `TLE API. <http://tle.satellogics.com/api/tle/>`_
-
+- WSTLESource: It reads a REST API currently used inside Satellogic. We are are working to make it publicly available.
 
 About HighAccuracyTLEPredictor 
 ------------------------------
