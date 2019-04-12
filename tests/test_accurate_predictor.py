@@ -29,7 +29,7 @@ from hypothesis.strategies import floats, tuples, datetimes
 
 from orbit_predictor.predictors.base import ONE_SECOND
 from orbit_predictor.exceptions import PropagationError
-from orbit_predictor.locations import Location, ARG, EUROPA1
+from orbit_predictor.locations import Location, ARG
 from orbit_predictor.predictors import TLEPredictor
 from orbit_predictor.sources import MemoryTLESource
 

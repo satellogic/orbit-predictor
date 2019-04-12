@@ -54,7 +54,7 @@ from sgp4.propagation import _gstime
 from orbit_predictor import coordinate_systems
 from orbit_predictor.utils import reify
 
-from .base import CartesianPredictor, logger, ONE_SECOND
+from .base import CartesianPredictor, logger
 
 # Hack Zone be warned
 

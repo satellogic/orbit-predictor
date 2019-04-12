@@ -35,7 +35,8 @@ from orbit_predictor.utils import (
     reify,
     vector_diff,
     vector_norm,
-    gstime_from_datetime)
+    gstime_from_datetime
+)
 
 logger = logging.getLogger(__name__)
 

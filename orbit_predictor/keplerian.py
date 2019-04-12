@@ -24,6 +24,7 @@
 # https://github.com/poliastro/poliastro/blob/1d2f3ca/src/poliastro/twobody/classical.py
 # https://github.com/poliastro/poliastro/blob/1d2f3ca/src/poliastro/twobody/rv.py
 # Copyright (c) 2012-2017 Juan Luis Cano Rodríguez, MIT license
+
 from math import cos, sin, sqrt
 
 import numpy as np

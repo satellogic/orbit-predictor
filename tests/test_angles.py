@@ -1,6 +1,7 @@
 # Inspired by
 # https://github.com/poliastro/poliastro/blob/86f971c/src/poliastro/twobody/tests/test_angles.py
 # Copyright (c) 2012-2017 Juan Luis Cano Rodríguez, MIT license
+
 from unittest import TestCase
 
 from math import radians, degrees
