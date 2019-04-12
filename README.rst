@@ -87,14 +87,6 @@ Currently you have available these sources
 - EtcTLESource: a uniq TLE is stored in `/etc/latest_tle`
 - WSTLESource: It reads a REST API currently used inside Satellogic. We are are working to make it publicly available.
 
-About HighAccuracyTLEPredictor 
-------------------------------
-
-The default 'predictor' code is tunned to low CPU usage. (IE: a Satellite computer). The 
-error estimation is ~20 seconds. If you need more than that you can use the *HighAccuracyTLEPredictor*  
-passing `precise=True` to `get_predictor()`. 
-
-
 How to contribute
 -----------------
 
