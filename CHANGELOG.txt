@@ -1,0 +1,13 @@
+# orbit-predictor changelog
+
+## 1.9.0 (2019-04-12)
+
+* First Python-3 only release!
+* Deprecated HighAccuracyTLEPredictor class, removed non-precise algorithm
+* Added new Keplerian and J2 predictors based on classical orbital elements
+* Added functions to create sun-synchronous satellites and planar constellations
+* Added new NoradTLESource
+* Fix off-nadir angle calculation
+* Allow custom locations using an environment variable
+* Do not round the microseconds internally, achieve much higher precision
+  (validated against STK)
