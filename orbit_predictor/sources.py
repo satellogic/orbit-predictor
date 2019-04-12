@@ -57,15 +57,8 @@ class TLESource:
         lines = self._get_tle(sate_id, date)
         return TLE(sate_id=sate_id, date=date, lines=lines)
 
-    def get_predictor(self, sate_id, precise=True):
+    def get_predictor(self, sate_id):
         """Return a Predictor instance using the current storage."""
-        if not precise:
-            warnings.warn(
-                "There is no `precise=False` predictor anymore "
-                "and the parameter will be removed in the future",
-                FutureWarning,
-            )
-
         return TLEPredictor(sate_id, self)
 
 
