@@ -141,7 +141,7 @@ class TestOnTokio(ElevationTestCase):
         self.assertElevation(self.september_10th.dust(), -13.66267)
 
 
-class Date(object):
+class Date:
     def __init__(self, dt, tz):
         self.date = dt - datetime.timedelta(hours=tz)
 

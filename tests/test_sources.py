@@ -21,24 +21,17 @@
 # SOFTWARE.
 
 import datetime
+import unittest
+from unittest.mock import Mock, patch
+
 import os
 import shutil
 import tempfile
-import unittest
 from requests.exceptions import RequestException
+from urllib import parse as urlparse
 
 from orbit_predictor import sources
 from orbit_predictor.predictors import TLEPredictor
-
-try:
-    from unittest.mock import Mock, patch
-except ImportError:
-    from mock import Mock, patch  # Python2
-
-try:
-    from urllib import parse as urlparse
-except ImportError:
-    import urlparse  # Python2
 
 
 SATE_ID = "AAUSAT-II"

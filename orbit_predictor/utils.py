@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # MIT License
 #
 # Copyright (c) 2017 Satellogic SA
@@ -339,7 +338,7 @@ def mean_motion(sma_km):
     return sqrt(wgs84.mu / sma_km ** 3)  # rad / s
 
 
-class reify(object):
+class reify:
     """
     Use as a class method decorator.  It operates almost exactly like the
     Python ``@property`` decorator, but it puts the result of the method it

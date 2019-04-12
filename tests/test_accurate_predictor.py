@@ -20,9 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time
-from datetime import datetime, timedelta
-from unittest import TestCase
+import datetime as dt
+from unittest import TestCase, mock
 
 import logassert
 from hypothesis import example, given, settings
@@ -33,11 +32,6 @@ from orbit_predictor.exceptions import PropagationError
 from orbit_predictor.locations import Location, ARG, EUROPA1
 from orbit_predictor.predictors import TLEPredictor
 from orbit_predictor.sources import MemoryTLESource
-
-try:
-    from unittest import mock  # py3
-except ImportError:
-    import mock  # py2
 
 
 SATE_ID = '41558U'  # newsat 2

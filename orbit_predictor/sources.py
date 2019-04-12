@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # MIT License
 #
 # Copyright (c) 2017 Satellogic SA
@@ -26,19 +25,13 @@ from collections import defaultdict, namedtuple
 import warnings
 
 import requests
+from urllib import parse as urlparse
+from urllib.parse import urlencode
 
 from sgp4.earth_gravity import wgs84
 from sgp4.io import twoline2rv
 
 from orbit_predictor.predictors import TLEPredictor
-
-try:
-    from urllib import parse as urlparse
-    from urllib.parse import urlencode
-except ImportError:
-    # pytyhon2 support.
-    import urlparse  # NOQA
-    from urllib import urlencode  # NOQA
 
 logger = logging.getLogger(__name__)
 
@@ -46,12 +39,12 @@ TLE = namedtuple('TLE',
                  ['sate_id', 'lines', 'date'])
 
 
-class GPSSource(object):
+class GPSSource:
     def get_position_ecef(self, sate_id, when_utc):
         raise NotImplementedError("You have to implement it.")
 
 
-class TLESource(object):
+class TLESource:
 
     def add_tle(self, sate_id, tle, epoch):
         raise NotImplementedError("You have to implement it.")

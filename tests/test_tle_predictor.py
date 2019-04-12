@@ -22,6 +22,7 @@
 
 import datetime
 import unittest
+from unittest.mock import patch
 
 from orbit_predictor.coordinate_systems import llh_to_ecef
 from orbit_predictor.locations import Location, ARG
@@ -33,11 +34,6 @@ from orbit_predictor.predictors import (
 )
 from orbit_predictor.predictors.base import ONE_SECOND
 from orbit_predictor.sources import MemoryTLESource
-
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch  # Python2
 
 
 SATE_ID = 'BUGSAT-1'

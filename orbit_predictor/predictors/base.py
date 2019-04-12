@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # MIT License
 #
 # Copyright (c) 2017 Satellogic SA
@@ -55,7 +54,7 @@ class Position(namedtuple(
         return coordinate_systems.ecef_to_llh(self.position_ecef)
 
 
-class PredictedPass(object):
+class PredictedPass:
     def __init__(self, location, sate_id,
                  max_elevation_deg,
                  aos, los, duration_s,
@@ -130,7 +129,7 @@ class PredictedPass(object):
         return degrees(angle) * sign
 
 
-class Predictor(object):
+class Predictor:
 
     def __init__(self, sate_id, source):
         self.sate_id = sate_id
@@ -199,7 +198,7 @@ class GPSPredictor(Predictor):
     pass
 
 
-class LocationPredictor(object):
+class LocationPredictor:
     """Predicts passes over a given location
     Exposes an iterable interface
     """
