@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datetime
+import datetime as dt
 import importlib
 from math import asin, cos, degrees, radians, sin, sqrt
 import os

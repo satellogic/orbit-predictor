@@ -22,7 +22,7 @@
 
 import functools
 from collections import namedtuple
-from datetime import datetime
+import datetime as dt
 from math import asin, atan2, cos, degrees, floor, radians, sin, sqrt, modf
 
 import numpy as np
@@ -231,7 +231,7 @@ def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
     :returns: an ``AzimuthElevation`` namedtuple
     """
     if when is None:
-        when = datetime.utcnow()
+        when = dt.datetime.utcnow()
 
     utc_time_tuple = when.timetuple()
     utc_time_list = list(utc_time_tuple[:6])

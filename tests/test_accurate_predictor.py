@@ -51,11 +51,11 @@ class AccuratePredictorTests(TestCase):
     def setUp(self):
         # Source
         self.db = MemoryTLESource()
-        self.start = datetime(2017, 3, 6, 7, 51)
+        self.start = dt.datetime(2017, 3, 6, 7, 51)
         self.db.add_tle(SATE_ID, LINES, self.start)
         # Predictor
         self.predictor = TLEPredictor(SATE_ID, self.db)
-        self.end = self.start + timedelta(days=5)
+        self.end = self.start + dt.timedelta(days=5)
 
     def test_predicted_passes_are_equal_between_executions(self):
         location = Location('bad-case-1', 11.937501570612568,
@@ -63,7 +63,7 @@ class AccuratePredictorTests(TestCase):
         first_set = list(
             self.predictor.passes_over(location, self.start, self.end))
         second_set = list(
-            self.predictor.passes_over(location, self.start + timedelta(seconds=3), self.end)
+            self.predictor.passes_over(location, self.start + dt.timedelta(seconds=3), self.end)
         )
 
         # We use delta=ONE_SECOND because
@@ -72,7 +72,7 @@ class AccuratePredictorTests(TestCase):
         self.assertAlmostEqual(first_set[0].los, second_set[0].los, delta=ONE_SECOND)
 
     def test_predicted_passes_have_elevation_positive_and_visible_on_date(self):
-        end = self.start + timedelta(days=60)
+        end = self.start + dt.timedelta(days=60)
         for pass_ in self.predictor.passes_over(ARG, self.start, end):
             self.assertGreater(pass_.max_elevation_deg, 0)
             position = self.predictor.get_position(pass_.max_elevation_date)
@@ -81,8 +81,8 @@ class AccuratePredictorTests(TestCase):
             self.assertLessEqual(pass_.off_nadir_deg, 90)
 
     def test_predicted_passes_off_nadir_angle_works(self):
-        start = datetime(2017, 3, 6, 13, 30)
-        end = start + timedelta(hours=1)
+        start = dt.datetime(2017, 3, 6, 13, 30)
+        end = start + dt.timedelta(hours=1)
         location = Location('bad-case-1', 11.937501570612568,
                             -55.35189435098657, 1780.674044538666)
 
@@ -90,8 +90,8 @@ class AccuratePredictorTests(TestCase):
         self.assertGreaterEqual(0, pass_.off_nadir_deg)
 
     @given(start=datetimes(
-               min_value=datetime(2017, 1, 1),
-               max_value=datetime(2020, 12, 31),
+               min_value=dt.datetime(2017, 1, 1),
+               max_value=dt.datetime(2020, 12, 31),
            ),
            location=tuples(
                floats(min_value=-90, max_value=90),
@@ -99,7 +99,7 @@ class AccuratePredictorTests(TestCase):
                floats(min_value=-200, max_value=9000)
            ))
     @settings(max_examples=10000, deadline=None)
-    @example(start=datetime(2017, 1, 26, 11, 51, 51),
+    @example(start=dt.datetime(2017, 1, 26, 11, 51, 51),
              location=(-37.69358328273305, 153.96875, 0.0))
     def test_pass_is_always_returned(self, start, location):
         location = Location('bad-case-1', *location)
@@ -107,8 +107,8 @@ class AccuratePredictorTests(TestCase):
         self.assertGreater(pass_.max_elevation_deg, 0)
 
     def test_aos_deg_can_be_used_in_get_next_pass(self):
-        start = datetime(2017, 3, 6, 13, 30)
-        end = start + timedelta(hours=1)
+        start = dt.datetime(2017, 3, 6, 13, 30)
+        end = start + dt.timedelta(hours=1)
         location = Location('bad-case-1', 11.937501570612568,
                             -55.35189435098657, 1780.674044538666)
         complete_pass = self.predictor.get_next_pass(location, when_utc=start,
@@ -122,7 +122,7 @@ class AccuratePredictorTests(TestCase):
         self.assertLess(pass_with_aos.aos, complete_pass.max_elevation_date)
         self.assertAlmostEqual(pass_with_aos.max_elevation_date,
                                complete_pass.max_elevation_date,
-                               delta=timedelta(seconds=1))
+                               delta=dt.timedelta(seconds=1))
 
         self.assertGreater(pass_with_aos.los, complete_pass.max_elevation_date)
         self.assertLess(pass_with_aos.los, complete_pass.los)
@@ -138,7 +138,7 @@ class AccuratePredictorTests(TestCase):
         self.assertAlmostEqual(elev, 5, delta=0.1)
 
     def test_predicted_passes_whit_aos(self):
-        end = self.start + timedelta(days=60)
+        end = self.start + dt.timedelta(days=60)
         for pass_ in self.predictor.passes_over(ARG, self.start, end, aos_at_dg=5):
             self.assertGreater(pass_.max_elevation_deg, 5)
             position = self.predictor.get_position(pass_.aos)
@@ -151,7 +151,7 @@ class AccurateVsGpredictTests(TestCase):
     def setUp(self):
         # Source
         self.db = MemoryTLESource()
-        self.db.add_tle(BUGSAT_SATE_ID, BUGSAT1_TLE_LINES, datetime.now())
+        self.db.add_tle(BUGSAT_SATE_ID, BUGSAT1_TLE_LINES, dt.datetime.utcnow())
         # Predictor
         self.predictor = TLEPredictor(BUGSAT_SATE_ID, self.db)
 
@@ -173,19 +173,19 @@ class AccurateVsGpredictTests(TestCase):
 
         for line in STK_DATA.splitlines()[4:]:
             line_parts = line.split()
-            aos = datetime.strptime(" ".join(line_parts[:2]), '%Y/%m/%d %H:%M:%S.%f')
-            max_elevation_date = datetime.strptime(" ".join(line_parts[2:4]),
-                                                   '%Y/%m/%d %H:%M:%S.%f')
-            los = datetime.strptime(" ".join(line_parts[4:6]), '%Y/%m/%d %H:%M:%S.%f')
-            duration = datetime.strptime(line_parts[6], '%H:%M:%S.%f')
-            duration_s = timedelta(
+            aos = dt.datetime.strptime(" ".join(line_parts[:2]), '%Y/%m/%d %H:%M:%S.%f')
+            max_elevation_date = dt.datetime.strptime(" ".join(line_parts[2:4]),
+                                                      '%Y/%m/%d %H:%M:%S.%f')
+            los = dt.datetime.strptime(" ".join(line_parts[4:6]), '%Y/%m/%d %H:%M:%S.%f')
+            duration = dt.datetime.strptime(line_parts[6], '%H:%M:%S.%f')
+            duration_s = dt.timedelta(
                 minutes=duration.minute, seconds=duration.second).total_seconds()
             max_elev_deg = float(line_parts[7])
 
             try:
                 date = pass_.los  # NOQA
             except UnboundLocalError:
-                date = datetime.strptime(
+                date = dt.datetime.strptime(
                     "2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
 
             pass_ = self.predictor.get_next_pass(ARG, date)
@@ -202,12 +202,12 @@ class AccuratePredictorCalculationErrorTests(TestCase):
     def setUp(self):
         # Source
         self.db = MemoryTLESource()
-        self.db.add_tle(BUGSAT_SATE_ID, BUGSAT1_TLE_LINES, datetime.now())
+        self.db.add_tle(BUGSAT_SATE_ID, BUGSAT1_TLE_LINES, dt.datetime.utcnow())
         # Predictor
         self.predictor = TLEPredictor(BUGSAT_SATE_ID, self.db)
         self.is_ascending_mock = self._patch(
             'orbit_predictor.predictors.base.LocationPredictor.is_ascending')
-        self.start = datetime(2017, 3, 6, 7, 51)
+        self.start = dt.datetime(2017, 3, 6, 7, 51)
         logassert.setup(self,  'orbit_predictor.predictors.base')
 
     def _patch(self, *args,  **kwargs):

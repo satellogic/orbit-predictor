@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datetime
+import datetime as dt
 import time
 import unittest
 
@@ -142,71 +142,71 @@ class TestOnTokio(ElevationTestCase):
 
 
 class Date:
-    def __init__(self, dt, tz):
-        self.date = dt - datetime.timedelta(hours=tz)
+    def __init__(self, dt_, tz):
+        self.date = dt_ - dt.timedelta(hours=tz)
 
     def noon(self):
-        return self.date + datetime.timedelta(hours=12)
+        return self.date + dt.timedelta(hours=12)
 
     def dawn(self):
-        return self.date + datetime.timedelta(hours=7)
+        return self.date + dt.timedelta(hours=7)
 
     def dust(self):
-        return self.date + datetime.timedelta(hours=19)
+        return self.date + dt.timedelta(hours=19)
 
     @classmethod
     def from_utc(cls, time_string, tz):
         t = time.strptime(time_string, '%d/%m/%Y')
-        return cls(datetime.datetime(t.tm_year, t.tm_mon, t.tm_mday, tzinfo=UTC), tz)
+        return cls(dt.datetime(t.tm_year, t.tm_mon, t.tm_mday, tzinfo=UTC), tz)
 
 
 # NOTE: These classes seem necessary to allow the dates to be introduced as UTC and then
 #       localized so that when input to get_sun_azimuth_elevation they are interpreted
 #       correctly as the original UTC...
 #       It's horrible, and if you know of a better way to do this please let me know.
-class UTCTimezone(datetime.tzinfo):
-    ZERO = datetime.timedelta(0)
+class UTCTimezone(dt.tzinfo):
+    ZERO = dt.timedelta(0)
 
-    def utcoffset(self, dt):
+    def utcoffset(self, dt_):
         return UTCTimezone.ZERO
 
-    def dst(self, dt):
+    def dst(self, dt_):
         return UTCTimezone.ZERO
 
-    def tzname(self, dt):
+    def tzname(self, dt_):
         return 'UTC'
 
 
 UTC = UTCTimezone()
 
 
-class LocalTimezone(datetime.tzinfo):
-    STDOFFSET = datetime.timedelta(seconds=-time.timezone)
+class LocalTimezone(dt.tzinfo):
+    STDOFFSET = dt.timedelta(seconds=-time.timezone)
     if time.daylight:
-        DSTOFFSET = datetime.timedelta(seconds=-time.altzone)
+        DSTOFFSET = dt.timedelta(seconds=-time.altzone)
     else:
         DSTOFFSET = STDOFFSET
     DSTDIFF = DSTOFFSET - STDOFFSET
 
-    def utcoffset(self, dt):
-        if self._isdst(dt):
+    def utcoffset(self, dt_):
+        if self._isdst(dt_):
             return LocalTimezone.DSTOFFSET
         else:
             return LocalTimezone.STDOFFSET
 
-    def dst(self, dt):
-        if self._isdst(dt):
+    def dst(self, dt_):
+        if self._isdst(dt_):
             return LocalTimezone.DSTDIFF
         else:
             return UTCTimezone.ZERO
 
-    def tzname(self, dt):
-        return time.tzname[self._isdst(dt)]
+    def tzname(self, dt_):
+        return time.tzname[self._isdst(dt_)]
 
-    def _isdst(self, dt):
-        tt = (dt.year, dt.month, dt.day,
-              dt.hour, dt.minute, dt.second,
-              dt.weekday(), 0, 0)
+    def _isdst(self, dt_):
+        tt = (dt_.year, dt_.month, dt_.day,
+              dt_.hour, dt_.minute, dt_.second,
+              dt_.weekday(), 0, 0)
         stamp = time.mktime(tt)
         tt = time.localtime(stamp)
         return tt.tm_isdst > 0

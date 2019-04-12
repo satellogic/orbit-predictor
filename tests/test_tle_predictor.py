@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datetime
+import datetime as dt
 import unittest
 from unittest.mock import patch
 
@@ -48,14 +48,14 @@ class TLEPredictorTestCase(unittest.TestCase):
     def setUpClass(cls):
         # Source
         cls.db = MemoryTLESource()
-        cls.db.add_tle(SATE_ID, BUGSAT1_TLE_LINES, datetime.datetime.now())
+        cls.db.add_tle(SATE_ID, BUGSAT1_TLE_LINES, dt.datetime.utcnow())
         # Predictor
         cls.predictor = TLEPredictor(SATE_ID, cls.db)
 
     def test_predicted_pass_eq(self):
-        aos = datetime.datetime.utcnow()
-        max_elevation_date = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
-        los = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+        aos = dt.datetime.utcnow()
+        max_elevation_date = dt.datetime.utcnow() + dt.timedelta(minutes=5)
+        los = dt.datetime.utcnow() + dt.timedelta(minutes=10)
         max_elevation_position = Position(
             when_utc=max_elevation_date,
             position_ecef=(1, 1, 1),
@@ -79,9 +79,9 @@ class TLEPredictorTestCase(unittest.TestCase):
         self.assertEqual(p2, p1)
 
     def test_predicted_pass_no_eq(self):
-        aos = datetime.datetime.utcnow()
-        max_elevation_date = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
-        los = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+        aos = dt.datetime.utcnow()
+        max_elevation_date = dt.datetime.utcnow() + dt.timedelta(minutes=5)
+        los = dt.datetime.utcnow() + dt.timedelta(minutes=10)
         max_elevation_position = Position(
             when_utc=max_elevation_date,
             position_ecef=(1, 1, 1),
@@ -109,9 +109,9 @@ class TLEPredictorTestCase(unittest.TestCase):
         class SubPredictedPass(PredictedPass):
             pass
 
-        aos = datetime.datetime.utcnow()
-        max_elevation_date = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
-        los = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+        aos = dt.datetime.utcnow()
+        max_elevation_date = dt.datetime.utcnow() + dt.timedelta(minutes=5)
+        los = dt.datetime.utcnow() + dt.timedelta(minutes=10)
         max_elevation_position = Position(
             when_utc=max_elevation_date,
             position_ecef=(1, 1, 1),
@@ -135,29 +135,29 @@ class TLEPredictorTestCase(unittest.TestCase):
         self.assertEqual(p2, p1)
 
     def test_get_next_pass(self):
-        date = datetime.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
+        date = dt.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
         pass_ = self.predictor.get_next_pass(ARG, date, max_elevation_gt=15)
         for i in range(20):
             pass_ = self.predictor.get_next_pass(ARG, pass_.los, max_elevation_gt=15)
             self.assertGreaterEqual(pass_.max_elevation_deg, 15)
 
     def test_get_next_pass_with_limit_exception(self):
-        date = datetime.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
+        date = dt.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
         pass_ = self.predictor.get_next_pass(ARG, date, max_elevation_gt=15)
         with self.assertRaises(NotReachable):
             self.predictor.get_next_pass(ARG, date, max_elevation_gt=15,
-                                         limit_date=pass_.aos - datetime.timedelta(minutes=1))
+                                         limit_date=pass_.aos - dt.timedelta(minutes=1))
 
     def test_get_next_pass_with_limit(self):
-        date = datetime.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
+        date = dt.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
         pass_ = self.predictor.get_next_pass(ARG, date, max_elevation_gt=15)
         new_pass = self.predictor.get_next_pass(
             ARG, date, max_elevation_gt=15,
-            limit_date=pass_.los + datetime.timedelta(seconds=1))
+            limit_date=pass_.los + dt.timedelta(seconds=1))
         self.assertEqual(pass_, new_pass)
 
     def test_get_next_pass_while_passing(self):
-        date = datetime.datetime.strptime("2014/10/23 01:27:33.224", '%Y/%m/%d %H:%M:%S.%f')
+        date = dt.datetime.strptime("2014/10/23 01:27:33.224", '%Y/%m/%d %H:%M:%S.%f')
         pass_ = self.predictor.get_next_pass(ARG, date)
         self.assertAlmostEqual(pass_.aos, date, delta=ONE_SECOND)
         self.assertTrue(date < pass_.los)
@@ -166,7 +166,7 @@ class TLEPredictorTestCase(unittest.TestCase):
         self.assertTrue(ARG.is_visible(position))
 
     def test_greater_than_deg(self):
-        date = datetime.datetime.strptime("2014/10/23 01:25:09", '%Y/%m/%d %H:%M:%S')
+        date = dt.datetime.strptime("2014/10/23 01:25:09", '%Y/%m/%d %H:%M:%S')
         pass5 = self.predictor.get_next_pass(ARG, date, aos_at_dg=5)
         pass10 = self.predictor.get_next_pass(ARG, date, aos_at_dg=10)
         pass12 = self.predictor.get_next_pass(ARG, date, aos_at_dg=12)
@@ -181,7 +181,7 @@ class TLEPredictorTestCase(unittest.TestCase):
     @patch("orbit_predictor.predictors.TLEPredictor._propagate_ecef")
     def test_get_position(self, mocked_propagate):
         mocked_propagate.return_value = ('foo', 'bar')
-        when_utc = datetime.datetime.utcnow()
+        when_utc = dt.datetime.utcnow()
         position = self.predictor.get_position(when_utc)
 
         self.assertIsInstance(position, Position)
@@ -191,7 +191,7 @@ class TLEPredictorTestCase(unittest.TestCase):
         self.assertEqual(position.velocity_ecef, 'bar')
 
     def test_off_nadir_computable_and_reasonable(self):
-        date = datetime.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
+        date = dt.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
         pass_ = self.predictor.get_next_pass(ARG, date)
         self.assertLessEqual(abs(pass_.off_nadir_deg), 90)
 

@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datetime
+import datetime as dt
 import unittest
 from math import degrees
 
@@ -38,10 +38,10 @@ class LocationTestCase(unittest.TestCase):
     def setUp(self):
         # Source
         self.db = MemoryTLESource()
-        self.db.add_tle(SATE_ID, BUGSAT1_TLE_LINES, datetime.datetime.now())
+        self.db.add_tle(SATE_ID, BUGSAT1_TLE_LINES, dt.datetime.utcnow())
         # Predictor
         self.predictor = TLEPredictor(SATE_ID, self.db)
-        date = datetime.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
+        date = dt.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
         self.next_pass = self.predictor.get_next_pass(ARG, when_utc=date)
 
     def test_compare_eq(self):
@@ -70,14 +70,14 @@ class LocationTestCase(unittest.TestCase):
         self.assertEqual(l2, l1)
 
     def test_get_azimuth_elev(self):
-        date = datetime.datetime.strptime("2014-10-21 22:47:29.147740", '%Y-%m-%d %H:%M:%S.%f')
+        date = dt.datetime.strptime("2014-10-21 22:47:29.147740", '%Y-%m-%d %H:%M:%S.%f')
         azimuth, elevation = ARG.get_azimuth_elev(self.predictor.get_position(date))
 
         self.assertAlmostEqual(degrees(azimuth), 249.7, delta=0.1)
         self.assertAlmostEqual(degrees(elevation), -52.1, delta=0.1)
 
     def test_get_azimuth_elev_deg(self):
-        date = datetime.datetime.strptime("2014-10-21 22:47:29.147740", '%Y-%m-%d %H:%M:%S.%f')
+        date = dt.datetime.strptime("2014-10-21 22:47:29.147740", '%Y-%m-%d %H:%M:%S.%f')
         azimuth, elevation = ARG.get_azimuth_elev_deg(self.predictor.get_position(date))
 
         self.assertAlmostEqual(azimuth, 249.7, delta=0.1)
@@ -88,21 +88,21 @@ class LocationTestCase(unittest.TestCase):
         self.assertTrue(ARG.is_visible(position))
 
     def test_no_visible(self):
-        position = self.predictor.get_position(self.next_pass.los + datetime.timedelta(minutes=10))
+        position = self.predictor.get_position(self.next_pass.los + dt.timedelta(minutes=10))
         self.assertFalse(ARG.is_visible(position))
 
     def test_is_visible_with_deg(self):
-        position = self.predictor.get_position(self.next_pass.aos + datetime.timedelta(minutes=4))
+        position = self.predictor.get_position(self.next_pass.aos + dt.timedelta(minutes=4))
         # 21 deg
         self.assertTrue(ARG.is_visible(position, elevation=4))
 
     def test_no_visible_with_deg(self):
-        position = self.predictor.get_position(self.next_pass.aos + datetime.timedelta(minutes=4))
+        position = self.predictor.get_position(self.next_pass.aos + dt.timedelta(minutes=4))
         # 21 deg
         self.assertFalse(ARG.is_visible(position, elevation=30))
 
     def test_doppler_factor(self):
-        date = datetime.datetime.strptime("2014-10-21 23:06:11.132438", '%Y-%m-%d %H:%M:%S.%f')
+        date = dt.datetime.strptime("2014-10-21 23:06:11.132438", '%Y-%m-%d %H:%M:%S.%f')
         position = self.predictor.get_position(date)
         doppler_factor = ARG.doppler_factor(position)
 

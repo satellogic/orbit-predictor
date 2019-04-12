@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datetime
 import unittest
 from unittest.mock import Mock, patch
 
+import datetime as dt
 import os
 import shutil
 import tempfile
@@ -47,29 +47,29 @@ class TestMemoryTLESource(unittest.TestCase):
         self.db = sources.MemoryTLESource()
 
     def test_add_tle(self):
-        self.db.add_tle(SATE_ID, SAMPLE_TLE, datetime.datetime.now())
-        tle = self.db._get_tle(SATE_ID, datetime.datetime.now())
+        self.db.add_tle(SATE_ID, SAMPLE_TLE, dt.datetime.utcnow())
+        tle = self.db._get_tle(SATE_ID, dt.datetime.utcnow())
         self.assertEqual(tle, SAMPLE_TLE)
 
     def test_add_tle_twice(self):
-        self.db.add_tle(SATE_ID, SAMPLE_TLE, datetime.datetime.now())
-        self.db.add_tle(SATE_ID, SAMPLE_TLE2, datetime.datetime.now())
-        tle = self.db._get_tle(SATE_ID, datetime.datetime.now())
+        self.db.add_tle(SATE_ID, SAMPLE_TLE, dt.datetime.utcnow())
+        self.db.add_tle(SATE_ID, SAMPLE_TLE2, dt.datetime.utcnow())
+        tle = self.db._get_tle(SATE_ID, dt.datetime.utcnow())
         self.assertEqual(tle, SAMPLE_TLE2)
 
     def test_add_tle_two_id(self):
-        self.db.add_tle(SATE_ID, SAMPLE_TLE, datetime.datetime.now())
-        self.db.add_tle("fake_id", SAMPLE_TLE2, datetime.datetime.now())
-        tle = self.db._get_tle(SATE_ID, datetime.datetime.now())
+        self.db.add_tle(SATE_ID, SAMPLE_TLE, dt.datetime.utcnow())
+        self.db.add_tle("fake_id", SAMPLE_TLE2, dt.datetime.utcnow())
+        tle = self.db._get_tle(SATE_ID, dt.datetime.utcnow())
         self.assertEqual(tle, SAMPLE_TLE)
 
     def test_empty(self):
         with self.assertRaises(LookupError):
-            self.db._get_tle(SATE_ID, datetime.datetime.now())
+            self.db._get_tle(SATE_ID, dt.datetime.utcnow())
 
     # this methods are from TLESource()
     def test_get(self):
-        date = datetime.datetime.now()
+        date = dt.datetime.utcnow()
         self.db.add_tle(SATE_ID, SAMPLE_TLE, date)
         tle = self.db.get_tle(SATE_ID, date)
         self.assertEqual(tle.lines, SAMPLE_TLE)
@@ -97,21 +97,21 @@ class TestEtcTLESource(unittest.TestCase):
     def test_add_tle(self):
         db = sources.EtcTLESource(self.filename)
 
-        db.add_tle(SATE_ID, SAMPLE_TLE2, datetime.datetime.now())
-        tle = db._get_tle(SATE_ID, datetime.datetime.now())
+        db.add_tle(SATE_ID, SAMPLE_TLE2, dt.datetime.utcnow())
+        tle = db._get_tle(SATE_ID, dt.datetime.utcnow())
         self.assertEqual(tle, SAMPLE_TLE2)
 
     def test_read_tle(self):
         db = sources.EtcTLESource(self.filename)
 
-        tle = db._get_tle(SATE_ID, datetime.datetime.now())
+        tle = db._get_tle(SATE_ID, dt.datetime.utcnow())
         self.assertEqual(tle, SAMPLE_TLE)
 
     def test_wrong_sate(self):
         db = sources.EtcTLESource(self.filename)
 
         with self.assertRaises(LookupError):
-            db._get_tle("fake_id", datetime.datetime.now())
+            db._get_tle("fake_id", dt.datetime.utcnow())
 
     def tearDown(self):
         shutil.rmtree(self.dirname)
@@ -145,7 +145,7 @@ class TestWSTLESource(unittest.TestCase):
         mocked_requests.return_value = mocked_response
 
         source = sources.WSTLESource(url="http://test.none/")
-        tle = source._get_tle('40014U', datetime.datetime(2015, 1, 1))
+        tle = source._get_tle('40014U', dt.datetime(2015, 1, 1))
 
         call_args = mocked_requests.call_args
         url = urlparse.urlparse(call_args[0][0])
@@ -231,5 +231,6 @@ class TestNoradTLESource(unittest.TestCase):
             "2 40014  97.9781 190.6418 0032692 299.0467  60.7524 14.91878099 18425")
 
         predictor = sources.get_predictor_from_tle_lines(BUGSAT1_TLE_LINES)
-        position = predictor.get_position(datetime.datetime(2019, 1, 1))
-        self.assertEqual(position.position_ecef, (-5280.795613274576, -3977.487633239489, -2061.43227648734))
+        position = predictor.get_position(dt.datetime(2019, 1, 1))
+        self.assertEqual(
+            position.position_ecef, (-5280.795613274576, -3977.487633239489, -2061.43227648734))
