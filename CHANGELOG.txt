@@ -1,5 +1,9 @@
 # orbit-predictor changelog
 
+## 1.9.1 (2019-04-14)
+
+* Fix trivial import error in deprecated module
+
 ## 1.9.0 (2019-04-12)
 
 * First Python-3 only release!
