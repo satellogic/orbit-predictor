@@ -1,7 +1,8 @@
 # For backwards compatibility
 import warnings
 
-from .predictors.accurate import HighAccuracyTLEPredictor, ONE_SECOND
+from .predictors.base import ONE_SECOND
+from .predictors.accurate import HighAccuracyTLEPredictor
 
 warnings.warn(
     "Use `from orbit_predictor.predictors import TLEPredictor` instead, "
