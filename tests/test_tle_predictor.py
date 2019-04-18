@@ -156,7 +156,7 @@ class TLEPredictorTestCase(unittest.TestCase):
             limit_date=pass_.los + dt.timedelta(seconds=1))
         self.assertEqual(pass_, new_pass)
 
-    def test_get_next_pass_while_passing(self):
+    def test_get_next_pass_right_at_passing(self):
         date = dt.datetime.strptime("2014/10/23 01:27:33.224", '%Y/%m/%d %H:%M:%S.%f')
         pass_ = self.predictor.get_next_pass(ARG, date)
         self.assertAlmostEqual(pass_.aos, date, delta=ONE_SECOND)
@@ -164,6 +164,12 @@ class TLEPredictorTestCase(unittest.TestCase):
 
         position = self.predictor.get_position(date)
         self.assertTrue(ARG.is_visible(position))
+
+    def test_get_next_pass_while_passing_gets_next(self):
+        date = dt.datetime.strptime("2014/10/23 01:28:00.000", '%Y/%m/%d %H:%M:%S.%f')
+        pass_ = self.predictor.get_next_pass(ARG, date)
+
+        self.assertTrue(date < pass_.aos < pass_.los)
 
     def test_greater_than_deg(self):
         date = dt.datetime.strptime("2014/10/23 01:25:09", '%Y/%m/%d %H:%M:%S')
