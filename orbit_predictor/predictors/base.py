@@ -179,10 +179,13 @@ class CartesianPredictor(Predictor):
                       aos_at_dg=0, limit_date=None):
         """Return a PredictedPass instance with the data of the next pass over the given location
 
-        locattion_llh: point on Earth we want to see from the satellite.
-        when_utc: datetime UTC.
-        max_elevation_gt: filter passings with max_elevation under it.
+        location_llh: point on Earth we want to see from the satellite.
+        when_utc: datetime UTC after which the pass is calculated, default to now.
+        max_elevation_gt: filter passes with max_elevation under it.
         aos_at_dg: This is if we want to start the pass at a specific elevation.
+
+        The next pass with a LOS strictly after when_utc will be returned,
+        possibly the current pass.
         """
         if when_utc is None:
             when_utc = dt.datetime.utcnow()
