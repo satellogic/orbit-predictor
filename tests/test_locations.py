@@ -107,3 +107,8 @@ class LocationTestCase(unittest.TestCase):
         doppler_factor = ARG.doppler_factor(position)
 
         self.assertAlmostEqual((2 - doppler_factor)*437.445e6, 437.445632e6, delta=100)
+
+    def test_sun_elevation_on_earth_works(self):
+        # https://github.com/satellogic/orbit-predictor/issues/52
+        l1 = Location(latitude_deg=1, longitude_deg=2, elevation_m=3, name="location1")
+        l1.sun_elevation_on_earth()
