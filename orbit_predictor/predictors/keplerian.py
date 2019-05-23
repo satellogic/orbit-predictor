@@ -109,7 +109,7 @@ class KeplerianPredictor(CartesianPredictor):
         """
         # Get latest TLE, or the one corresponding to a specified date
         if date is None:
-            date = datetime.datetime.utcnow()
+            date = dt.datetime.utcnow()
 
         tle = source.get_tle(sate_id, date)
 

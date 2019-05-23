@@ -121,3 +121,11 @@ class TLEConversionTests(TestCase):
 
         assert_allclose(pos_keplerian.position_ecef, pos_tle.position_ecef, rtol=1e-9)
         assert_allclose(pos_keplerian.velocity_ecef, pos_tle.velocity_ecef, rtol=1e-13)
+
+    def test_from_tle_with_no_date_works(self):
+        # https://github.com/satellogic/orbit-predictor/issues/52
+        start = dt.datetime(2017, 3, 6, 7, 51)
+        db = MemoryTLESource()
+        db.add_tle(self.SATE_ID, self.LINES, start)
+
+        KeplerianPredictor.from_tle(self.SATE_ID, db)
