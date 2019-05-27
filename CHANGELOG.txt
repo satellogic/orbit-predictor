@@ -1,5 +1,9 @@
 # orbit-predictor changelog
 
+## 1.9.3 (2019-05-27)
+
+* Fix a bug that prevented predictors from being pickeable
+
 ## 1.9.2 (2019-05-23)
 
 * Fix leftover datetime wrong imports, increase coverage
