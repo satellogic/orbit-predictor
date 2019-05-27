@@ -71,7 +71,7 @@ class TLESource:
 
 class MemoryTLESource(TLESource):
     def __init__(self):
-        self.tles = defaultdict(lambda: set())
+        self.tles = defaultdict(set)
 
     def add_tle(self, sate_id, tle, epoch):
         self.tles[sate_id].add((epoch, tle))
