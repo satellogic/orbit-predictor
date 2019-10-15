@@ -102,7 +102,7 @@ class EtcTLESource(TLESource):
             data = fd.read()
             lines = data.split("\n")
             if not lines[0] == sate_id:
-                raise LookupError("Stored satellite id not")
+                raise LookupError("Stored satellite id not found")
             return tuple(lines[1:3])
 
 
