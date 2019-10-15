@@ -10,7 +10,7 @@ Orbit Predictor
 Orbit Predictor is a Python library to propagate orbits of Earth-orbiting objects (satellites, ISS, 
 Santa Claus, etc) using `TLE (Two-Line Elements set) <https://en.wikipedia.org/wiki/Two-line_element_set>`_
 
-Al the hard work is done by Brandon Rhodes implementation of 
+All the hard work is done by Brandon Rhodes implementation of 
 `SGP4 <https://github.com/brandon-rhodes/python-sgp4>`_. 
 
 We can say *Orbit predictor* is kind of a "wrapper" for the python implementation of SGP4
