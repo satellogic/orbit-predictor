@@ -91,19 +91,20 @@ class EtcTLESource(TLESource):
     def __init__(self, filename="/etc/latest_tle"):
         self.filename = filename
 
-    def add_tle(self, sate_id, tle, epoch):
-        with open(self.filename, "w") as fd:
+    def add_tle(self, sate_id, tle, epoch, append=False):
+        with open(self.filename, "a+" if append else 'w') as fd:
             fd.write(sate_id + "\n")
             for l in tle:
                 fd.write(l + "\n")
 
     def _get_tle(self, sate_id, date):
         with open(self.filename) as fd:
-            data = fd.read()
-            lines = data.split("\n")
-            if not lines[0] == sate_id:
-                raise LookupError("Stored satellite id not found")
-            return tuple(lines[1:3])
+            data = fd.read().split("\n")
+            tle_lines = [data[i:i+3] for i in range(0, len(data), 3)]
+            for tle in tle_lines:
+                if tle[0] == sate_id:
+                    return tuple(tle[1:])
+            raise LookupError("Stored satellite id not found")
 
 
 class WSTLESource(TLESource):

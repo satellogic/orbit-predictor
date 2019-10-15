@@ -117,6 +117,19 @@ class TestEtcTLESource(unittest.TestCase):
         shutil.rmtree(self.dirname)
 
 
+class TestEtcTLESourceMultiple(TestEtcTLESource):
+    def test_add_tle(self):
+        db = sources.EtcTLESource(self.filename)
+        sate_id_2 = SATE_ID + 'I'
+        db.add_tle(sate_id_2, SAMPLE_TLE2, dt.datetime.utcnow(), append=True)
+
+        tle_sat_1 = db._get_tle(SATE_ID, dt.datetime.utcnow())
+        self.assertEqual(tle_sat_1, SAMPLE_TLE)
+
+        tle_sat_2 = db._get_tle(sate_id_2, dt.datetime.utcnow())
+        self.assertEqual(tle_sat_2, SAMPLE_TLE2)
+
+
 class TestWSTLESource(unittest.TestCase):
     def setUp(self):
         self.mock_json = {
