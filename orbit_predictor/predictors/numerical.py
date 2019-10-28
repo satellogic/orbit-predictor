@@ -139,6 +139,11 @@ class J2Predictor(KeplerianPredictor):
             Increment or decrement of true anomaly, will adjust the epoch
             accordingly.
 
+        Notes
+        -----
+        See Vallado "Fundamentals of Astrodynamics and Applications", 4th ed (2013)
+        section 11.4.1.
+
         """
         if date is None:
             date = dt.datetime.today().date()
