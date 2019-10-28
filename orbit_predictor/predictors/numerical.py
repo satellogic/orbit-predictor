@@ -36,6 +36,7 @@ OMEGA = 2 * np.pi / (86400 * 365.2421897)  # rad / s
 MU_E = wgs84.mu  # km3 / s2
 R_E_KM = wgs84.radiusearthkm  # km
 J2 = wgs84.j2
+OMEGA_E = 7.292115e-5  # rad / s
 
 
 def sun_sync_plane_constellation(num_satellites, *,
