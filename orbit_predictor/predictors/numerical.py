@@ -65,6 +65,53 @@ def sun_sync_plane_constellation(num_satellites, *,
         )
 
 
+def repeating_ground_track_sma(orbits, days=1, *, ecc, inc_deg=0, tolerance=1e-8):
+    """Computes semimajor axis for repeating ground track orbit.
+
+    Parameters
+    ----------
+    orbits : int
+        Number of orbits in a given period.
+    days : int, optional
+        Number of days to cover the given orbits, default to 1.
+    ecc : float
+        Eccentricity.
+    inc_deg : float, optional
+        Inclination in degrees, default to 0 (equatorial).
+
+    Returns
+    -------
+    sma : float
+        Semimajor axis.
+
+    Notes
+    -----
+    See Vallado "Fundamentals of Astrodynamics and Applications", 4th ed (2013)
+    and Wertz et al. "Space Mission Engineering: The New SMAD" (2011).
+
+    """
+    if not (isinstance(orbits, int) and isinstance(days, int)):
+        raise ValueError("Number of orbits and number of days must be integer.")
+
+    k = orbits / days
+    n = k * OMEGA_E
+
+    delta_rev = 2 * np.pi / k
+
+    while True:
+        sma_new = np.cbrt(MU_E * (1 / n) ** 2)
+        p = sma_new * (1 - ecc ** 2)
+        Omega_dot = - 3 * n * J2 / 2 * (R_E_KM / p) ** 2 * np.cos(np.radians(inc_deg))
+        delta_l_p = 2 * np.pi / n * Omega_dot
+        delta_lon = delta_rev + delta_l_p
+        n = 2 * np.pi * OMEGA_E / delta_lon
+        sma = np.cbrt(MU_E * (1 / n) ** 2)
+        if np.isclose(sma, sma_new, rtol=tolerance):
+            break
+
+    return sma
+
+
 @njit
 def pkepler(argp, delta_t_sec, ecc, inc, p, raan, sma, ta):
     """Perturbed Kepler problem (only J2)
@@ -189,6 +236,14 @@ class J2Predictor(KeplerianPredictor):
         raan = raan_from_ltan(epoch, ltan_h)
 
         return cls(sma, ecc, inc_deg, raan, 0, ta_deg, epoch)
+
+    @classmethod
+    def repeating_ground_track(
+            cls, *, orbits, days=1, ecc=0.0, inc_deg=0, raan_deg=0, argp_deg=0, ta_deg=0
+    ):
+        sma = repeating_ground_track_sma(orbits, days, ecc=ecc, inc_deg=inc_deg)
+
+        return cls(sma, ecc, inc_deg, raan_deg, argp_deg, ta_deg, dt.datetime.now())
 
     def _propagate_eci(self, when_utc=None):
         """Return position and velocity in the given date using ECI coordinate system.

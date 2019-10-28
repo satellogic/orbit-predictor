@@ -93,3 +93,19 @@ class SunSynchronousTests(TestCase):
 
             self.assertEqual(pred._ta, ta_deg)
             self.assertEqual(pred._epoch, expected_ref_epoch)
+
+
+class RepeatedGroundtrackTests(TestCase):
+    def test_repeated_groundtrack_sma1(self):
+        expected_sma = 6581.473808  # km
+
+        pred = J2Predictor.repeating_ground_track(orbits=16, ecc=0.0, inc_deg=57)
+
+        self.assertAlmostEqual(pred._sma, expected_sma, places=6)
+
+    def test_repeated_groundtrack_sma2(self):
+        expected_sma = 6926.430833  # km
+
+        pred = J2Predictor.repeating_ground_track(orbits=59, days=4, ecc=0.0, inc_deg=28)
+
+        self.assertAlmostEqual(pred._sma, expected_sma, places=6)
