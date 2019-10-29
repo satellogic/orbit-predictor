@@ -2,10 +2,11 @@ import datetime as dt
 from unittest import TestCase
 
 import numpy as np
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_almost_equal
+import pytest
 
 from orbit_predictor.locations import ARG
-from orbit_predictor.predictors.numerical import J2Predictor, InvalidOrbitError
+from orbit_predictor.predictors.numerical import J2Predictor, InvalidOrbitError, R_E_KM
 
 
 class J2PredictorTests(TestCase):
@@ -93,3 +94,18 @@ class SunSynchronousTests(TestCase):
 
             self.assertEqual(pred._ta, ta_deg)
             self.assertEqual(pred._epoch, expected_ref_epoch)
+
+
+# Test data from Wertz et al. "Space Mission Engineering: The New SMAD" (2011), table 9-13
+@pytest.mark.parametrize("orbits,days,inc_deg,expected_h", [
+    (14, 1, 28, 817.14),
+    (43, 3, 28, 701.34),
+    (29, 2, 28, 645.06),
+    (59, 4, 28, 562.55),
+    (74, 5, 28, 546.31),
+    (15, 1, 28, 482.25),
+])
+def test_repeated_groundtrack_sma(orbits, days, inc_deg, expected_h):
+    pred = J2Predictor.repeating_ground_track(orbits=orbits, days=days, ecc=0.0, inc_deg=inc_deg)
+
+    assert_almost_equal(pred._sma - R_E_KM, expected_h, decimal=0)
