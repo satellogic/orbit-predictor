@@ -52,7 +52,7 @@ class Position(namedtuple(
 
     @reify
     def position_llh(self):
-        """Latitude, longitude, altitude."""
+        """Latitude (deg), longitude (deg), altitude (km)."""
         return coordinate_systems.ecef_to_llh(self.position_ecef)
 
 
