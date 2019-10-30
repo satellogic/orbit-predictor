@@ -111,6 +111,7 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
         timetuple = when_utc.timetuple()[:6]
         timetuple[5] = timetuple[5] + when_utc.microsecond * 1e-6
         position_eci, velocity_eci = sgp4_sate.propagate(*timetuple)
+
         return position_eci, velocity_eci
 
     def _propagate_ecef(self, when_utc):
@@ -119,6 +120,9 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
                      when_utc.hour, when_utc.minute, when_utc.second + when_utc.microsecond * 1e-6)
 
         position_eci, velocity_eci = self.propagator.propagate(*timetuple)
+        if self.propagator.error != 0:
+            raise RuntimeError(self.propagator.error_message)
+
         gmst = _gstime(jday(*timetuple))
         position_ecef = coordinate_systems.eci_to_ecef(position_eci, gmst)
         velocity_ecef = coordinate_systems.eci_to_ecef(velocity_eci, gmst)
