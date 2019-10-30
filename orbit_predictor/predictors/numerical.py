@@ -33,9 +33,10 @@ from orbit_predictor.utils import njit, raan_from_ltan, float_to_hms
 
 
 OMEGA = 2 * np.pi / (86400 * 365.2421897)  # rad / s
-MU_E = wgs84.mu
-R_E_KM = wgs84.radiusearthkm
+MU_E = wgs84.mu  # km3 / s2
+R_E_KM = wgs84.radiusearthkm  # km
 J2 = wgs84.j2
+OMEGA_E = 7.292115e-5  # rad / s
 
 
 def sun_sync_plane_constellation(num_satellites, *,
@@ -62,6 +63,54 @@ def sun_sync_plane_constellation(num_satellites, *,
         yield J2Predictor.sun_synchronous(
             alt_km=alt_km, ecc=ecc, inc_deg=inc_deg, ltan_h=ltan_h, date=date, ta_deg=ta_deg
         )
+
+
+def repeating_ground_track_sma(orbits, days=1, *, ecc, inc_deg=0, tolerance=1e-8):
+    """Computes semimajor axis for repeating ground track orbit.
+
+    Parameters
+    ----------
+    orbits : int
+        Number of orbits in a given period.
+    days : int, optional
+        Number of days to cover the given orbits, default to 1.
+    ecc : float
+        Eccentricity.
+    inc_deg : float, optional
+        Inclination in degrees, default to 0 (equatorial).
+
+    Returns
+    -------
+    sma : float
+        Semimajor axis.
+
+    Notes
+    -----
+    See Vallado "Fundamentals of Astrodynamics and Applications", 4th ed (2013)
+    and Wertz et al. "Space Mission Engineering: The New SMAD" (2011).
+
+    """
+    if not (isinstance(orbits, int) and isinstance(days, int)):
+        raise ValueError("Number of orbits and number of days must be integer.")
+
+    k = orbits / days
+    n = k * OMEGA_E
+
+    while True:
+        sma_new = np.cbrt(MU_E * (1 / n) ** 2)
+        p = sma_new * (1 - ecc ** 2)
+        Omega_dot = - 3 * n * J2 / 2 * (R_E_KM / p) ** 2 * np.cos(np.radians(inc_deg))
+        omega_dot = 3 * n * J2 / 4 * (R_E_KM / p) ** 2 * (4 - 5 * np.sin(np.radians(inc_deg)) ** 2)
+        M0_dot = (
+            3 * n * J2 / 4 * (R_E_KM / p) ** 2 * np.sqrt(1 - ecc ** 2)
+            * (2 - 3 * np.sin(np.radians(inc_deg)) ** 2)
+        )
+        n = k * (OMEGA_E - Omega_dot) - (M0_dot + omega_dot)
+        sma = np.cbrt(MU_E * (1 / n) ** 2)
+        if np.isclose(sma, sma_new, rtol=tolerance):
+            break
+
+    return sma
 
 
 @njit
@@ -139,6 +188,11 @@ class J2Predictor(KeplerianPredictor):
             Increment or decrement of true anomaly, will adjust the epoch
             accordingly.
 
+        Notes
+        -----
+        See Vallado "Fundamentals of Astrodynamics and Applications", 4th ed (2013)
+        section 11.4.1.
+
         """
         if date is None:
             date = dt.datetime.today().date()
@@ -183,6 +237,14 @@ class J2Predictor(KeplerianPredictor):
         raan = raan_from_ltan(epoch, ltan_h)
 
         return cls(sma, ecc, inc_deg, raan, 0, ta_deg, epoch)
+
+    @classmethod
+    def repeating_ground_track(
+            cls, *, orbits, days=1, ecc=0.0, inc_deg=0, raan_deg=0, argp_deg=0, ta_deg=0
+    ):
+        sma = repeating_ground_track_sma(orbits, days, ecc=ecc, inc_deg=inc_deg)
+
+        return cls(sma, ecc, inc_deg, raan_deg, argp_deg, ta_deg, dt.datetime.now())
 
     def _propagate_eci(self, when_utc=None):
         """Return position and velocity in the given date using ECI coordinate system.
