@@ -154,11 +154,11 @@ def rotate(vec, ax, angle):
         (cos(angle), -sin(angle)),
         (sin(angle), cos(angle))
     ))
-    if ax == 1:
-        rot = rot.T
 
-    # np.dot() arguments must all have the same dtype
-    return np.dot(rot, vec.astype(rot.dtype))
+    if ax == 1:
+        return np.dot(rot.T, vec.astype(rot.dtype))
+    else:
+        return np.dot(rot, vec.astype(rot.dtype))
 
 
 @njit
