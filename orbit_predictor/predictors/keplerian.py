@@ -25,7 +25,6 @@ from math import degrees, radians, sqrt
 
 import numpy as np
 from sgp4.earth_gravity import wgs84
-from sgp4.io import twoline2rv
 
 from orbit_predictor import coordinate_systems
 from orbit_predictor.angles import ta_to_M, M_to_ta
@@ -111,14 +110,11 @@ class KeplerianPredictor(CartesianPredictor):
         if date is None:
             date = dt.datetime.utcnow()
 
-        tle = source.get_tle(sate_id, date)
-
-        # Retrieve TLE epoch and corresponding position
-        epoch = twoline2rv(tle.lines[0], tle.lines[1], wgs84).epoch
-        pos = TLEPredictor(sate_id, source).get_position(epoch)
+        # Retrieve TLE position at given date as starting point
+        pos = TLEPredictor(sate_id, source).get_position(date)
 
         # Convert position from ECEF to ECI
-        gmst = gstime_from_datetime(epoch)
+        gmst = gstime_from_datetime(date)
         position_eci = coordinate_systems.ecef_to_eci(pos.position_ecef, gmst)
         velocity_eci = coordinate_systems.ecef_to_eci(pos.velocity_ecef, gmst)
 
@@ -127,7 +123,7 @@ class KeplerianPredictor(CartesianPredictor):
             wgs84.mu, np.array(position_eci), np.array(velocity_eci))
         sma = p / (1 - ecc ** 2)
 
-        return cls(sma, ecc, degrees(inc), degrees(raan), degrees(argp), degrees(ta), epoch)
+        return cls(sma, ecc, degrees(inc), degrees(raan), degrees(argp), degrees(ta), date)
 
     def _propagate_eci(self, when_utc):
         """Return position and velocity in the given date using ECI coordinate system.
