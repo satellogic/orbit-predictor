@@ -99,13 +99,13 @@ def repeating_ground_track_sma(orbits, days=1, *, ecc, inc_deg=0, tolerance=1e-8
     while True:
         sma_new = np.cbrt(MU_E * (1 / n) ** 2)
         p = sma_new * (1 - ecc ** 2)
-        Omega_dot = - 3 * n * J2 / 2 * (R_E_KM / p) ** 2 * np.cos(np.radians(inc_deg))
-        omega_dot = 3 * n * J2 / 4 * (R_E_KM / p) ** 2 * (4 - 5 * np.sin(np.radians(inc_deg)) ** 2)
+        node_dot = - 3 * n * J2 / 2 * (R_E_KM / p) ** 2 * np.cos(np.radians(inc_deg))
+        argp_dot = 3 * n * J2 / 4 * (R_E_KM / p) ** 2 * (4 - 5 * np.sin(np.radians(inc_deg)) ** 2)
         M0_dot = (
             3 * n * J2 / 4 * (R_E_KM / p) ** 2 * np.sqrt(1 - ecc ** 2)
             * (2 - 3 * np.sin(np.radians(inc_deg)) ** 2)
         )
-        n = k * (OMEGA_E - Omega_dot) - (M0_dot + omega_dot)
+        n = k * (OMEGA_E - node_dot) - (M0_dot + argp_dot)
         sma = np.cbrt(MU_E * (1 / n) ** 2)
         if np.isclose(sma, sma_new, rtol=tolerance):
             break
