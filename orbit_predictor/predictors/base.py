@@ -208,15 +208,32 @@ class LocationPredictor:
     Exposes an iterable interface
     """
 
-    def __init__(self, location, propagator, start_date, limit_date=None,
-                 max_elevation_gt=0, aos_at_dg=0):
+    def __init__(self, location, predictor, start_date, limit_date=None,
+                 max_elevation_gt=0, aos_at_dg=0, *, propagator=None):
+        if propagator is not None:
+            warnings.warn(
+                "propagator parameter was renamed to predictor "
+                "and will be removed in a future release",
+                DeprecationWarning
+            )
+            predictor = propagator
+
         self.location = location
-        self.propagator = propagator
+        self.predictor = predictor
         self.start_date = start_date
         self.limit_date = limit_date
 
         self.max_elevation_gt = radians(max([max_elevation_gt, aos_at_dg]))
         self.aos_at = radians(aos_at_dg)
+
+    @property
+    def propagator(self):
+        warnings.warn(
+            "propagator parameter was renamed to predictor "
+            "and will be removed in a future release",
+            DeprecationWarning
+        )
+        return self.predictor
 
     def __iter__(self):
         """Returns one pass each time"""
@@ -242,9 +259,9 @@ class LocationPredictor:
 
     def _build_predicted_pass(self, accuratepass):
         """Returns a classic predicted pass"""
-        tca_position = self.propagator.get_position(accuratepass.tca)
+        tca_position = self.predictor.get_position(accuratepass.tca)
 
-        return PredictedPass(self.location, self.propagator.sate_id,
+        return PredictedPass(self.location, self.predictor.sate_id,
                              max_elevation_deg=accuratepass.max_elevation_deg,
                              aos=accuratepass.aos,
                              los=accuratepass.los,
@@ -259,7 +276,7 @@ class LocationPredictor:
                 return candidate
         else:
             logger.error('Could not find a descending pass over %s start date: %s - TLE: %s',
-                         self.location, ascending_date, self.propagator.tle)
+                         self.location, ascending_date, self.predictor.tle)
             raise PropagationError("Can not find an descending phase")
 
     def _find_nearest_ascending(self, descending_date):
@@ -268,7 +285,7 @@ class LocationPredictor:
                 return candidate
         else:
             logger.error('Could not find an ascending pass over %s start date: %s - TLE: %s',
-                         self.location, descending_date, self.propagator.tle)
+                         self.location, descending_date, self.predictor.tle)
             raise PropagationError('Can not find an ascending phase')
 
     def _sample_points(self, date):
@@ -313,7 +330,7 @@ class LocationPredictor:
         return start + (end - start) / 2
 
     def _elevation_at(self, when_utc):
-        position = self.propagator.get_only_position(when_utc)
+        position = self.predictor.get_only_position(when_utc)
         return self.location.elevation_for(position)
 
     def is_passing(self, when_utc):
@@ -329,7 +346,7 @@ class LocationPredictor:
     def _orbit_step(self, size):
         """Returns a time step, that will make the satellite advance a given number of orbits"""
         step_in_radians = size * 2 * pi
-        seconds = (step_in_radians / self.propagator.mean_motion) * 60
+        seconds = (step_in_radians / self.predictor.mean_motion) * 60
         return dt.timedelta(seconds=seconds)
 
     def _find_aos(self, tca):
