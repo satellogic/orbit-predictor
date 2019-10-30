@@ -45,6 +45,7 @@ Some stuff won't be trivial to understand, but comments and fixes are welcome
 """
 import datetime as dt
 from functools import lru_cache
+import warnings
 
 from sgp4 import ext, model
 from sgp4.earth_gravity import wgs84
@@ -86,18 +87,26 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
         return self.source.get_tle(self.sate_id, dt.datetime.utcnow())
 
     @reify
-    def propagator(self):
+    def _propagator(self):
         tle_line_1, tle_line_2 = self.tle.lines
         return twoline2rv(tle_line_1, tle_line_2, wgs84)
 
     @reify
+    def propagator(self):
+        warnings.warn(
+            "The .propagator property will be made private in a future release",
+            DeprecationWarning
+        )
+        return self._propagator
+
+    @reify
     def mean_motion(self):
-        return self.propagator.no  # this speed is in radians/minute
+        return self._propagator.no  # this speed is in radians/minute
 
     @lru_cache(maxsize=3600 * 24 * 7)  # Max cache, a week
     def _propagate_only_position_ecef(self, timetuple):
         """Return position in the given date using ECEF coordinate system."""
-        position_eci, _ = self.propagator.propagate(*timetuple)
+        position_eci, _ = self._propagator.propagate(*timetuple)
         gmst = _gstime(jday(*timetuple))
         return coordinate_systems.eci_to_ecef(position_eci, gmst)
 
@@ -106,9 +115,9 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
         timetuple = (when_utc.year, when_utc.month, when_utc.day,
                      when_utc.hour, when_utc.minute, when_utc.second + when_utc.microsecond * 1e-6)
 
-        position_eci, velocity_eci = self.propagator.propagate(*timetuple)
-        if self.propagator.error != 0:
-            raise RuntimeError(self.propagator.error_message)
+        position_eci, velocity_eci = self._propagator.propagate(*timetuple)
+        if self._propagator.error != 0:
+            raise RuntimeError(self._propagator.error_message)
 
         gmst = _gstime(jday(*timetuple))
         position_ecef = coordinate_systems.eci_to_ecef(position_eci, gmst)
