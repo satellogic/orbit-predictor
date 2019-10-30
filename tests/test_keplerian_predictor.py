@@ -122,6 +122,35 @@ class TLEConversionTests(TestCase):
         assert_allclose(pos_keplerian.position_ecef, pos_tle.position_ecef, rtol=1e-9)
         assert_allclose(pos_keplerian.velocity_ecef, pos_tle.velocity_ecef, rtol=1e-13)
 
+    def test_from_tle_returns_same_initial_conditions_tle_date(self):
+        start = dt.datetime(2017, 3, 6, 7, 51)
+        db = MemoryTLESource()
+        db.add_tle(self.SATE_ID, self.LINES, start)
+
+        keplerian_predictor = KeplerianPredictor.from_tle(self.SATE_ID, db, start)
+        tle_predictor = TLEPredictor(self.SATE_ID, db)
+
+        pos_keplerian = keplerian_predictor.get_position(start)
+        pos_tle = tle_predictor.get_position(start)
+
+        assert_allclose(pos_keplerian.position_ecef, pos_tle.position_ecef, rtol=1e-9)
+        assert_allclose(pos_keplerian.velocity_ecef, pos_tle.velocity_ecef, rtol=1e-13)
+
+    def test_from_tle_returns_same_initial_conditions_future_date(self):
+        start = dt.datetime(2017, 3, 6, 7, 51)
+        future = dt.datetime(2017, 9, 6, 7, 51)
+        db = MemoryTLESource()
+        db.add_tle(self.SATE_ID, self.LINES, start)
+
+        keplerian_predictor = KeplerianPredictor.from_tle(self.SATE_ID, db, future)
+        tle_predictor = TLEPredictor(self.SATE_ID, db)
+
+        pos_keplerian = keplerian_predictor.get_position(future)
+        pos_tle = tle_predictor.get_position(future)
+
+        assert_allclose(pos_keplerian.position_ecef, pos_tle.position_ecef, rtol=1e-9)
+        assert_allclose(pos_keplerian.velocity_ecef, pos_tle.velocity_ecef, rtol=1e-13)
+
     def test_from_tle_with_no_date_works(self):
         # https://github.com/satellogic/orbit-predictor/issues/52
         start = dt.datetime(2017, 3, 6, 7, 51)
