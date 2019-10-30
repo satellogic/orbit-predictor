@@ -33,6 +33,18 @@ LIGHT_SPEED_KMS = 299792.458
 
 class Location:
     def __init__(self, name, latitude_deg, longitude_deg, elevation_m):
+        """Location.
+
+        Parameters
+        ----------
+        latitude_deg : float
+            Latitude in degrees.
+        longitude_deg : float
+            Longitude in degrees.
+        elevation_m : float
+            Elevation in meters.
+
+        """
         self.name = name
         self.latitude_deg = latitude_deg
         self.longitude_deg = longitude_deg
