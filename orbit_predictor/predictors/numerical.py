@@ -228,8 +228,8 @@ class J2Predictor(KeplerianPredictor):
                         "Exactly two of altitude, eccentricity and inclination must be given"
                     )
 
-        except FloatingPointError:
-            raise InvalidOrbitError("Cannot find Sun-synchronous orbit with given parameters")
+        except FloatingPointError as e:
+            raise InvalidOrbitError("Cannot find Sun-synchronous orbit with given parameters") from e
 
         # TODO: Allow change in time or location
         # Right the epoch is fixed given the LTAN, as well as the sub-satellite point
