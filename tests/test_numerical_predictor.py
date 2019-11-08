@@ -30,7 +30,7 @@ class J2PredictorTests(TestCase):
 
         when_utc = self.epoch + dt.timedelta(hours=3)
 
-        position_eci, velocity_eci = self.predictor._propagate_eci(when_utc)
+        position_eci, velocity_eci = self.predictor.propagate_eci(when_utc)
 
         assert_allclose(position_eci, expected_position, rtol=1e-2)
         assert_allclose(velocity_eci, expected_velocity, rtol=1e-2)

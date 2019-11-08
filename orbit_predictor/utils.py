@@ -177,10 +177,7 @@ def transform(vec, ax, angle):
 def raan_from_ltan(when, ltan=12.0):
     # TODO: Avoid code duplication
     # compute apparent right ascension of the sun (radians)
-    utc_time_tuple = when.timetuple()
-    utc_time_tuple = list(utc_time_tuple[:6])
-    utc_time_tuple[5] = utc_time_tuple[5] + when.microsecond * 1e-6
-    jd = juliandate(utc_time_tuple)
+    jd = juliandate(timetuple_from_dt(when))
     date = jd - DECEMBER_31TH_1999_MIDNIGHT_JD
 
     w = 282.9404 + 4.70935e-5 * date  # longitude of perihelion degrees
@@ -234,9 +231,7 @@ def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
         when = dt.datetime.utcnow()
 
     utc_time_tuple = when.timetuple()
-    utc_time_list = list(utc_time_tuple[:6])
-    utc_time_list[5] = utc_time_list[5] + when.microsecond * 1e-6
-    jd = juliandate(utc_time_list)
+    jd = juliandate(timetuple_from_dt(when))
     date = jd - DECEMBER_31TH_1999_MIDNIGHT_JD
 
     w = 282.9404 + 4.70935e-5 * date    # longitude of perihelion degrees
@@ -321,9 +316,8 @@ def sidereal_time(utc_tuple, local_lon, sun_lon):
 
 
 def gstime_from_datetime(when_utc):
-    timelist = list(when_utc.timetuple()[:6])
-    timelist[5] = timelist[5] + when_utc.microsecond * 1e-6
-    return _gstime(jday(*timelist))
+    timetuple = timetuple_from_dt(when_utc)
+    return _gstime(jday(*timetuple))
 
 
 def float_to_hms(hour):
@@ -332,6 +326,12 @@ def float_to_hms(hour):
     rem, second = modf(rem * 60)
 
     return int(hour), int(minute), int(second), int(rem * 1e6)
+
+
+def timetuple_from_dt(when_utc):
+    timetuple = (when_utc.year, when_utc.month, when_utc.day,
+                 when_utc.hour, when_utc.minute, when_utc.second + when_utc.microsecond * 1e-6)
+    return timetuple
 
 
 def mean_motion(sma_km):

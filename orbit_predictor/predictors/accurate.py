@@ -53,8 +53,8 @@ from sgp4.io import twoline2rv
 from sgp4.propagation import _gstime
 
 from orbit_predictor import coordinate_systems
-from orbit_predictor.utils import reify
 
+from ..utils import reify, timetuple_from_dt
 from .base import CartesianPredictor, logger
 
 # Hack Zone be warned
@@ -110,25 +110,22 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
         gmst = _gstime(jday(*timetuple))
         return coordinate_systems.eci_to_ecef(position_eci, gmst)
 
-    def _propagate_ecef(self, when_utc):
-        """Return position and velocity in the given date using ECEF coordinate system."""
-        timetuple = (when_utc.year, when_utc.month, when_utc.day,
-                     when_utc.hour, when_utc.minute, when_utc.second + when_utc.microsecond * 1e-6)
+    def propagate_eci(self, when_utc=None):
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
+        timetuple = timetuple_from_dt(when_utc)
 
         position_eci, velocity_eci = self._propagator.propagate(*timetuple)
         if self._propagator.error != 0:
             raise RuntimeError(self._propagator.error_message)
 
-        gmst = _gstime(jday(*timetuple))
-        position_ecef = coordinate_systems.eci_to_ecef(position_eci, gmst)
-        velocity_ecef = coordinate_systems.eci_to_ecef(velocity_eci, gmst)
-        return (position_ecef, velocity_ecef)
+        return position_eci, velocity_eci
 
     def get_only_position(self, when_utc):
         """Return a tuple in ECEF coordinate system
 
         Code is optimized, dont complain too much!
         """
-        timetuple = (when_utc.year, when_utc.month, when_utc.day,
-                     when_utc.hour, when_utc.minute, when_utc.second + when_utc.microsecond * 1e-6)
+        timetuple = timetuple_from_dt(when_utc)
         return self._propagate_only_position_ecef(timetuple)

@@ -30,7 +30,7 @@ class KeplerianPredictorTests(TestCase):
         expected_position = np.array([1131.340, -2282.343, 6672.423])
         expected_velocity = np.array([-5.64305, 4.30333, 2.42879])
 
-        position_eci, velocity_eci = self.predictor._propagate_eci(self.epoch)
+        position_eci, velocity_eci = self.predictor.propagate_eci(self.epoch)
 
         assert_allclose(position_eci, expected_position, rtol=1e-7)
         assert_allclose(velocity_eci, expected_velocity, rtol=1e-6)
@@ -41,7 +41,7 @@ class KeplerianPredictorTests(TestCase):
 
         when_utc = self.epoch + dt.timedelta(minutes=40)
 
-        position_eci, velocity_eci = self.predictor._propagate_eci(when_utc)
+        position_eci, velocity_eci = self.predictor.propagate_eci(when_utc)
 
         assert_allclose(position_eci, expected_position, rtol=1e-5)
         assert_allclose(velocity_eci, expected_velocity, rtol=1e-5)
@@ -70,7 +70,7 @@ class KeplerianPredictorOneDayTests(TestCase):
         expected_position = np.array([3852.57404763, -4749.1872318, -2933.02952967])
         expected_velocity = np.array([5.33068317, 5.28723659, -1.54255441])
 
-        position_eci, velocity_eci = self.predictor._propagate_eci(self.epoch)
+        position_eci, velocity_eci = self.predictor.propagate_eci(self.epoch)
 
         assert_allclose(position_eci, expected_position, rtol=1e-7)
         assert_allclose(velocity_eci, expected_velocity, rtol=1e-6)
@@ -81,7 +81,7 @@ class KeplerianPredictorOneDayTests(TestCase):
 
         when_utc = self.epoch + dt.timedelta(hours=23.999999999)
 
-        position_eci, velocity_eci = self.predictor._propagate_eci(when_utc)
+        position_eci, velocity_eci = self.predictor.propagate_eci(when_utc)
 
         assert_allclose(position_eci, expected_position, rtol=1e-2)
         assert_allclose(velocity_eci, expected_velocity, rtol=1e-2)
@@ -92,7 +92,7 @@ class KeplerianPredictorOneDayTests(TestCase):
 
         when_utc = self.epoch + dt.timedelta(hours=24)
 
-        position_eci, velocity_eci = self.predictor._propagate_eci(when_utc)
+        position_eci, velocity_eci = self.predictor.propagate_eci(when_utc)
 
         assert_allclose(position_eci, expected_position, rtol=1e-2)
         assert_allclose(velocity_eci, expected_velocity, rtol=1e-2)

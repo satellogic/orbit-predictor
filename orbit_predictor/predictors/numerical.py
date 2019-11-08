@@ -228,8 +228,8 @@ class J2Predictor(KeplerianPredictor):
                         "Exactly two of altitude, eccentricity and inclination must be given"
                     )
 
-        except FloatingPointError:
-            raise InvalidOrbitError("Cannot find Sun-synchronous orbit with given parameters")
+        except FloatingPointError as e:
+            raise InvalidOrbitError("Cannot find Sun-synchronous orbit with given parameters") from e
 
         # TODO: Allow change in time or location
         # Right the epoch is fixed given the LTAN, as well as the sub-satellite point
@@ -246,10 +246,13 @@ class J2Predictor(KeplerianPredictor):
 
         return cls(sma, ecc, inc_deg, raan_deg, argp_deg, ta_deg, dt.datetime.now())
 
-    def _propagate_eci(self, when_utc=None):
+    def propagate_eci(self, when_utc=None):
         """Return position and velocity in the given date using ECI coordinate system.
 
         """
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
         # Orbit parameters
         sma = self._sma
         ecc = self._ecc
