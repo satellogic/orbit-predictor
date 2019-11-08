@@ -53,8 +53,8 @@ from sgp4.io import twoline2rv
 from sgp4.propagation import _gstime
 
 from orbit_predictor import coordinate_systems
-from orbit_predictor.utils import reify
 
+from ..utils import reify, timetuple_from_dt
 from .base import CartesianPredictor, logger
 
 # Hack Zone be warned
@@ -112,8 +112,7 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
 
     def _propagate_ecef(self, when_utc):
         """Return position and velocity in the given date using ECEF coordinate system."""
-        timetuple = (when_utc.year, when_utc.month, when_utc.day,
-                     when_utc.hour, when_utc.minute, when_utc.second + when_utc.microsecond * 1e-6)
+        timetuple = timetuple_from_dt(when_utc)
 
         position_eci, velocity_eci = self._propagator.propagate(*timetuple)
         if self._propagator.error != 0:
@@ -129,6 +128,5 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
 
         Code is optimized, dont complain too much!
         """
-        timetuple = (when_utc.year, when_utc.month, when_utc.day,
-                     when_utc.hour, when_utc.minute, when_utc.second + when_utc.microsecond * 1e-6)
+        timetuple = timetuple_from_dt(when_utc)
         return self._propagate_only_position_ecef(timetuple)
