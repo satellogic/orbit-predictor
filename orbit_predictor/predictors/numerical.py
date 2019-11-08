@@ -246,10 +246,13 @@ class J2Predictor(KeplerianPredictor):
 
         return cls(sma, ecc, inc_deg, raan_deg, argp_deg, ta_deg, dt.datetime.now())
 
-    def _propagate_eci(self, when_utc=None):
+    def propagate_eci(self, when_utc=None):
         """Return position and velocity in the given date using ECI coordinate system.
 
         """
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
         # Orbit parameters
         sma = self._sma
         ecc = self._ecc

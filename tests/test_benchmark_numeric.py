@@ -23,7 +23,7 @@ def test_benchmark_numeric(benchmark):
 
     when_utc = epoch + dt.timedelta(hours=3)
 
-    position_eci, velocity_eci = benchmark(predictor._propagate_eci, when_utc=when_utc)
+    position_eci, velocity_eci = benchmark(predictor.propagate_eci, when_utc=when_utc)
 
     assert_allclose(position_eci, expected_position, rtol=1e-2)
     assert_allclose(velocity_eci, expected_velocity, rtol=1e-2)

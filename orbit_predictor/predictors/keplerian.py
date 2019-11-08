@@ -125,10 +125,13 @@ class KeplerianPredictor(CartesianPredictor):
 
         return cls(sma, ecc, degrees(inc), degrees(raan), degrees(argp), degrees(ta), date)
 
-    def _propagate_eci(self, when_utc):
+    def propagate_eci(self, when_utc=None):
         """Return position and velocity in the given date using ECI coordinate system.
 
         """
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
         # Orbit parameters
         sma = self._sma
         ecc = self._ecc

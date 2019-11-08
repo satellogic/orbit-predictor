@@ -110,18 +110,17 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
         gmst = _gstime(jday(*timetuple))
         return coordinate_systems.eci_to_ecef(position_eci, gmst)
 
-    def _propagate_ecef(self, when_utc):
-        """Return position and velocity in the given date using ECEF coordinate system."""
+    def propagate_eci(self, when_utc=None):
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
         timetuple = timetuple_from_dt(when_utc)
 
         position_eci, velocity_eci = self._propagator.propagate(*timetuple)
         if self._propagator.error != 0:
             raise RuntimeError(self._propagator.error_message)
 
-        gmst = _gstime(jday(*timetuple))
-        position_ecef = coordinate_systems.eci_to_ecef(position_eci, gmst)
-        velocity_ecef = coordinate_systems.eci_to_ecef(velocity_eci, gmst)
-        return (position_ecef, velocity_ecef)
+        return position_eci, velocity_eci
 
     def get_only_position(self, when_utc):
         """Return a tuple in ECEF coordinate system

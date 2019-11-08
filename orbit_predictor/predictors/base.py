@@ -137,18 +137,21 @@ class Predictor:
         self.sate_id = sate_id
         self.source = source
 
+    def propagate_eci(self, when_utc=None):
+        raise NotImplementedError
+
     def get_position(self, when_utc=None):
         raise NotImplementedError("You have to implement it!")
 
 
 class CartesianPredictor(Predictor):
 
-    def _propagate_eci(self, when_utc=None):
-        raise NotImplementedError
-
     def _propagate_ecef(self, when_utc=None):
         """Return position and velocity in the given date using ECEF coordinate system."""
-        position_eci, velocity_eci = self._propagate_eci(when_utc)
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
+        position_eci, velocity_eci = self.propagate_eci(when_utc)
         gmst = gstime_from_datetime(when_utc)
         position_ecef = coordinate_systems.eci_to_ecef(position_eci, gmst)
         velocity_ecef = coordinate_systems.eci_to_ecef(velocity_eci, gmst)
