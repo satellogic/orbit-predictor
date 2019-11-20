@@ -23,7 +23,7 @@
 import functools
 from collections import namedtuple
 import datetime as dt
-from math import asin, atan2, cos, degrees, floor, radians, sin, sqrt, modf
+from math import asin, atan2, cos, degrees, floor, radians, sin, sqrt, tan, modf
 
 import numpy as np
 from sgp4.earth_gravity import wgs84
@@ -71,6 +71,18 @@ AzimuthElevation = namedtuple('AzimuthElevation', 'azimuth elevation')
 def euclidean_distance(*components):
     """Returns the norm of a vector"""
     return sqrt(sum(c**2 for c in components))
+
+
+def angle_between(a, b):
+    """
+    Computes angle between two vectors in degrees.
+
+    Notes
+    -----
+    Naïve algorithm, see https://scicomp.stackexchange.com/q/27689/782.
+
+    """
+    return degrees(np.arccos(dot_product(a, b) / (vector_norm(a) * vector_norm(b))))
 
 
 def dot_product(a, b):
@@ -292,6 +304,46 @@ def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
     elevation = asin_d(zhor)
 
     return AzimuthElevation(azimuth, elevation)
+
+
+def shadow(r_sun, r, r_p=wgs84.radiusearthkm):
+    """
+    Gives illumination of Earth satellite (2 for illuminated, 1 for penumbra, 0 for umbra).
+
+    Parameters
+    ----------
+    r_sun : numpy.ndarray or list
+        Vector pointing to the Sun in km.
+    r : numpy.ndarray or list
+        Vector pointing to the satellite in km.
+    r_p : float, optional
+        Radius of the planet, default to Earth WGS84.
+
+    Notes
+    -----
+    Algorithm 34 from Vallado, section 5.3.
+
+    """
+    alpha_umb = radians(0.264121687)
+    alpha_pen = radians(0.269007205)
+
+    if dot_product(r_sun, r) < 0:
+        angle = angle_between(-r_sun, r)
+        sat_horiz = vector_norm(r) * cos_d(angle)
+        sat_vert = vector_norm(r) * sin_d(angle)
+        x = r_p / sin(alpha_pen)
+        pen_vert = tan(alpha_pen) * (x + sat_horiz)
+
+        if sat_vert <= pen_vert:
+            y = r_p / sin(alpha_umb)
+            umb_vert = tan(alpha_umb) * (y - sat_horiz)
+
+            if sat_vert <= umb_vert:
+                return 0
+            else:
+                return 1
+    else:
+        return 2
 
 
 def juliandate(utc_tuple):
