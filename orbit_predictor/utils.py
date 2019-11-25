@@ -343,6 +343,8 @@ def shadow(r_sun, r, r_p=wgs84.radiusearthkm):
     alpha_umb = radians(0.264121687)
     alpha_pen = radians(0.269007205)
 
+    shadow_result = 2
+
     if dot_product(r_sun, r) < 0:
         angle = angle_between(-r_sun, r)
         sat_horiz = vector_norm(r) * cos_d(angle)
@@ -355,11 +357,11 @@ def shadow(r_sun, r, r_p=wgs84.radiusearthkm):
             umb_vert = tan(alpha_umb) * (y - sat_horiz)
 
             if sat_vert <= umb_vert:
-                return 0
+                shadow_result = 0
             else:
-                return 1
-    else:
-        return 2
+                shadow_result = 1
+
+    return shadow_result
 
 
 def juliandate(utc_tuple):
