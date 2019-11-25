@@ -30,7 +30,8 @@ from sgp4.earth_gravity import wgs84
 from sgp4.ext import jday
 from sgp4.propagation import _gstime
 
-from .coordinate_systems import eci_to_radec
+from .constants import AU
+from .coordinate_systems import eci_to_radec, ecef_to_eci
 
 # Inspired in https://github.com/poliastro/poliastro/blob/88edda8/src/poliastro/jit.py
 try:
@@ -301,6 +302,24 @@ def get_sun(when):
     sun_eci = _sun_eci(w, M, L, eccentricity, oblecl)
 
     return np.array(sun_eci)
+
+
+def get_shadow(r, when_utc):
+    """
+    Gives illumination of Earth satellite (2 for illuminated, 1 for penumbra, 0 for umbra).
+
+    Parameters
+    ----------
+    r : numpy.ndarray or list
+        ECEF vector pointing to the satellite in km.
+    when_utc : datetime.datetime
+        Time of calculation.
+
+    """
+    gmst = gstime_from_datetime(when_utc)
+    r_sun = get_sun(when_utc) * AU
+
+    return shadow(r_sun, ecef_to_eci(r, gmst))
 
 
 def shadow(r_sun, r, r_p=wgs84.radiusearthkm):
