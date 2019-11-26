@@ -1,5 +1,21 @@
 # orbit-predictor changelog
 
+## 1.10.0 (2019-11-27)
+
+* Add get_shadow method that computes if a satellite is in shadow
+* Add get_sun method that retrieves the ECI position of the Sun
+* Add elevation and groundtrack generic APIs
+* Rename LocationPredictor.propagator to predictor for clarity
+* Make HighAccuracyTLEPropagator.propagator private
+* Document Position.position_llh
+* Add version to __init__.py
+* Make propagate_eci public
+* Raise error if propagation failed
+* Fix J2Predictor.from_tle for non-epoch dates
+* Add method to create predictor with repeating groundtrack
+* Support Python 3.8
+* Remove mentions to deprecated "precise" predictor
+
 ## 1.9.3 (2019-05-27)
 
 * Fix a bug that prevented predictors from being pickeable
