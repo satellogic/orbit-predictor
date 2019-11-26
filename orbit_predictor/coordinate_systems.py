@@ -24,6 +24,11 @@
 from math import asin, atan, atan2, cos, degrees, pi, radians, sin, sqrt
 
 
+def _euclidean_distance(*components):
+    # TODO: Remove code duplication with utils
+    return sqrt(sum(c**2 for c in components))
+
+
 def llh_to_ecef(lat_deg, lon_deg, h_km):
     """
     Latitude is geodetic, height is above ellipsoid. Output is in km.
@@ -111,6 +116,21 @@ def ecef_to_eci(eci_coords, gmst):
     y = (eci_coords[0] * (sin(gmst))) + (eci_coords[1] * cos(gmst))
     z = eci_coords[2]
     return x, y, z
+
+
+def eci_to_radec(eci_coords):
+    xequat, yequat, zequat = eci_coords
+
+    # convert equatorial rectangular coordinates to RA and Decl:
+    r = _euclidean_distance(xequat, yequat, zequat)
+    RA = atan2(yequat, xequat)
+    DEC = asin(zequat/r)
+
+    return RA, DEC, r
+
+
+def radec_to_eci(radec_coords):
+    raise NotImplementedError
 
 
 def horizon_to_az_elev(top_s, top_e, top_z):

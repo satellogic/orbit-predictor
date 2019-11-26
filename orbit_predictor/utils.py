@@ -23,12 +23,15 @@
 import functools
 from collections import namedtuple
 import datetime as dt
-from math import asin, atan2, cos, degrees, floor, radians, sin, sqrt, modf
+from math import asin, atan2, cos, degrees, floor, radians, sin, sqrt, tan, modf
 
 import numpy as np
 from sgp4.earth_gravity import wgs84
 from sgp4.ext import jday
 from sgp4.propagation import _gstime
+
+from .constants import AU
+from .coordinate_systems import eci_to_radec, ecef_to_eci
 
 # Inspired in https://github.com/poliastro/poliastro/blob/88edda8/src/poliastro/jit.py
 try:
@@ -71,6 +74,18 @@ AzimuthElevation = namedtuple('AzimuthElevation', 'azimuth elevation')
 def euclidean_distance(*components):
     """Returns the norm of a vector"""
     return sqrt(sum(c**2 for c in components))
+
+
+def angle_between(a, b):
+    """
+    Computes angle between two vectors in degrees.
+
+    Notes
+    -----
+    Naïve algorithm, see https://scicomp.stackexchange.com/q/27689/782.
+
+    """
+    return degrees(np.arccos(dot_product(a, b) / (vector_norm(a) * vector_norm(b))))
 
 
 def dot_product(a, b):
@@ -175,41 +190,11 @@ def transform(vec, ax, angle):
 
 
 def raan_from_ltan(when, ltan=12.0):
-    # TODO: Avoid code duplication
-    # compute apparent right ascension of the sun (radians)
-    jd = juliandate(timetuple_from_dt(when))
-    date = jd - DECEMBER_31TH_1999_MIDNIGHT_JD
-
-    w = 282.9404 + 4.70935e-5 * date  # longitude of perihelion degrees
-    eccentricity = 0.016709 - 1.151e-9 * date  # eccentricity
-    M = (356.0470 + 0.9856002585 * date) % 360  # mean anomaly degrees
-    oblecl = 23.4393 - 3.563e-7 * date  # Sun's obliquity of the ecliptic
-
-    # auxiliary angle
-    auxiliary_angle = M + degrees(eccentricity * sin_d(M) * (1 + eccentricity * cos_d(M)))
-
-    # rectangular coordinates in the plane of the ecliptic (x axis toward perhilion)
-    x = cos_d(auxiliary_angle) - eccentricity
-    y = sin_d(auxiliary_angle) * sqrt(1 - eccentricity ** 2)
-
-    # find the distance and true anomaly
-    r = euclidean_distance(x, y)
-    v = atan2_d(y, x)
-
-    # find the longitude of the sun
-    sun_lon = v + w
-
-    # compute the ecliptic rectangular coordinates
-    xeclip = r * cos_d(sun_lon)
-    yeclip = r * sin_d(sun_lon)
-    zeclip = 0.0
-
-    # rotate these coordinates to equatorial rectangular coordinates
-    xequat = xeclip
-    yequat = yeclip * cos_d(oblecl) + zeclip * sin_d(oblecl)
+    sun_eci = get_sun(when)
 
     # convert equatorial rectangular coordinates to RA and Decl:
-    RA = atan2_d(yequat, xequat)  # degrees
+    RA, _, _ = eci_to_radec(sun_eci)
+    RA = degrees(RA)
 
     # Idea from
     # https://www.mathworks.com/matlabcentral/fileexchange/39085-mean-local-time-of-the-ascending-node
@@ -234,40 +219,14 @@ def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
     jd = juliandate(timetuple_from_dt(when))
     date = jd - DECEMBER_31TH_1999_MIDNIGHT_JD
 
-    w = 282.9404 + 4.70935e-5 * date    # longitude of perihelion degrees
-    eccentricity = 0.016709 - 1.151e-9 * date      # eccentricity
-    M = (356.0470 + 0.9856002585 * date) % 360    # mean anomaly degrees
-    L = w + M                        # Sun's mean longitude degrees
-    oblecl = 23.4393 - 3.563e-7 * date  # Sun's obliquity of the ecliptic
-
-    # auxiliary angle
-    auxiliary_angle = M + degrees(eccentricity * sin_d(M) * (1 + eccentricity * cos_d(M)))
-
-    # rectangular coordinates in the plane of the ecliptic (x axis toward perhilion)
-    x = cos_d(auxiliary_angle) - eccentricity
-    y = sin_d(auxiliary_angle) * sqrt(1 - eccentricity**2)
-
-    # find the distance and true anomaly
-    r = euclidean_distance(x, y)
-    v = atan2_d(y, x)
-
-    # find the longitude of the sun
-    sun_lon = v + w
-
-    # compute the ecliptic rectangular coordinates
-    xeclip = r * cos_d(sun_lon)
-    yeclip = r * sin_d(sun_lon)
-    zeclip = 0.0
-
-    # rotate these coordinates to equitorial rectangular coordinates
-    xequat = xeclip
-    yequat = yeclip * cos_d(oblecl) + zeclip * sin_d(oblecl)
-    zequat = yeclip * sin_d(23.4406) + zeclip * cos_d(oblecl)
+    w, M, L, eccentricity, oblecl = _sun_mean_ecliptic_elements(date)
+    sun_eci = _sun_eci(w, M, L, eccentricity, oblecl)
 
     # convert equatorial rectangular coordinates to RA and Decl:
-    r = euclidean_distance(xequat, yequat, zequat)
-    RA = atan2_d(yequat, xequat)
-    delta = asin_d(zequat/r)
+    RA, DEC, r = eci_to_radec(sun_eci)
+
+    RA = degrees(RA)
+    DEC = degrees(DEC)
 
     # Following the RA DEC to Az Alt conversion sequence explained here:
     # http://www.stargazing.net/kepler/altaz.html
@@ -278,9 +237,9 @@ def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
     HA = sidereal * 15 - RA
 
     # convert to rectangular coordinate system
-    x = cos_d(HA) * cos_d(delta)
-    y = sin_d(HA) * cos_d(delta)
-    z = sin_d(delta)
+    x = cos_d(HA) * cos_d(DEC)
+    y = sin_d(HA) * cos_d(DEC)
+    z = sin_d(DEC)
 
     # rotate this along an axis going east-west.
     xhor = x * cos_d(90 - latitude_deg) - z * sin_d(90 - latitude_deg)
@@ -292,6 +251,117 @@ def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
     elevation = asin_d(zhor)
 
     return AzimuthElevation(azimuth, elevation)
+
+
+def _sun_mean_ecliptic_elements(t_ut1):
+    w = 282.9404 + 4.70935e-5 * t_ut1    # longitude of perihelion degrees
+    eccentricity = 0.016709 - 1.151e-9 * t_ut1      # eccentricity
+    M = (356.0470 + 0.9856002585 * t_ut1) % 360    # mean anomaly degrees
+    L = w + M                        # Sun's mean longitude degrees
+    oblecl = 23.4393 - 3.563e-7 * t_ut1  # Sun's obliquity of the ecliptic
+
+    return w, M, L, eccentricity, oblecl
+
+
+def _sun_eci(w, M, L, eccentricity, oblecl):
+    # auxiliary angle
+    auxiliary_angle = M + degrees(eccentricity * sin_d(M) * (1 + eccentricity * cos_d(M)))
+
+    # rectangular coordinates in the plane of the ecliptic (x axis toward perihelion)
+    x = cos_d(auxiliary_angle) - eccentricity
+    y = sin_d(auxiliary_angle) * sqrt(1 - eccentricity**2)
+
+    # find the distance and true anomaly
+    r = euclidean_distance(x, y)
+    v = atan2_d(y, x)
+
+    # find the true longitude of the sun
+    sun_lon = v + w
+
+    # compute the ecliptic rectangular coordinates
+    xeclip = r * cos_d(sun_lon)
+    yeclip = r * sin_d(sun_lon)
+    zeclip = 0.0
+
+    # rotate these coordinates to equatorial rectangular coordinates
+    xequat = xeclip
+    yequat = yeclip * cos_d(oblecl) + zeclip * sin_d(oblecl)
+    zequat = yeclip * sin_d(23.4406) + zeclip * cos_d(oblecl)
+
+    return [xequat, yequat, zequat]
+
+
+def get_sun(when):
+    """
+    Returns inertial position of the Sun, in au.
+    """
+    jd = juliandate(timetuple_from_dt(when))
+    date = jd - DECEMBER_31TH_1999_MIDNIGHT_JD
+
+    w, M, L, eccentricity, oblecl = _sun_mean_ecliptic_elements(date)
+    sun_eci = _sun_eci(w, M, L, eccentricity, oblecl)
+
+    return np.array(sun_eci)
+
+
+def get_shadow(r, when_utc):
+    """
+    Gives illumination of Earth satellite (2 for illuminated, 1 for penumbra, 0 for umbra).
+
+    Parameters
+    ----------
+    r : numpy.ndarray or list
+        ECEF vector pointing to the satellite in km.
+    when_utc : datetime.datetime
+        Time of calculation.
+
+    """
+    gmst = gstime_from_datetime(when_utc)
+    r_sun = get_sun(when_utc) * AU
+
+    return shadow(r_sun, ecef_to_eci(r, gmst))
+
+
+def shadow(r_sun, r, r_p=wgs84.radiusearthkm):
+    """
+    Gives illumination of Earth satellite (2 for illuminated, 1 for penumbra, 0 for umbra).
+
+    Parameters
+    ----------
+    r_sun : numpy.ndarray or list
+        Vector pointing to the Sun in km.
+    r : numpy.ndarray or list
+        Vector pointing to the satellite in km.
+    r_p : float, optional
+        Radius of the planet, default to Earth WGS84.
+
+    Notes
+    -----
+    Algorithm 34 from Vallado, section 5.3.
+
+    """
+    alpha_umb = radians(0.264121687)
+    alpha_pen = radians(0.269007205)
+
+    shadow_result = 2
+
+    if dot_product(r_sun, r) < 0:
+        angle = angle_between(-r_sun, r)
+        sat_horiz = vector_norm(r) * cos_d(angle)
+        sat_vert = vector_norm(r) * sin_d(angle)
+        x = r_p / sin(alpha_pen)
+        pen_vert = tan(alpha_pen) * (x + sat_horiz)
+
+        if sat_vert <= pen_vert:
+            y = r_p / sin(alpha_umb)
+            umb_vert = tan(alpha_umb) * (y - sat_horiz)
+
+            if sat_vert <= umb_vert:
+                shadow_result = 0
+            else:
+                shadow_result = 1
+
+    return shadow_result
 
 
 def juliandate(utc_tuple):
@@ -310,7 +380,7 @@ def sidereal_time(utc_tuple, local_lon, sun_lon):
     # J2000 = jd - 2451545.0;
     UTH = utc_tuple.tm_hour + utc_tuple.tm_min / 60.0 + utc_tuple.tm_sec / 3600.0
 
-    # Calculate local siderial time
+    # Calculate local sidereal time
     GMST0 = ((sun_lon + 180) % 360) / 15
     return GMST0 + UTH + local_lon / 15
 

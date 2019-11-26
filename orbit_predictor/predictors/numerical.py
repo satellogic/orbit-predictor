@@ -24,19 +24,12 @@ from math import degrees, radians, sqrt, cos, sin
 import datetime as dt
 
 import numpy as np
-from sgp4.earth_gravity import wgs84
 
+from orbit_predictor.constants import OMEGA, MU_E, R_E_KM, J2, OMEGA_E
 from orbit_predictor.predictors.keplerian import KeplerianPredictor
 from orbit_predictor.angles import ta_to_M, M_to_ta
 from orbit_predictor.keplerian import coe2rv
 from orbit_predictor.utils import njit, raan_from_ltan, float_to_hms
-
-
-OMEGA = 2 * np.pi / (86400 * 365.2421897)  # rad / s
-MU_E = wgs84.mu  # km3 / s2
-R_E_KM = wgs84.radiusearthkm  # km
-J2 = wgs84.j2
-OMEGA_E = 7.292115e-5  # rad / s
 
 
 def sun_sync_plane_constellation(num_satellites, *,
