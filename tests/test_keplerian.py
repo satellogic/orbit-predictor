@@ -7,8 +7,7 @@ from math import radians
 import numpy as np
 from numpy.testing import assert_allclose
 
-from sgp4.earth_gravity import wgs84
-
+from orbit_predictor.constants import MU_E
 from orbit_predictor.keplerian import coe2rv, rv2coe
 
 
@@ -25,7 +24,7 @@ class COE2RVTests(TestCase):
         expected_position = [6525.344, 6861.535, 6449.125]
         expected_velocity = [4.902276, 5.533124, -1.975709]
 
-        position, velocity = coe2rv(wgs84.mu, p, ecc, inc, raan, argp, ta)
+        position, velocity = coe2rv(MU_E, p, ecc, inc, raan, argp, ta)
 
         assert_allclose(position, expected_position, rtol=1e-5)
         assert_allclose(velocity, expected_velocity, rtol=1e-5)
@@ -44,7 +43,7 @@ class RV2COETests(TestCase):
         expected_argp = radians(53.38)
         expected_ta = radians(92.335)
 
-        p, ecc, inc, raan, argp, ta = rv2coe(wgs84.mu, position, velocity)
+        p, ecc, inc, raan, argp, ta = rv2coe(MU_E, position, velocity)
 
         self.assertAlmostEqual(p, expected_p, places=0)
         self.assertAlmostEqual(ecc, expected_ecc, places=4)

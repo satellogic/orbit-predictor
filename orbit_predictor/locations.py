@@ -25,10 +25,9 @@ import importlib
 from math import asin, cos, degrees, radians, sin, sqrt
 import os
 
+from orbit_predictor.constants import LIGHT_SPEED_KMS
 from orbit_predictor import coordinate_systems
 from orbit_predictor.utils import reify, sun_azimuth_elevation
-
-LIGHT_SPEED_KMS = 299792.458
 
 
 class Location:
