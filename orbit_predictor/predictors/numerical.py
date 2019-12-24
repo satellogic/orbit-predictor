@@ -222,7 +222,9 @@ class J2Predictor(KeplerianPredictor):
                     )
 
         except FloatingPointError as e:
-            raise InvalidOrbitError("Cannot find Sun-synchronous orbit with given parameters") from e
+            raise InvalidOrbitError(
+                "Cannot find Sun-synchronous orbit with given parameters"
+            ) from e
 
         # TODO: Allow change in time or location
         # Right the epoch is fixed given the LTAN, as well as the sub-satellite point
