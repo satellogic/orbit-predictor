@@ -108,7 +108,7 @@ class KeplerianPredictor(CartesianPredictor):
         # Retrieve TLE position at given date as starting point
         pos = TLEPredictor(sate_id, source).get_position(date)
 
-        return cls(*pos.osculating_elements, date)
+        return cls(*pos.osculating_elements, epoch=date)
 
     def propagate_eci(self, when_utc=None):
         """Return position and velocity in the given date using ECI coordinate system.
