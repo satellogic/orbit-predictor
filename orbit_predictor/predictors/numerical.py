@@ -23,13 +23,35 @@
 from math import degrees, radians, sqrt, cos, sin
 import datetime as dt
 
+try:
+    from math import isclose
+except ImportError:
+    def isclose(a, b, *, rel_tol=1e-09, abs_tol=0.0):
+        return abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
 import numpy as np
 
 from orbit_predictor.constants import OMEGA, MU_E, R_E_KM, J2, OMEGA_E
 from orbit_predictor.predictors.keplerian import KeplerianPredictor
 from orbit_predictor.angles import ta_to_M, M_to_ta
 from orbit_predictor.keplerian import coe2rv
-from orbit_predictor.utils import njit, raan_from_ltan, float_to_hms
+from orbit_predictor.utils import njit, raan_from_ltan, float_to_hms, mean_motion
+
+
+def is_sun_synchronous(predictor, rtol=1e-3, epoch=None):
+    """Check if predictor corresponds to Sun-synchronous orbit within tolerance.
+
+    """
+    if epoch is None:
+        epoch = dt.datetime.now()
+
+    sma_km, ecc, inc_deg, *_ = predictor.get_position(epoch).osculating_elements
+    p = sma_km * (1 - ecc ** 2)
+    n = mean_motion(sma_km)
+
+    raan_dot_sec = - 3 * n * R_E_KM ** 2 * J2 / (2 * p ** 2) * cos(radians(inc_deg))
+
+    return isclose(raan_dot_sec, OMEGA, rel_tol=rtol)
 
 
 def sun_sync_plane_constellation(num_satellites, *,

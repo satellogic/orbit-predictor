@@ -6,7 +6,9 @@ from numpy.testing import assert_allclose, assert_almost_equal
 import pytest
 
 from orbit_predictor.locations import ARG
-from orbit_predictor.predictors.numerical import J2Predictor, InvalidOrbitError, R_E_KM
+from orbit_predictor.predictors.numerical import (
+    J2Predictor, InvalidOrbitError, R_E_KM, is_sun_synchronous
+)
 
 
 class J2PredictorTests(TestCase):
@@ -109,3 +111,26 @@ def test_repeated_groundtrack_sma(orbits, days, inc_deg, expected_h):
     pred = J2Predictor.repeating_ground_track(orbits=orbits, days=days, ecc=0.0, inc_deg=inc_deg)
 
     assert_almost_equal(pred.get_position().osculating_elements[0] - R_E_KM, expected_h, decimal=0)
+
+
+def test_is_sun_sync_returns_false_for_non_sun_sync_orbit():
+    pred1 = J2Predictor(7000, 0, 0, 0, 0, 0, dt.datetime.now())
+
+    assert not is_sun_synchronous(pred1)
+
+
+def test_is_sun_sync_detects_almost_sun_sync_orbit():
+    pred2 = J2Predictor(R_E_KM + 460, 0.001, 97.4, 0, 0, 0, dt.datetime.now())
+
+    assert not is_sun_synchronous(pred2)
+    assert is_sun_synchronous(pred2, rtol=1e-1)
+
+
+def test_is_sun_sync_returns_true_for_sun_sync_orbit():
+    pred1 = J2Predictor.sun_synchronous(alt_km=500, ecc=0)
+    pred2 = J2Predictor.sun_synchronous(alt_km=500, inc_deg=97)
+    pred3 = J2Predictor.sun_synchronous(ecc=0, inc_deg=97)
+
+    assert is_sun_synchronous(pred1)
+    assert is_sun_synchronous(pred2)
+    assert is_sun_synchronous(pred3)
