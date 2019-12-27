@@ -21,19 +21,14 @@
 # SOFTWARE.
 
 import datetime as dt
-from math import degrees, radians, sqrt
+from math import radians, sqrt
 
-import numpy as np
-from sgp4.earth_gravity import wgs84
-
-from orbit_predictor import coordinate_systems
 from orbit_predictor.angles import ta_to_M, M_to_ta
-from orbit_predictor.keplerian import rv2coe, coe2rv
+from orbit_predictor.constants import MU_E
+from orbit_predictor.keplerian import coe2rv
 from orbit_predictor.predictors import TLEPredictor
 from orbit_predictor.predictors.base import CartesianPredictor
-from orbit_predictor.utils import gstime_from_datetime, mean_motion
-
-MU_E = wgs84.mu
+from orbit_predictor.utils import mean_motion
 
 
 def kepler(argp, delta_t_sec, ecc, inc, p, raan, sma, ta):
@@ -41,7 +36,7 @@ def kepler(argp, delta_t_sec, ecc, inc, p, raan, sma, ta):
     M_0 = ta_to_M(ta, ecc)
 
     # Mean motion
-    n = sqrt(wgs84.mu / sma ** 3)
+    n = sqrt(MU_E / sma ** 3)
 
     # Propagation
     M = M_0 + n * delta_t_sec
@@ -113,17 +108,7 @@ class KeplerianPredictor(CartesianPredictor):
         # Retrieve TLE position at given date as starting point
         pos = TLEPredictor(sate_id, source).get_position(date)
 
-        # Convert position from ECEF to ECI
-        gmst = gstime_from_datetime(date)
-        position_eci = coordinate_systems.ecef_to_eci(pos.position_ecef, gmst)
-        velocity_eci = coordinate_systems.ecef_to_eci(pos.velocity_ecef, gmst)
-
-        # Convert position to Keplerian osculating elements
-        p, ecc, inc, raan, argp, ta = rv2coe(
-            wgs84.mu, np.array(position_eci), np.array(velocity_eci))
-        sma = p / (1 - ecc ** 2)
-
-        return cls(sma, ecc, degrees(inc), degrees(raan), degrees(argp), degrees(ta), date)
+        return cls(*pos.osculating_elements, epoch=date)
 
     def propagate_eci(self, when_utc=None):
         """Return position and velocity in the given date using ECI coordinate system.

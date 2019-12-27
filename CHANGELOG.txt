@@ -1,5 +1,13 @@
 # orbit-predictor changelog
 
+## 1.11.0 (2019-12-27)
+
+* Add `osculating_elements` property to Position that computes
+  osculating orbital elements
+* Add `is_sun_synchronous` function that checks if a Predictor
+  represents a Sun-synchronous orbit
+* Add Earth flattening and light speed to constants
+
 ## 1.10.0 (2019-11-27)
 
 * Add get_shadow method that computes if a satellite is in shadow

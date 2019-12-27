@@ -22,7 +22,6 @@
 
 import logging
 from collections import defaultdict, namedtuple
-import warnings
 
 import requests
 from urllib import parse as urlparse

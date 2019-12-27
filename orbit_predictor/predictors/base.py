@@ -26,9 +26,12 @@ import warnings
 from collections import namedtuple
 from math import pi, acos, degrees, radians
 
-from orbit_predictor.exceptions import NotReachable, PropagationError
+import numpy as np
 
+from orbit_predictor.constants import MU_E
+from orbit_predictor.exceptions import NotReachable, PropagationError
 from orbit_predictor import coordinate_systems
+from orbit_predictor.keplerian import rv2coe
 from orbit_predictor.utils import (
     cross_product,
     dot_product,
@@ -54,6 +57,28 @@ class Position(namedtuple(
     def position_llh(self):
         """Latitude (deg), longitude (deg), altitude (km)."""
         return coordinate_systems.ecef_to_llh(self.position_ecef)
+
+    @reify
+    def osculating_elements(self):
+        """Osculating Keplerian orbital elements.
+
+        Semimajor axis (km), eccentricity, inclination (deg),
+        right ascension of the ascending node or RAAN (deg),
+        argument of perigee (deg), true anomaly (deg).
+
+        """
+        gmst = gstime_from_datetime(self.when_utc)
+        position_eci = coordinate_systems.ecef_to_eci(self.position_ecef, gmst)
+        velocity_eci = coordinate_systems.ecef_to_eci(self.velocity_ecef, gmst)
+
+        # Convert position to Keplerian osculating elements
+        p, ecc, inc, raan, argp, ta = rv2coe(
+            MU_E, np.array(position_eci), np.array(velocity_eci)
+        )
+        # Transform to more familiar semimajor axis
+        sma = p / (1 - ecc ** 2)
+
+        return sma, ecc, degrees(inc), degrees(raan), degrees(argp), degrees(ta)
 
 
 class PredictedPass:
