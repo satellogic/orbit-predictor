@@ -2,7 +2,7 @@
 import os.path
 from setuptools import setup, find_packages
 
-# Copyright 2017-2019 Satellogic SA.
+# Copyright 2017-2020 Satellogic SA.
 
 
 # https://packaging.python.org/guides/single-sourcing-package-version/
