@@ -101,7 +101,7 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
 
     @reify
     def mean_motion(self):
-        return self._propagator.no  # this speed is in radians/minute
+        return self._propagator.no_unkozai  # this speed is in radians/minute
 
     @lru_cache(maxsize=3600 * 24 * 7)  # Max cache, a week
     def _propagate_only_position_ecef(self, timetuple):
