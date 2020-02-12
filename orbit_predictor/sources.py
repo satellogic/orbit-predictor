@@ -27,10 +27,10 @@ import requests
 from urllib import parse as urlparse
 from urllib.parse import urlencode
 
-from sgp4.earth_gravity import wgs84
-from sgp4.io import twoline2rv
+from sgp4.api import Satrec
 
 from orbit_predictor.predictors import TLEPredictor
+from orbit_predictor.utils import datetime_from_jday
 
 logger = logging.getLogger(__name__)
 
@@ -193,7 +193,7 @@ class NoradTLESource(TLESource):
 
 def get_predictor_from_tle_lines(tle_lines):
     db = MemoryTLESource()
-    sgp4_sat = twoline2rv(tle_lines[0], tle_lines[1], wgs84)
-    db.add_tle(sgp4_sat.satnum, tuple(tle_lines), sgp4_sat.epoch)
+    sgp4_sat = Satrec.twoline2rv(tle_lines[0], tle_lines[1])
+    db.add_tle(sgp4_sat.satnum, tuple(tle_lines), datetime_from_jday(sgp4_sat.jdsatepoch, sgp4_sat.jdsatepochF))
     predictor = TLEPredictor(sgp4_sat.satnum, db)
     return predictor
