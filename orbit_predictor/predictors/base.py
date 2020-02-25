@@ -33,12 +33,15 @@ from orbit_predictor.exceptions import NotReachable, PropagationError
 from orbit_predictor import coordinate_systems
 from orbit_predictor.keplerian import rv2coe
 from orbit_predictor.utils import (
+    angle_between,
     cross_product,
     dot_product,
     reify,
     vector_diff,
     vector_norm,
-    gstime_from_datetime
+    gstime_from_datetime,
+    get_shadow,
+    get_sun,
 )
 
 logger = logging.getLogger(__name__)
@@ -167,6 +170,45 @@ class Predictor:
 
     def get_position(self, when_utc=None):
         raise NotImplementedError("You have to implement it!")
+
+    def get_shadow(self, when_utc=None):
+        """Gives illumination at given time (2 for illuminated, 1 for penumbra, 0 for umbra)."""
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
+        return get_shadow(
+            self.get_position(when_utc).position_ecef,
+            when_utc
+        )
+
+    def get_normal_vector(self, when_utc=None):
+        """Gets unitary normal vector (orthogonal to orbital plane) at given time."""
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
+        position, velocity = self.propagate_eci(when_utc)
+        orbital_plane_normal = np.cross(position, velocity)
+        return orbital_plane_normal / vector_norm(orbital_plane_normal)
+
+    def get_beta(self, when_utc=None):
+        """Gets angle between orbital plane and Sun direction (beta) at given time, in degrees."""
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
+        # NOTE: There is a small inconsistency in that get_sun_model_eci_from_timestamp
+        # gives results in the Mean of Date (MOD) frame, whereas self._orbital_plane_normal
+        # returns ECI coordinates, which resembles GCRS but has some simplifying assumptions.
+        # These differences should amount to less than 1 degree
+
+        # Here we calculate the complementary angle of beta,
+        # because we use the normal vector of the orbital plane
+        beta_comp = angle_between(
+            get_sun(when_utc),
+            self.get_normal_vector(when_utc)
+        )
+
+        # We subtract from 90 degrees to return the real beta angle
+        return 90 - degrees(beta_comp)
 
 
 class CartesianPredictor(Predictor):
