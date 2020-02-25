@@ -238,7 +238,7 @@ class CartesianPredictor(Predictor):
         return Position(when_utc=when_utc, position_ecef=position_ecef,
                         velocity_ecef=velocity_ecef, error_estimate=None)
 
-    def get_only_position(self, when_utc):
+    def get_only_position(self, when_utc=None):
         """Return a tuple in ECEF coordinate system"""
         return self.get_position(when_utc).position_ecef
 

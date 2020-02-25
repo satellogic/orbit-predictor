@@ -122,10 +122,13 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
 
         return position_eci, velocity_eci
 
-    def get_only_position(self, when_utc):
+    def get_only_position(self, when_utc=None):
         """Return a tuple in ECEF coordinate system
 
         Code is optimized, dont complain too much!
         """
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
         timetuple = timetuple_from_dt(when_utc)
         return self._propagate_only_position_ecef(timetuple)
