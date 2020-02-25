@@ -42,6 +42,7 @@ from orbit_predictor.utils import (
     gstime_from_datetime,
     get_shadow,
     get_sun,
+    eclipse_duration,
 )
 
 logger = logging.getLogger(__name__)
@@ -247,6 +248,15 @@ class CartesianPredictor(Predictor):
     def get_only_position(self, when_utc=None):
         """Return a tuple in ECEF coordinate system"""
         return self.get_position(when_utc).position_ecef
+
+    def get_eclipse_duration(self, when_utc=None, tolerance=1e-1):
+        """Gets eclipse duration at given time, in minutes"""
+        ecc = self.get_position(when_utc).osculating_elements[1]
+        if ecc > tolerance:
+            raise NotImplementedError("Non circular orbits are not supported")
+
+        beta = self.get_beta(when_utc)
+        return eclipse_duration(beta, self.period)
 
     def passes_over(self, location, when_utc, limit_date=None, max_elevation_gt=0, aos_at_dg=0):
         return LocationPredictor(location, self, when_utc, limit_date,

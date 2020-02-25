@@ -23,7 +23,9 @@
 import functools
 from collections import namedtuple
 import datetime as dt
-from math import asin, atan2, cos, degrees, floor, radians, sin, sqrt, tan, modf
+from math import (
+    acos, asin, atan2, cos, degrees, floor, radians, sin, sqrt, tan, modf, pi
+)
 
 import numpy as np
 from sgp4.ext import jday
@@ -361,6 +363,14 @@ def shadow(r_sun, r, r_p=R_E_MEAN_KM):
                 shadow_result = 1
 
     return shadow_result
+
+
+def eclipse_duration(beta, period, r_p=R_E_MEAN_KM):
+    """Eclipse duration, in minutes"""
+    # Based on Vallado 4th ed., pp. 305
+    # Circular orbital radius corresponding to given period
+    r = np.cbrt(MU_E / (4 * pi ** 2) * (period * 60) ** 2)
+    return acos(sqrt(1 - (r_p / r) ** 2) / cos(radians(beta))) * period / pi
 
 
 def juliandate(utc_tuple):
