@@ -404,6 +404,7 @@ def timetuple_from_dt(when_utc):
 
 
 def mean_motion(sma_km):
+    """Mean motion, in radians per second"""
     return sqrt(MU_E / sma_km ** 3)  # rad / s
 
 

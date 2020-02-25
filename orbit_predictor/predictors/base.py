@@ -226,6 +226,7 @@ class CartesianPredictor(Predictor):
 
     @reify
     def mean_motion(self):
+        """Mean motion, in radians per minute"""
         raise NotImplementedError
 
     def get_position(self, when_utc=None):
