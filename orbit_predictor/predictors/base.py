@@ -229,6 +229,11 @@ class CartesianPredictor(Predictor):
         """Mean motion, in radians per minute"""
         raise NotImplementedError
 
+    @reify
+    def period(self):
+        """Orbital period, in minutes"""
+        return 2 * pi / self.mean_motion
+
     def get_position(self, when_utc=None):
         """Return a Position namedtuple in ECEF coordinate system"""
         if when_utc is None:
