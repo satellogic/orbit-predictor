@@ -29,7 +29,7 @@ import numpy as np
 from sgp4.ext import jday
 from sgp4.propagation import _gstime
 
-from .constants import AU, R_E_KM, MU_E
+from .constants import AU, R_E_MEAN_KM, MU_E
 from .coordinate_systems import eci_to_radec, ecef_to_eci
 
 # Inspired in https://github.com/poliastro/poliastro/blob/88edda8/src/poliastro/jit.py
@@ -321,7 +321,7 @@ def get_shadow(r, when_utc):
     return shadow(r_sun, ecef_to_eci(r, gmst))
 
 
-def shadow(r_sun, r, r_p=R_E_KM):
+def shadow(r_sun, r, r_p=R_E_MEAN_KM):
     """
     Gives illumination of Earth satellite (2 for illuminated, 1 for penumbra, 0 for umbra).
 
