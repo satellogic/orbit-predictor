@@ -162,9 +162,9 @@ class PredictedPass:
 
 class Predictor:
 
-    def __init__(self, sate_id, source):
-        self.sate_id = sate_id
-        self.source = source
+    @property
+    def sate_id(self):
+        raise NotImplementedError
 
     def propagate_eci(self, when_utc=None):
         raise NotImplementedError

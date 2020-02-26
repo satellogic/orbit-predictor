@@ -82,9 +82,21 @@ model.jday = jday
 class HighAccuracyTLEPredictor(CartesianPredictor):
     """A pass predictor with high accuracy on estimations"""
 
+    def __init__(self, sate_id, source):
+        self._sate_id = sate_id
+        self._source = source
+
+    @property
+    def sate_id(self):
+        return self._sate_id
+
+    @property
+    def source(self):
+        return self._source
+
     @reify
     def tle(self):
-        return self.source.get_tle(self.sate_id, dt.datetime.utcnow())
+        return self._source.get_tle(self.sate_id, dt.datetime.utcnow())
 
     @reify
     def _propagator(self):
