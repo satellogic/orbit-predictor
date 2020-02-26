@@ -209,7 +209,7 @@ class Predictor:
         )
 
         # We subtract from 90 degrees to return the real beta angle
-        return 90 - degrees(beta_comp)
+        return 90 - beta_comp
 
 
 class CartesianPredictor(Predictor):
