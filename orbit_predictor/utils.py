@@ -370,7 +370,12 @@ def eclipse_duration(beta, period, r_p=R_E_MEAN_KM):
     # Based on Vallado 4th ed., pp. 305
     # Circular orbital radius corresponding to given period
     r = np.cbrt(MU_E / (4 * pi ** 2) * (period * 60) ** 2)
-    return acos(sqrt(1 - (r_p / r) ** 2) / cos(radians(beta))) * period / pi
+
+    # We clip the argument of acos between -1 and 1
+    # to return a eclipse duration of 0 when it is out of range
+    return acos(
+        np.clip(sqrt(1 - (r_p / r) ** 2) / cos(radians(beta)), -1, 1)
+    ) * period / pi
 
 
 def juliandate(utc_tuple):
