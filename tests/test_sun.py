@@ -1,9 +1,11 @@
 import datetime as dt
 
 import numpy as np
+from hypothesis import given
+from hypothesis.strategies import floats
 import pytest
 
-from orbit_predictor.utils import angle_between, get_sun, get_shadow
+from orbit_predictor.utils import angle_between, get_sun, get_shadow, eclipse_duration
 
 
 # Data obtained from Astropy using the JPL ephemerides
@@ -45,3 +47,34 @@ def test_get_shadow_gives_penumbra(when_utc, r_ecef):
     shadow = get_shadow(r_ecef, when_utc)
 
     assert shadow == 1
+
+
+@pytest.mark.parametrize("beta", [-90, 90])
+@given(period=floats(90, 60 * 24))
+def test_eclipse_duration_beta_90_is_0(beta, period):
+    expected_eclipse_duration = 0
+    eclipse_duration_value = eclipse_duration(beta, period)
+
+    assert eclipse_duration_value == expected_eclipse_duration
+
+
+@given(
+    beta=floats(-90, 90, allow_nan=False),
+    period=floats(0, 60 * 24, allow_nan=False, width=16, exclude_min=True),
+)
+def test_eclipse_duration_dwarf_planet_always_0(beta, period):
+    expected_eclipse_duration = 0
+    eclipse_duration_value = eclipse_duration(beta, period, r_p=0)
+
+    assert eclipse_duration_value == expected_eclipse_duration
+
+
+@given(
+    beta=floats(-90, 90).filter(lambda f: f > 1e-1),
+    period=floats(90, 60 * 24),
+)
+def test_eclipse_duration_is_maximum_at_beta_0(beta, period):
+    ref_eclipse_duration = eclipse_duration(0, period)
+
+    assert beta != 0
+    assert eclipse_duration(beta, period) < ref_eclipse_duration
