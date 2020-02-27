@@ -59,8 +59,8 @@ def test_eclipse_duration_beta_90_is_0(beta, period):
 
 
 @given(
-    beta=floats(-90, 90, allow_nan=False),
-    period=floats(0, 60 * 24, allow_nan=False, width=16, exclude_min=True),
+    beta=floats(-90, 90),
+    period=floats(0, 60 * 24, width=16, exclude_min=True),
 )
 def test_eclipse_duration_dwarf_planet_always_0(beta, period):
     expected_eclipse_duration = 0
