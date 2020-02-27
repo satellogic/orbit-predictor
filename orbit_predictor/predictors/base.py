@@ -196,11 +196,6 @@ class Predictor:
         if when_utc is None:
             when_utc = dt.datetime.utcnow()
 
-        # NOTE: There is a small inconsistency in that get_sun_model_eci_from_timestamp
-        # gives results in the Mean of Date (MOD) frame, whereas self._orbital_plane_normal
-        # returns ECI coordinates, which resembles GCRS but has some simplifying assumptions.
-        # These differences should amount to less than 1 degree
-
         # Here we calculate the complementary angle of beta,
         # because we use the normal vector of the orbital plane
         beta_comp = angle_between(
