@@ -13,7 +13,7 @@ install:
     - "pip install -U --upgrade-strategy eager --prefer-binary --editable .[dev]"
     - "pip install coveralls"
 script:
-    - "pytest -v  --cov-report= --cov=orbit_predictor tests/"
+    - "pytest --cov-report= --cov=orbit_predictor tests/ -k sun_sync_delta_true_anomaly_has_expected_anomaly_and_epoch -vvvv"
 after_script:
     - "flake8 orbit_predictor"
 
