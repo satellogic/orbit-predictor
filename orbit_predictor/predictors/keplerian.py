@@ -90,7 +90,8 @@ class KeplerianPredictor(CartesianPredictor):
 
     @property
     def mean_motion(self):
-        return mean_motion(self._sma) * 60  # this speed is in radians/minute
+        """Mean motion, in radians per minute"""
+        return mean_motion(self._sma) * 60
 
     @classmethod
     def from_tle(cls, sate_id, source, date=None):

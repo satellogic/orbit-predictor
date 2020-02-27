@@ -33,12 +33,16 @@ from orbit_predictor.exceptions import NotReachable, PropagationError
 from orbit_predictor import coordinate_systems
 from orbit_predictor.keplerian import rv2coe
 from orbit_predictor.utils import (
+    angle_between,
     cross_product,
     dot_product,
     reify,
     vector_diff,
     vector_norm,
-    gstime_from_datetime
+    gstime_from_datetime,
+    get_shadow,
+    get_sun,
+    eclipse_duration,
 )
 
 logger = logging.getLogger(__name__)
@@ -158,15 +162,49 @@ class PredictedPass:
 
 class Predictor:
 
-    def __init__(self, sate_id, source):
-        self.sate_id = sate_id
-        self.source = source
+    @property
+    def sate_id(self):
+        raise NotImplementedError
 
     def propagate_eci(self, when_utc=None):
         raise NotImplementedError
 
     def get_position(self, when_utc=None):
         raise NotImplementedError("You have to implement it!")
+
+    def get_shadow(self, when_utc=None):
+        """Gives illumination at given time (2 for illuminated, 1 for penumbra, 0 for umbra)."""
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
+        return get_shadow(
+            self.get_position(when_utc).position_ecef,
+            when_utc
+        )
+
+    def get_normal_vector(self, when_utc=None):
+        """Gets unitary normal vector (orthogonal to orbital plane) at given time."""
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
+        position, velocity = self.propagate_eci(when_utc)
+        orbital_plane_normal = np.cross(position, velocity)
+        return orbital_plane_normal / vector_norm(orbital_plane_normal)
+
+    def get_beta(self, when_utc=None):
+        """Gets angle between orbital plane and Sun direction (beta) at given time, in degrees."""
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
+        # Here we calculate the complementary angle of beta,
+        # because we use the normal vector of the orbital plane
+        beta_comp = angle_between(
+            get_sun(when_utc),
+            self.get_normal_vector(when_utc)
+        )
+
+        # We subtract from 90 degrees to return the real beta angle
+        return 90 - beta_comp
 
 
 class CartesianPredictor(Predictor):
@@ -184,7 +222,13 @@ class CartesianPredictor(Predictor):
 
     @reify
     def mean_motion(self):
+        """Mean motion, in radians per minute"""
         raise NotImplementedError
+
+    @reify
+    def period(self):
+        """Orbital period, in minutes"""
+        return 2 * pi / self.mean_motion
 
     def get_position(self, when_utc=None):
         """Return a Position namedtuple in ECEF coordinate system"""
@@ -196,9 +240,18 @@ class CartesianPredictor(Predictor):
         return Position(when_utc=when_utc, position_ecef=position_ecef,
                         velocity_ecef=velocity_ecef, error_estimate=None)
 
-    def get_only_position(self, when_utc):
+    def get_only_position(self, when_utc=None):
         """Return a tuple in ECEF coordinate system"""
         return self.get_position(when_utc).position_ecef
+
+    def get_eclipse_duration(self, when_utc=None, tolerance=1e-1):
+        """Gets eclipse duration at given time, in minutes"""
+        ecc = self.get_position(when_utc).osculating_elements[1]
+        if ecc > tolerance:
+            raise NotImplementedError("Non circular orbits are not supported")
+
+        beta = self.get_beta(when_utc)
+        return eclipse_duration(beta, self.period)
 
     def passes_over(self, location, when_utc, limit_date=None, max_elevation_gt=0, aos_at_dg=0):
         return LocationPredictor(location, self, when_utc, limit_date,

@@ -23,13 +23,15 @@
 import functools
 from collections import namedtuple
 import datetime as dt
-from math import asin, atan2, cos, degrees, floor, radians, sin, sqrt, tan, modf
+from math import (
+    acos, asin, atan2, cos, degrees, floor, radians, sin, sqrt, tan, modf, pi
+)
 
 import numpy as np
 from sgp4.ext import jday
 from sgp4.propagation import _gstime
 
-from .constants import AU, R_E_KM, MU_E
+from .constants import AU, R_E_MEAN_KM, MU_E
 from .coordinate_systems import eci_to_radec, ecef_to_eci
 
 # Inspired in https://github.com/poliastro/poliastro/blob/88edda8/src/poliastro/jit.py
@@ -321,7 +323,7 @@ def get_shadow(r, when_utc):
     return shadow(r_sun, ecef_to_eci(r, gmst))
 
 
-def shadow(r_sun, r, r_p=R_E_KM):
+def shadow(r_sun, r, r_p=R_E_MEAN_KM):
     """
     Gives illumination of Earth satellite (2 for illuminated, 1 for penumbra, 0 for umbra).
 
@@ -361,6 +363,19 @@ def shadow(r_sun, r, r_p=R_E_KM):
                 shadow_result = 1
 
     return shadow_result
+
+
+def eclipse_duration(beta, period, r_p=R_E_MEAN_KM):
+    """Eclipse duration, in minutes"""
+    # Based on Vallado 4th ed., pp. 305
+    # Circular orbital radius corresponding to given period
+    r = np.cbrt(MU_E / (4 * pi ** 2) * (period * 60) ** 2)
+
+    # We clip the argument of acos between -1 and 1
+    # to return a eclipse duration of 0 when it is out of range
+    return acos(
+        np.clip(sqrt(1 - (r_p / r) ** 2) / cos(radians(beta)), -1, 1)
+    ) * period / pi
 
 
 def juliandate(utc_tuple):
@@ -404,6 +419,7 @@ def timetuple_from_dt(when_utc):
 
 
 def mean_motion(sma_km):
+    """Mean motion, in radians per second"""
     return sqrt(MU_E / sma_km ** 3)  # rad / s
 
 

@@ -82,9 +82,21 @@ model.jday = jday
 class HighAccuracyTLEPredictor(CartesianPredictor):
     """A pass predictor with high accuracy on estimations"""
 
+    def __init__(self, sate_id, source):
+        self._sate_id = sate_id
+        self._source = source
+
+    @property
+    def sate_id(self):
+        return self._sate_id
+
+    @property
+    def source(self):
+        return self._source
+
     @reify
     def tle(self):
-        return self.source.get_tle(self.sate_id, dt.datetime.utcnow())
+        return self._source.get_tle(self.sate_id, dt.datetime.utcnow())
 
     @reify
     def _propagator(self):
@@ -101,7 +113,8 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
 
     @reify
     def mean_motion(self):
-        return self._propagator.no_unkozai  # this speed is in radians/minute
+        """Mean motion, in radians per minute"""
+        return self._propagator.no_unkozai
 
     @lru_cache(maxsize=3600 * 24 * 7)  # Max cache, a week
     def _propagate_only_position_ecef(self, timetuple):
@@ -122,10 +135,13 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
 
         return position_eci, velocity_eci
 
-    def get_only_position(self, when_utc):
+    def get_only_position(self, when_utc=None):
         """Return a tuple in ECEF coordinate system
 
         Code is optimized, dont complain too much!
         """
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
         timetuple = timetuple_from_dt(when_utc)
         return self._propagate_only_position_ecef(timetuple)
