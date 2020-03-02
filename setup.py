@@ -37,11 +37,11 @@ setup(
         'numpy>=1.8.2',
         'sgp4>=2.3',
         'requests',
+        "scipy>=0.16",
     ],
     extras_require={
         "fast": [
             "numba>=0.38",
-            "scipy>=0.16",
         ],
         "dev": [
             "hypothesis",
