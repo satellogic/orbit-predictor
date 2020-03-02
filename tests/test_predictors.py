@@ -8,7 +8,7 @@ from orbit_predictor.constants import R_E_KM
 from orbit_predictor.predictors.keplerian import KeplerianPredictor
 from orbit_predictor.predictors.numerical import J2Predictor
 from orbit_predictor.utils import eclipse_duration, get_shadow
-from orbit_predictor.sources import get_predictor_from_tle_lines 
+from orbit_predictor.sources import get_predictor_from_tle_lines
 
 
 @pytest.fixture()
@@ -44,7 +44,7 @@ def sate_predictors():
     # First tle: The nominal case: LEO orbit sun-sync
     # Second tle: Beta angle with no-eclipse months
     predictors = {
-        'nominal_newsat': 
+        'nominal_newsat':
             ('1 45018U 20003C   20059.45818850  .00000954  00000-0  38528-4 0  9996',
              '2 45018  97.3318 127.6031 0014006 111.9460 248.3269 15.27107050  6765'),
         'rare_ltan6':
@@ -122,11 +122,10 @@ def test_eclipses_since_finds_all_eclipses_in_a_few_orbits(sate_predictors, sate
     for sate_name, start, limit in sate_dates_list:
         predictor = sate_predictors[sate_name]
         eclipses = list(predictor.eclipses_since(start, limit))
-        
         total_duration_m = int((limit - start).total_seconds() / 60)
         for mins in range(total_duration_m):
             current_time = start + dt.timedelta(minutes=mins)
             pos = predictor.get_only_position(current_time)
             if get_shadow(pos, current_time) != 2:
-                assert any(ecl_start <= current_time <= ecl_end 
+                assert any(ecl_start <= current_time <= ecl_end
                            for ecl_start, ecl_end in eclipses)

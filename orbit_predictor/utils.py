@@ -341,8 +341,6 @@ def shadow(r_sun, r, r_p=R_E_MEAN_KM):
     Algorithm 34 from Vallado, section 5.3.
 
     """
-    alpha_umb = radians(0.264121687)
-    alpha_pen = radians(0.269007205)
 
     shadow_result = 2
 
@@ -350,12 +348,12 @@ def shadow(r_sun, r, r_p=R_E_MEAN_KM):
         angle = angle_between(-r_sun, r)
         sat_horiz = vector_norm(r) * cos_d(angle)
         sat_vert = vector_norm(r) * sin_d(angle)
-        x = r_p / sin(alpha_pen)
-        pen_vert = tan(alpha_pen) * (x + sat_horiz)
+        x = r_p / sin(ALPHA_PEN)
+        pen_vert = tan(ALPHA_PEN) * (x + sat_horiz)
 
         if sat_vert <= pen_vert:
-            y = r_p / sin(alpha_umb)
-            umb_vert = tan(alpha_umb) * (y - sat_horiz)
+            y = r_p / sin(ALPHA_UMB)
+            umb_vert = tan(ALPHA_UMB) * (y - sat_horiz)
 
             if sat_vert <= umb_vert:
                 shadow_result = 0

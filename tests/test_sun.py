@@ -15,7 +15,8 @@ from orbit_predictor.utils import (
 
 
 # Data obtained from Astropy using the JPL ephemerides
-# coords = get_body("sun", Time(when_utc)).represent_as(CartesianRepresentation).xyz.to("au").T.value
+# coords = get_body("sun",
+#                   Time(when_utc)).represent_as(CartesianRepresentation).xyz.to("au").T.value
 @pytest.mark.parametrize("when_utc,expected_eci", [
     [dt.datetime(2000, 1, 1, 12), np.array([0.17705013, -0.88744275, -0.38474906])],
     [dt.datetime(2009, 6, 1, 18, 30), np.array([0.32589889, 0.88109849, 0.38197646])],
@@ -86,11 +87,12 @@ def test_eclipse_duration_is_maximum_at_beta_0(beta, period):
     assert eclipse_duration(beta, period) < ref_eclipse_duration
 
 
+# Examples taken from the predictors in test_predictors, validated with shadow function
 @pytest.mark.parametrize("when_utc,r_ecef", [
     [dt.datetime(2021, 9, 4, 1, 21, 15), np.array((1307.930, -258.467, -6727.760))],  # illum
-    [dt.datetime(2021, 9, 4, 1, 25, 15), np.array((2312.642, -1713.363, -6224.066))],  # after start
-    [dt.datetime(2021, 9, 4, 1, 53, 19), np.array((2104.446, -4747.296, 4476.039))],  # pre end 
-    [dt.datetime(2021, 9, 4, 1, 57, 19), np.array((1216.010, -3660.917, 5667.907))], # illum
+    [dt.datetime(2021, 9, 4, 1, 25, 15), np.array((2312.642, -1713.363, -6224.066))],  # eclipse
+    [dt.datetime(2021, 9, 4, 1, 53, 19), np.array((2104.446, -4747.296, 4476.039))],  # eclipse
+    [dt.datetime(2021, 9, 4, 1, 57, 19), np.array((1216.010, -3660.917, 5667.907))],  # illum
 ])
 def test_satellite_minus_penumbra_consistent_with_discrete_witness_cases(when_utc, r_ecef):
     if get_shadow(r_ecef, when_utc) == 2:
@@ -104,5 +106,4 @@ def test_satellite_minus_penumbra_consistent_with_discrete_witness_cases(when_ut
     [dt.datetime(2000, 1, 1, 12, 10, 15), np.array([-2842.327184, 6539.439097, 1625.522584])],
 ])
 def test_satellite_minus_penumbra_is_positive_in_illumination(when_utc, r_ecef):
-    shadow = get_shadow(r_ecef, when_utc)
     assert get_satellite_minus_penumbra_verticals(r_ecef, when_utc) > 0
