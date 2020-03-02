@@ -301,7 +301,7 @@ class CartesianPredictor(Predictor):
             return result
 
         orbital_period_s = self.period * 60
-        # A third orbit is used as the base window of the search.
+        # A third of the orbit period is used as the base window of the search.
         # This window ensures the function get_satellite_minus_penumbra_verticals
         # will not have more than one local minimum (one in the illuminated phase and
         # the other in penumbra).
