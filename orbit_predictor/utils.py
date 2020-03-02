@@ -31,7 +31,7 @@ import numpy as np
 from sgp4.ext import jday
 from sgp4.propagation import _gstime
 
-from .constants import AU, R_E_MEAN_KM, MU_E
+from .constants import AU, R_E_MEAN_KM, MU_E, ALPHA_UMB, ALPHA_PEN
 from .coordinate_systems import eci_to_radec, ecef_to_eci
 
 # Inspired in https://github.com/poliastro/poliastro/blob/88edda8/src/poliastro/jit.py
@@ -363,6 +363,50 @@ def shadow(r_sun, r, r_p=R_E_MEAN_KM):
                 shadow_result = 1
 
     return shadow_result
+
+
+def get_satellite_minus_penumbra_verticals(r, when_utc, r_p=R_E_MEAN_KM):
+    """
+    Returns the continuous value of the difference between the satellite vertical
+    and the penumbra vertical if the dot product of r_sun and r is negative,
+    otherwise it returns a positive value in a continuous way.
+
+    Parameters
+    ----------
+    r : numpy.ndarray or list
+        ECEF vector pointing to the satellite in km.
+    when_utc : datetime.datetime
+        Time of calculation.
+
+    Notes
+    -----
+    It is a rather artificial continuous function with positive
+    values in illuminated phase, and negative values with penumbra or umbra.
+    The zeros of the function are only in the transitions from illuminated to
+    penumbra (when going from positive to negative)
+    and from penumbra to illuminated (when going from negative to positive).
+    BEWARE: it can have local minimuns with positive values.
+    Works for highly elliptical orbits too.
+    The internals are the same as shadow function based on
+    Algorithm 34 from Vallado, section 5.3.
+    """
+
+    gmst = gstime_from_datetime(when_utc)
+    r_sun = get_sun(when_utc) * AU
+    r = ecef_to_eci(r, gmst)
+
+    if dot_product(r_sun, r) >= 0:
+        # The result of simplifying the sat_vert - pen_vert calculation
+        # in the case of dot_product(r_sun, r) == 0, i.e., angle == pi / 2.
+        return (vector_norm(np.array(r)) - r_p / cos(ALPHA_PEN))
+
+    angle = angle_between(-r_sun, r)
+    sat_horiz = vector_norm(r) * cos_d(angle)
+    sat_vert = vector_norm(r) * sin_d(angle)
+    x = r_p / sin(ALPHA_PEN)
+    pen_vert = tan(ALPHA_PEN) * (x + sat_horiz)
+
+    return sat_vert - pen_vert
 
 
 def eclipse_duration(beta, period, r_p=R_E_MEAN_KM):

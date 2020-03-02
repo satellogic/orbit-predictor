@@ -5,7 +5,13 @@ from hypothesis import given
 from hypothesis.strategies import floats
 import pytest
 
-from orbit_predictor.utils import angle_between, get_sun, get_shadow, eclipse_duration
+from orbit_predictor.utils import (
+    angle_between,
+    get_sun,
+    get_shadow,
+    eclipse_duration,
+    get_satellite_minus_penumbra_verticals,
+)
 
 
 # Data obtained from Astropy using the JPL ephemerides
@@ -78,3 +84,25 @@ def test_eclipse_duration_is_maximum_at_beta_0(beta, period):
 
     assert beta != 0
     assert eclipse_duration(beta, period) < ref_eclipse_duration
+
+
+@pytest.mark.parametrize("when_utc,r_ecef", [
+    [dt.datetime(2021, 9, 4, 1, 21, 15), np.array((1307.930, -258.467, -6727.760))],  # illum
+    [dt.datetime(2021, 9, 4, 1, 25, 15), np.array((2312.642, -1713.363, -6224.066))],  # after start
+    [dt.datetime(2021, 9, 4, 1, 53, 19), np.array((2104.446, -4747.296, 4476.039))],  # pre end 
+    [dt.datetime(2021, 9, 4, 1, 57, 19), np.array((1216.010, -3660.917, 5667.907))], # illum
+])
+def test_satellite_minus_penumbra_consistent_with_discrete_witness_cases(when_utc, r_ecef):
+    if get_shadow(r_ecef, when_utc) == 2:
+        assert get_satellite_minus_penumbra_verticals(r_ecef, when_utc) > 0
+    else:
+        assert get_satellite_minus_penumbra_verticals(r_ecef, when_utc) < 0
+
+
+@pytest.mark.parametrize("when_utc,r_ecef", [
+    [dt.datetime(2000, 1, 1, 12, 10, 5), np.array([-2779.471958, 6565.365892, 1625.185914])],
+    [dt.datetime(2000, 1, 1, 12, 10, 15), np.array([-2842.327184, 6539.439097, 1625.522584])],
+])
+def test_satellite_minus_penumbra_is_positive_in_illumination(when_utc, r_ecef):
+    shadow = get_shadow(r_ecef, when_utc)
+    assert get_satellite_minus_penumbra_verticals(r_ecef, when_utc) > 0
