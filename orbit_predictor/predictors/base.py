@@ -27,6 +27,11 @@ from collections import namedtuple
 from math import pi, acos, degrees, radians
 
 import numpy as np
+try:
+    from scipy.optimize import brentq, minimize_scalar
+except ImportError:
+    warnings.warn('scipy module was not found, some features may not work properly.',
+                  ImportWarning)
 
 from orbit_predictor.constants import MU_E
 from orbit_predictor.exceptions import NotReachable, PropagationError
@@ -47,11 +52,6 @@ from orbit_predictor.utils import (
 )
 
 logger = logging.getLogger(__name__)
-
-try:
-    from scipy.optimize import brentq, minimize_scalar
-except ImportError:
-    logger.warning('scipy module was not found, some features will not work properly.')
 
 
 ONE_SECOND = dt.timedelta(seconds=1)
