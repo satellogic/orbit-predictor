@@ -27,7 +27,6 @@ from collections import namedtuple
 from math import pi, acos, degrees, radians
 
 import numpy as np
-from scipy.optimize import brentq, minimize_scalar
 
 from orbit_predictor.constants import MU_E
 from orbit_predictor.exceptions import NotReachable, PropagationError
@@ -48,6 +47,12 @@ from orbit_predictor.utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+try:
+    from scipy.optimize import brentq, minimize_scalar
+except ImportError:
+    logger.warning('scipy module was not found, some features will not work properly.')
+
 
 ONE_SECOND = dt.timedelta(seconds=1)
 
@@ -281,7 +286,7 @@ class CartesianPredictor(Predictor):
         else:
             raise NotReachable('Propagation limit date exceeded')
 
-    def eclipses_since(self, when_utc, limit_date=None):
+    def eclipses_since(self, when_utc=None, limit_date=None):
         """
         An iterator that yields all eclipses start and end times between
         when_utc and limit_date.
@@ -299,6 +304,9 @@ class CartesianPredictor(Predictor):
                 my_start
             )
             return result
+
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
 
         orbital_period_s = self.period * 60
         # A third of the orbit period is used as the base window of the search.

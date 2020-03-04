@@ -10,7 +10,7 @@ python:
 before_install:
     - "pip install -U pip"
 install:
-    - "pip install -U --upgrade-strategy eager --prefer-binary --editable .[dev]"
+    - "pip install -U --upgrade-strategy eager --prefer-binary --editable .[dev,fast]"
     - "pip install coveralls"
 script:
     - "pytest -v  --cov-report= --cov=orbit_predictor tests/"
