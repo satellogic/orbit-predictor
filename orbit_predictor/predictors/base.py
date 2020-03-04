@@ -27,6 +27,11 @@ from collections import namedtuple
 from math import pi, acos, degrees, radians
 
 import numpy as np
+try:
+    from scipy.optimize import brentq, minimize_scalar
+except ImportError:
+    warnings.warn('scipy module was not found, some features may not work properly.',
+                  ImportWarning)
 
 from orbit_predictor.constants import MU_E
 from orbit_predictor.exceptions import NotReachable, PropagationError
@@ -43,9 +48,11 @@ from orbit_predictor.utils import (
     get_shadow,
     get_sun,
     eclipse_duration,
+    get_satellite_minus_penumbra_verticals,
 )
 
 logger = logging.getLogger(__name__)
+
 
 ONE_SECOND = dt.timedelta(seconds=1)
 
@@ -278,6 +285,79 @@ class CartesianPredictor(Predictor):
             return pass_
         else:
             raise NotReachable('Propagation limit date exceeded')
+
+    def eclipses_since(self, when_utc=None, limit_date=None):
+        """
+        An iterator that yields all eclipses start and end times between
+        when_utc and limit_date.
+
+        The next eclipse with a end strictly after when_utc will be returned,
+        possibly the current eclipse.
+        The last eclipse returned starts before limit_date, but it can end
+        strictly after limit_date.
+        No circular orbits are not supported, and will raise NotImplementedError.
+        """
+        def _get_illumination(t):
+            my_start = start + dt.timedelta(seconds=t)
+            result = get_satellite_minus_penumbra_verticals(
+                self.get_only_position(my_start),
+                my_start
+            )
+            return result
+
+        if when_utc is None:
+            when_utc = dt.datetime.utcnow()
+
+        orbital_period_s = self.period * 60
+        # A third of the orbit period is used as the base window of the search.
+        # This window ensures the function get_satellite_minus_penumbra_verticals
+        # will not have more than one local minimum (one in the illuminated phase and
+        # the other in penumbra).
+        base_search_window_s = orbital_period_s / 3
+        start = when_utc
+
+        while limit_date is None or start < limit_date:
+
+            # a minimum negative value is aproximatelly the middle point of the eclipse
+            minimum_illumination = minimize_scalar(
+                _get_illumination,
+                bounds=(0, base_search_window_s),
+                method="bounded",
+                options={"xatol": 1e-2},
+            )
+            eclipse_center_candidate_delta_s = minimum_illumination.x
+
+            # If found a minimum that is not illuminated, there is an eclipse here
+            if _get_illumination(eclipse_center_candidate_delta_s) < 0:
+                # The small time interval to search zeros around the center
+                # is estimated with the expected eclipse duration (which generally
+                # is smaller than expected, and that is the reason of the 1.5 coeficient).
+                # Also a minimum of 180 seconds was added because
+                # in some cases the estimation is 0 even though there is an eclipse.
+                eclipse_duration_estimation_s = self.get_eclipse_duration(start) * 60
+                zero_search_window_s = max(180, 1.5 * eclipse_duration_estimation_s)
+
+                # Search now both zeros to get the start and end of the eclipse
+                eclipse_start_delta_s = brentq(
+                    _get_illumination,
+                    eclipse_center_candidate_delta_s - zero_search_window_s,
+                    eclipse_center_candidate_delta_s,
+                    xtol=1e-2,
+                    full_output=False,
+                )
+                eclipse_end_delta_s = brentq(
+                    _get_illumination,
+                    eclipse_center_candidate_delta_s,
+                    eclipse_center_candidate_delta_s + zero_search_window_s,
+                    xtol=1e-2,
+                    full_output=False,
+                )
+                eclipse_start = start + dt.timedelta(seconds=eclipse_start_delta_s)
+                eclipse_end = start + dt.timedelta(seconds=eclipse_end_delta_s)
+                yield eclipse_start, eclipse_end
+                start = eclipse_end + dt.timedelta(seconds=base_search_window_s)
+            else:
+                start += dt.timedelta(seconds=base_search_window_s)
 
 
 class GPSPredictor(Predictor):

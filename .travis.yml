@@ -10,8 +10,8 @@ python:
 before_install:
     - "pip install -U pip"
 install:
-    - "pip install -U --upgrade-strategy eager --prefer-binary --editable .[dev]"
-    - "pip install coveralls"
+    - if [[ $TRAVIS_PYTHON_VERSION == 3.4 ]]; then pip install -U --upgrade-strategy eager --prefer-binary --editable .[dev]; fi
+    - if [[ $TRAVIS_PYTHON_VERSION != 3.4 ]]; then pip install -U --upgrade-strategy eager --prefer-binary --editable .[dev,fast]; fi
 script:
     - "pytest -v  --cov-report= --cov=orbit_predictor tests/"
 after_script:
@@ -19,6 +19,7 @@ after_script:
 
 # report coverage to coveralls.io
 after_success:
+    - "pip install coveralls"
     - coveralls
 
 cache:
