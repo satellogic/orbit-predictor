@@ -1,4 +1,5 @@
 import datetime as dt
+import importlib.util
 
 from hypothesis import given
 from hypothesis.strategies import datetimes, composite, floats
@@ -9,6 +10,12 @@ from orbit_predictor.predictors.keplerian import KeplerianPredictor
 from orbit_predictor.predictors.numerical import J2Predictor
 from orbit_predictor.utils import eclipse_duration, get_shadow
 from orbit_predictor.sources import get_predictor_from_tle_lines
+
+
+fastversion = pytest.mark.skipif(
+    importlib.util.find_spec('scipy') is None,
+    reason='scipy is required',
+)
 
 
 @pytest.fixture()
@@ -89,6 +96,7 @@ def test_get_eclipse_duration_changes_for_non_sun_synchronous_satellite(non_sun_
     assert abs(eclipse_duration1 - eclipse_duration2) > 1  # minutes
 
 
+@fastversion
 @pytest.mark.parametrize('sate_dates_list', [[
     ['nominal_newsat', dt.datetime(2021, 9, 4), dt.datetime(2021, 9, 5)],
     ['rare_ltan6', dt.datetime(2021, 8, 5), dt.datetime(2021, 8, 6)],
@@ -114,6 +122,7 @@ def test_eclipses_since_is_consistent_with_get_shadow(sate_predictors, sate_date
                 assert (get_shadow(pos, time_to_check) == 2) == must_be_illuminated
 
 
+@fastversion
 @pytest.mark.parametrize('sate_dates_list', [[
     ['nominal_newsat', dt.datetime(2021, 9, 4), dt.datetime(2021, 9, 4, 12, 0, 0)],
     ['rare_ltan6', dt.datetime(2021, 8, 5), dt.datetime(2021, 8, 5, 12, 0, 0)],
