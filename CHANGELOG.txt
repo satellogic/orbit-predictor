@@ -1,5 +1,17 @@
 # orbit-predictor changelog
 
+## 1.12.0 (2020-03-04)
+
+* Require sgp4>=2.3
+* Use mean Earth radius for illumination computation
+* Use current date if not given in `get_only_position` too
+* Document `mean_motion` (finally!)
+* Add `R_E_MEAN_KM`, `ALPHA_UMB` and `ALPHA_PEN` constants
+* Add `period` property to predictors
+* Add `get_shadow`, `get_eclipse_duration`, `get_beta`, `get_normal_vector`
+  and `eclipses_since` methods to predictors
+* Make `sate_id` mandatory and `source` optional
+
 ## 1.11.0 (2019-12-27)
 
 * Add `osculating_elements` property to Position that computes
