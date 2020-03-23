@@ -35,7 +35,7 @@ setup(
     ],
     install_requires=[
         'numpy>=1.8.2',
-        'sgp4>=2.3',
+        'sgp4>=2.5',
         'requests',
     ],
     extras_require={

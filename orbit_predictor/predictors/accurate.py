@@ -49,6 +49,7 @@ import warnings
 
 from sgp4 import ext, model
 from sgp4.api import Satrec, jday as jday_sep, SGP4_ERRORS
+from sgp4.model import WGS84
 from sgp4.propagation import gstime
 
 from orbit_predictor import coordinate_systems
@@ -98,7 +99,7 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
     @reify
     def _propagator(self):
         tle_line_1, tle_line_2 = self.tle.lines
-        return Satrec.twoline2rv(tle_line_1, tle_line_2)
+        return Satrec.twoline2rv(tle_line_1, tle_line_2, WGS84)
 
     @reify
     def propagator(self):
