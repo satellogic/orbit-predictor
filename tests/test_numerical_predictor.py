@@ -62,7 +62,7 @@ class SunSynchronousTests(TestCase):
         expected_ecc = 0.14546153131334466
 
         pred = J2Predictor.sun_synchronous(alt_km=475, inc_deg=97)
-        self.assertAlmostEqual(pred.get_position().osculating_elements[1], expected_ecc, places=15)
+        self.assertAlmostEqual(pred.get_position().osculating_elements[1], expected_ecc, places=14)
 
     def test_sun_sync_from_eccentricity_and_inclination(self):
         # Vallado 3rd edition, example 11-2
