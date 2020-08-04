@@ -329,18 +329,13 @@ class CartesianPredictor(Predictor):
 
             # If found a minimum that is not illuminated, there is an eclipse here
             if _get_illumination(eclipse_center_candidate_delta_s) < 0:
-                # The small time interval to search zeros around the center
-                # is estimated with the expected eclipse duration (which generally
-                # is smaller than expected, and that is the reason of the 1.5 coeficient).
-                # Also a minimum of 180 seconds was added because
-                # in some cases the estimation is 0 even though there is an eclipse.
-                eclipse_duration_estimation_s = self.get_eclipse_duration(start) * 60
-                zero_search_window_s = max(180, 1.5 * eclipse_duration_estimation_s)
-
                 # Search now both zeros to get the start and end of the eclipse
+                # We know that in (0, base_search_window_s) there is a minimum with negative value,
+                # and also on the opposite side of the eclipse we expect sunlight,
+                # therefore we already have two robust bracketing intervals
                 eclipse_start_delta_s = brentq(
                     _get_illumination,
-                    eclipse_center_candidate_delta_s - zero_search_window_s,
+                    eclipse_center_candidate_delta_s - orbital_period_s / 2,
                     eclipse_center_candidate_delta_s,
                     xtol=1e-2,
                     full_output=False,
@@ -348,7 +343,7 @@ class CartesianPredictor(Predictor):
                 eclipse_end_delta_s = brentq(
                     _get_illumination,
                     eclipse_center_candidate_delta_s,
-                    eclipse_center_candidate_delta_s + zero_search_window_s,
+                    eclipse_center_candidate_delta_s + orbital_period_s / 2,
                     xtol=1e-2,
                     full_output=False,
                 )
