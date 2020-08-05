@@ -138,3 +138,20 @@ def test_eclipses_since_finds_all_eclipses_in_a_few_orbits(sate_predictors, sate
             if get_shadow(pos, current_time) != 2:
                 assert any(ecl_start <= current_time <= ecl_end
                            for ecl_start, ecl_end in eclipses)
+
+
+@fastversion
+def test_eclipse_corner_case():
+    # See https://github.com/satellogic/orbit-predictor/issues/96
+    start = dt.datetime(2020, 9, 1)
+    end = dt.datetime(2020, 9, 2)
+    pred = J2Predictor.sun_synchronous(
+        alt_km=470.0,
+        ecc=0.001,
+        ltan_h=19,
+        ta_deg=0,
+        date=start,
+    )
+    eclipses = list(pred.eclipses_since(when_utc=start, limit_date=end))
+
+    assert len(eclipses) == 16
