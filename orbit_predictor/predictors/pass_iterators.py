@@ -40,7 +40,7 @@ class LocationPredictor:
         """Returns one pass each time"""
         current_date = self.start_date
         while True:
-            if self.is_ascending(current_date):
+            if self._is_ascending(current_date):
                 # we need a descending point
                 ascending_date = current_date
                 descending_date = self._find_nearest_descending(ascending_date)
@@ -73,7 +73,7 @@ class LocationPredictor:
 
     def _find_nearest_descending(self, ascending_date):
         for candidate in self._sample_points(ascending_date):
-            if not self.is_ascending(candidate):
+            if not self._is_ascending(candidate):
                 return candidate
         else:
             logger.error('Could not find a descending pass over %s start date: %s - TLE: %s',
@@ -82,7 +82,7 @@ class LocationPredictor:
 
     def _find_nearest_ascending(self, descending_date):
         for candidate in self._sample_points(descending_date):
-            if self.is_ascending(candidate):
+            if self._is_ascending(candidate):
                 return candidate
         else:
             logger.error('Could not find an ascending pass over %s start date: %s - TLE: %s',
@@ -114,7 +114,7 @@ class LocationPredictor:
     def _find_tca(self, ascending_date, descending_date):
         while not self._precision_reached(ascending_date, descending_date):
             midpoint = self.midpoint(ascending_date, descending_date)
-            if self.is_ascending(midpoint):
+            if self._is_ascending(midpoint):
                 ascending_date = midpoint
             else:
                 descending_date = midpoint
@@ -134,11 +134,7 @@ class LocationPredictor:
         position = self.predictor.get_only_position(when_utc)
         return self.location.elevation_for(position)
 
-    def is_passing(self, when_utc):
-        """Returns a boolean indicating if satellite is actually visible"""
-        return bool(self._elevation_at(when_utc))
-
-    def is_ascending(self, when_utc):
+    def _is_ascending(self, when_utc):
         """Check is elevation is ascending or descending on a given point"""
         elevation = self._elevation_at(when_utc)
         next_elevation = self._elevation_at(when_utc + ONE_SECOND)
