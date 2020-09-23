@@ -46,6 +46,13 @@ BUGSAT1_TLE_LINES = (
     "2 40014  97.9781 190.6418 0032692 299.0467  60.7524 14.91878099 18425")
 
 
+TRICKY_SAT_ID = "99999U"
+TRICKY_SAT_TLE_LINES = (
+    "1 99999U 20003C   20266.16335194  .00000680  00000-0  27888-4 0  9992",
+    "2 99999  97.3095 330.4275 0013971 101.1830 259.0981 15.27499258 38313"
+)
+
+
 class AccuratePredictorTests(TestCase):
 
     def setUp(self):
@@ -228,3 +235,33 @@ class AccuratePredictorCalculationErrorTests(TestCase):
             self.predictor.get_next_pass(ARG, self.start)
 
         self.assertLoggedError(str(ARG), str(self.start), *BUGSAT1_TLE_LINES)
+
+
+class SkippedPassesRegressionTests(TestCase):
+    """Check that we do not skip passes"""
+    # See https://github.com/satellogic/orbit-predictor/issues/99
+
+    def setUp(self):
+        self.db = MemoryTLESource()
+        self.db.add_tle(TRICKY_SAT_ID, TRICKY_SAT_TLE_LINES, dt.datetime.now())
+        self.predictor = TLEPredictor(TRICKY_SAT_ID, self.db)
+
+    def test_pass_is_not_skipped(self):
+        loc = Location(
+            name="loc",
+            latitude_deg=-15.137152171507697,
+            longitude_deg=-0.4276612055384211,
+            elevation_m=1.665102900005877e-05,
+        )
+
+        PASS_DATE = dt.datetime(2020, 9, 25, 9, 2, 6)
+        LIMIT_DATE = dt.datetime(2020, 9, 25, 10, 36, 0)
+
+        predicted_passes = list(self.predictor.passes_over(
+            loc,
+            when_utc=PASS_DATE,
+            limit_date=LIMIT_DATE,
+            aos_at_dg=0, max_elevation_gt=0,
+        ))
+
+        assert predicted_passes
