@@ -21,10 +21,7 @@ def round_datetime(dt_):
     return dt_
 
 
-class LocationPredictor:
-    """Predicts passes over a given location
-    Exposes an iterable interface
-    """
+class BaseLocationPredictor:
 
     def __init__(self, location, predictor, start_date, limit_date=None,
                  max_elevation_gt=0, aos_at_dg=0):
@@ -37,6 +34,19 @@ class LocationPredictor:
         self.aos_at = radians(aos_at_dg)
 
     def __iter__(self):
+        yield from self.iter_passes()
+
+    def iter_passes(self):
+        """Yields passes"""
+        raise NotImplementedError
+
+
+class LocationPredictor(BaseLocationPredictor):
+    """Predicts passes over a given location
+    Exposes an iterable interface
+    """
+
+    def iter_passes(self):
         """Returns one pass each time"""
         current_date = self.start_date
         while True:
