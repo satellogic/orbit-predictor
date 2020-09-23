@@ -365,15 +365,7 @@ class LocationPredictor:
     """
 
     def __init__(self, location, predictor, start_date, limit_date=None,
-                 max_elevation_gt=0, aos_at_dg=0, *, propagator=None):
-        if propagator is not None:
-            warnings.warn(
-                "propagator parameter was renamed to predictor "
-                "and will be removed in a future release",
-                DeprecationWarning
-            )
-            predictor = propagator
-
+                 max_elevation_gt=0, aos_at_dg=0):
         self.location = location
         self.predictor = predictor
         self.start_date = start_date
@@ -381,15 +373,6 @@ class LocationPredictor:
 
         self.max_elevation_gt = radians(max([max_elevation_gt, aos_at_dg]))
         self.aos_at = radians(aos_at_dg)
-
-    @property
-    def propagator(self):
-        warnings.warn(
-            "propagator parameter was renamed to predictor "
-            "and will be removed in a future release",
-            DeprecationWarning
-        )
-        return self.predictor
 
     def __iter__(self):
         """Returns one pass each time"""
