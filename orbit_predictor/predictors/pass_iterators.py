@@ -3,6 +3,15 @@ import logging
 from math import pi, acos, degrees, radians
 import warnings
 
+try:
+    from scipy.optimize import root_scalar, minimize_scalar
+except ImportError:
+    warnings.warn(
+        "scipy module was not found, some features may not work properly",
+        ImportWarning,
+        stacklevel=2,
+    )
+
 from orbit_predictor.exceptions import PropagationError
 from orbit_predictor.utils import (
     cross_product,
@@ -10,6 +19,7 @@ from orbit_predictor.utils import (
     reify,
     vector_diff,
     vector_norm,
+    orbital_period,
 )
 
 ONE_SECOND = dt.timedelta(seconds=1)
@@ -183,6 +193,86 @@ class LocationPredictor(BaseLocationPredictor):
                 start = midpoint
 
         return start
+
+
+class SmartLocationPredictor(BaseLocationPredictor):
+
+    def iter_passes(self):
+        current_date = self.start_date
+        while True:
+            valid, aos, tca, los, max_elevation = self._find_next_pass(current_date)
+            current_date = los
+
+            if self.limit_date is not None and current_date > self.limit_date:
+                break
+            else:
+                if valid:
+                    yield PredictedPass(
+                        self.location,
+                        self.predictor.sate_id,
+                        max_elevation_deg=degrees(max_elevation),
+                        aos=aos,
+                        los=los,
+                        duration_s=(los - aos).total_seconds(),
+                        max_elevation_position=self.predictor.get_position(tca),
+                        max_elevation_date=tca,
+                     )
+
+    def _elevation_at(self, when_utc):
+        position = self.predictor.get_only_position(when_utc)
+        return self.location.elevation_for(position)
+
+    def _find_next_pass(self, start_date, atol=1):
+        def elevation(delta_seconds):
+            return self._elevation_at(start_date + dt.timedelta(seconds=delta_seconds))
+
+        start_elevation = self._elevation_at(start_date)
+        period_s = orbital_period(self.predictor.mean_motion) * 60
+
+        # Find date for maximum elevation within the next orbital period
+        t_tca = minimize_scalar(
+            lambda t: -elevation(t), bounds=(0, period_s), method="bounded",
+            options=dict(xatol=atol),
+        ).x
+        tca = start_date + dt.timedelta(seconds=t_tca)
+        max_elevation = self._elevation_at(tca)
+        if max_elevation < self.max_elevation_gt:
+            return False, None, tca, start_date + dt.timedelta(seconds=period_s), max_elevation
+
+        # Find AOS (that it might be past the start date)
+        try:
+            if self.aos_at < start_elevation:
+                # AOS is past the start date
+                t_left = -period_s / 2
+            else:
+                t_left = 0
+            t_aos = root_scalar(
+                lambda t: elevation(t) - self.aos_at, bracket=(t_left, t_tca),
+                xtol=atol,
+            ).root
+        except ValueError as e:
+            raise PropagationError(
+                "Could not find AOS of pass with TCA {}".format(tca)
+            ) from e
+
+        # Ensure location is visible at AOS by adding atol
+        aos = start_date + dt.timedelta(seconds=t_aos + atol)
+
+        # LOS must be between TCA and an elapsed time around TCA + (TCA - AOS)
+        try:
+            t_los = root_scalar(
+                lambda t: elevation(t) - self.aos_at,
+                bracket=(t_tca, t_tca + (t_tca - t_aos) + 60),
+                xtol=atol,
+            ).root
+        except ValueError as e:
+            raise PropagationError(
+                "Could not find LOS of pass with AOS {} and TCA {}".format(aos, tca)
+            ) from e
+        else:
+            los = start_date + dt.timedelta(seconds=t_los)
+
+        return True, aos, tca, los, max_elevation
 
 
 class PredictedPass:
