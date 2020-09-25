@@ -225,14 +225,16 @@ class AccuratePredictorCalculationErrorTests(TestCase):
     def test_ascending_failure(self):
         self.is_ascending_mock.return_value = False
         with self.assertRaises(PropagationError):
-            self.predictor.get_next_pass(ARG, self.start)
+            self.predictor.get_next_pass(ARG, self.start,
+                                         location_predictor_class=LocationPredictor)
 
         self.assertLoggedError(str(ARG), str(self.start), *BUGSAT1_TLE_LINES)
 
     def test_descending_failure(self):
         self.is_ascending_mock.return_value = True
         with self.assertRaises(PropagationError):
-            self.predictor.get_next_pass(ARG, self.start)
+            self.predictor.get_next_pass(ARG, self.start,
+                                         location_predictor_class=LocationPredictor)
 
         self.assertLoggedError(str(ARG), str(self.start), *BUGSAT1_TLE_LINES)
 
