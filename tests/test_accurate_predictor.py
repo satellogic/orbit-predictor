@@ -26,11 +26,13 @@ from unittest import TestCase, mock
 import logassert
 from hypothesis import example, given, settings
 from hypothesis.strategies import floats, tuples, datetimes
+import pytest
 
 from orbit_predictor.predictors.base import ONE_SECOND
 from orbit_predictor.exceptions import PropagationError
 from orbit_predictor.locations import Location, ARG
 from orbit_predictor.predictors import TLEPredictor
+from orbit_predictor.predictors.pass_iterators import SmartLocationPredictor, LocationPredictor
 from orbit_predictor.sources import MemoryTLESource
 
 
@@ -248,7 +250,8 @@ class SkippedPassesRegressionTests(TestCase):
         self.db.add_tle(TRICKY_SAT_ID, TRICKY_SAT_TLE_LINES, dt.datetime.now())
         self.predictor = TLEPredictor(TRICKY_SAT_ID, self.db)
 
-    def test_pass_is_not_skipped(self):
+    @pytest.mark.xfail(reason="Legacy LocationPredictor skips some passes")
+    def test_pass_is_not_skipped_old(self):
         loc = Location(
             name="loc",
             latitude_deg=-15.137152171507697,
@@ -264,6 +267,28 @@ class SkippedPassesRegressionTests(TestCase):
             when_utc=PASS_DATE,
             limit_date=LIMIT_DATE,
             aos_at_dg=0, max_elevation_gt=0,
+            location_predictor_class=LocationPredictor,
+        ))
+
+        assert predicted_passes
+
+    def test_pass_is_not_skipped_smart(self):
+        loc = Location(
+            name="loc",
+            latitude_deg=-15.137152171507697,
+            longitude_deg=-0.4276612055384211,
+            elevation_m=1.665102900005877e-05,
+        )
+
+        PASS_DATE = dt.datetime(2020, 9, 25, 9, 2, 6)
+        LIMIT_DATE = dt.datetime(2020, 9, 25, 10, 36, 0)
+
+        predicted_passes = list(self.predictor.passes_over(
+            loc,
+            when_utc=PASS_DATE,
+            limit_date=LIMIT_DATE,
+            aos_at_dg=0, max_elevation_gt=0,
+            location_predictor_class=SmartLocationPredictor,
         ))
 
         assert predicted_passes
