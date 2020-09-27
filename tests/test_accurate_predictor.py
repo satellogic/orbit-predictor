@@ -217,7 +217,7 @@ class AccuratePredictorCalculationErrorTests(TestCase):
         self.is_ascending_mock = self._patch(
             'orbit_predictor.predictors.base.LocationPredictor._is_ascending')
         self.start = dt.datetime(2017, 3, 6, 7, 51)
-        logassert.setup(self,  'orbit_predictor.predictors.base')
+        logassert.setup(self,  'orbit_predictor.predictors.pass_iterators')
 
     def _patch(self, *args,  **kwargs):
         patcher = mock.patch(*args, **kwargs)
