@@ -5,6 +5,7 @@ import warnings
 
 try:
     from scipy.optimize import root_scalar, minimize_scalar
+    from ._minimize import minimize_scalar_bounded_alt
 except ImportError:
     warnings.warn(
         "scipy module was not found, some features may not work properly",
@@ -21,8 +22,6 @@ from orbit_predictor.utils import (
     vector_norm,
     orbital_period,
 )
-
-from ._minimize import minimize_scalar_bounded_alt
 
 ONE_SECOND = dt.timedelta(seconds=1)
 

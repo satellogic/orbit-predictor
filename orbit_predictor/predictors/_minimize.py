@@ -1,6 +1,8 @@
-from math import sqrt, inf, copysign, isnan
+from math import sqrt, copysign, isnan
 
 from scipy.optimize.optimize import OptimizeResult, _status_message
+
+inf = float("inf")
 
 
 def minimize_scalar_bounded_alt(func, bounds, xatol=1e-5, maxiter=500, **extra):
