@@ -22,6 +22,7 @@
 
 import datetime as dt
 from unittest import TestCase, mock
+import sys
 
 import logassert
 from hypothesis import example, given, settings
@@ -272,6 +273,7 @@ class SkippedPassesRegressionTests(TestCase):
 
         assert predicted_passes
 
+    @pytest.mark.skipif(sys.version_info < (3, 5), reason="Not installing SciPy in Python 3.4")
     def test_pass_is_not_skipped_smart(self):
         loc = Location(
             name="loc",
