@@ -232,13 +232,14 @@ class SmartLocationPredictor(BaseLocationPredictor):
         period_s = orbital_period(self.predictor.mean_motion) * 60
 
         # Find date for maximum elevation within the next orbital period
-        t_tca = minimize_scalar(
+        res_tca = minimize_scalar(
             lambda t: -elevation(t), bounds=(0, period_s),
             method=minimize_scalar_bounded_alt,
             options=dict(xatol=atol),
-        ).x
+        )
+        t_tca = res_tca.x
         tca = start_date + dt.timedelta(seconds=t_tca)
-        max_elevation = self._elevation_at(tca)
+        max_elevation = -res_tca.fun
         if max_elevation < self.max_elevation_gt:
             return False, None, tca, start_date + dt.timedelta(seconds=period_s), max_elevation
 
