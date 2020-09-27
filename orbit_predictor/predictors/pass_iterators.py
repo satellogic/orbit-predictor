@@ -36,7 +36,7 @@ def round_datetime(dt_):
 class BaseLocationPredictor:
 
     def __init__(self, location, predictor, start_date, limit_date=None,
-                 max_elevation_gt=0, aos_at_dg=0):
+                 max_elevation_gt=0, aos_at_dg=0, tolerance_s=1.0):
         self.location = location
         self.predictor = predictor
         self.start_date = start_date
@@ -44,6 +44,9 @@ class BaseLocationPredictor:
 
         self.max_elevation_gt = radians(max([max_elevation_gt, aos_at_dg]))
         self.aos_at = radians(aos_at_dg)
+
+        self.tolerance_s = tolerance_s
+        self.tolerance = dt.timedelta(seconds=tolerance_s)
 
     def __iter__(self):
         yield from self.iter_passes()
@@ -144,8 +147,7 @@ class LocationPredictor(BaseLocationPredictor):
         return ascending_date
 
     def _precision_reached(self, start, end):
-        # TODO: Allow the precision to change from the outside
-        return end - start <= ONE_SECOND
+        return end - start <= self.tolerance
 
     @staticmethod
     def midpoint(start, end):
@@ -159,7 +161,7 @@ class LocationPredictor(BaseLocationPredictor):
     def _is_ascending(self, when_utc):
         """Check is elevation is ascending or descending on a given point"""
         elevation = self._elevation_at(when_utc)
-        next_elevation = self._elevation_at(when_utc + ONE_SECOND)
+        next_elevation = self._elevation_at(when_utc + self.tolerance)
         return elevation <= next_elevation
 
     def _orbit_step(self, size):
@@ -224,7 +226,7 @@ class SmartLocationPredictor(BaseLocationPredictor):
         position = self.predictor.get_only_position(when_utc)
         return self.location.elevation_for(position)
 
-    def _find_next_pass(self, start_date, atol=1):
+    def _find_next_pass(self, start_date):
         def elevation(delta_seconds):
             return self._elevation_at(start_date + dt.timedelta(seconds=delta_seconds))
 
@@ -235,7 +237,7 @@ class SmartLocationPredictor(BaseLocationPredictor):
         res_tca = minimize_scalar(
             lambda t: -elevation(t), bounds=(0, period_s),
             method=minimize_scalar_bounded_alt,
-            options=dict(xatol=atol),
+            options=dict(xatol=self.tolerance_s),
         )
         t_tca = res_tca.x
         tca = start_date + dt.timedelta(seconds=t_tca)
@@ -252,7 +254,7 @@ class SmartLocationPredictor(BaseLocationPredictor):
                 t_left = 0
             t_aos = root_scalar(
                 lambda t: elevation(t) - self.aos_at, bracket=(t_left, t_tca),
-                xtol=atol,
+                xtol=self.tolerance_s,
             ).root
         except ValueError as e:
             raise PropagationError(
@@ -260,14 +262,14 @@ class SmartLocationPredictor(BaseLocationPredictor):
             ) from e
 
         # Ensure location is visible at AOS by adding atol
-        aos = start_date + dt.timedelta(seconds=t_aos + atol)
+        aos = start_date + dt.timedelta(seconds=t_aos + self.tolerance_s)
 
         # LOS must be between TCA and an elapsed time around TCA + (TCA - AOS)
         try:
             t_los = root_scalar(
                 lambda t: elevation(t) - self.aos_at,
                 bracket=(t_tca, t_tca + (t_tca - t_aos) + 60),
-                xtol=atol,
+                xtol=self.tolerance_s,
             ).root
         except ValueError as e:
             raise PropagationError(

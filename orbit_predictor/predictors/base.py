@@ -188,13 +188,13 @@ class CartesianPredictor(Predictor):
         return eclipse_duration(beta, self.period)
 
     def passes_over(self, location, when_utc, limit_date=None, max_elevation_gt=0, aos_at_dg=0,
-                    location_predictor_class=LocationPredictor):
+                    location_predictor_class=LocationPredictor, tolerance_s=1.0):
         return location_predictor_class(location, self, when_utc, limit_date,
-                                        max_elevation_gt, aos_at_dg)
+                                        max_elevation_gt, aos_at_dg, tolerance_s=tolerance_s)
 
     def get_next_pass(self, location, when_utc=None, max_elevation_gt=5,
                       aos_at_dg=0, limit_date=None,
-                      location_predictor_class=LocationPredictor):
+                      location_predictor_class=LocationPredictor, tolerance_s=1.0):
         """Return a PredictedPass instance with the data of the next pass over the given location
 
         location_llh: point on Earth we want to see from the satellite.
@@ -211,7 +211,8 @@ class CartesianPredictor(Predictor):
         for pass_ in self.passes_over(location, when_utc, limit_date,
                                       max_elevation_gt=max_elevation_gt,
                                       aos_at_dg=aos_at_dg,
-                                      location_predictor_class=location_predictor_class):
+                                      location_predictor_class=location_predictor_class,
+                                      tolerance_s=tolerance_s):
             return pass_
         else:
             raise NotReachable('Propagation limit date exceeded')
