@@ -234,6 +234,7 @@ class SmartLocationPredictor(BaseLocationPredictor):
         period_s = orbital_period(self.predictor.mean_motion) * 60
 
         # Find date for maximum elevation within the next orbital period
+        # NOTE: This is the most expensive operation
         res_tca = minimize_scalar(
             lambda t: -elevation(t), bounds=(0, period_s),
             method=minimize_scalar_bounded_alt,
@@ -245,7 +246,7 @@ class SmartLocationPredictor(BaseLocationPredictor):
         if max_elevation < self.max_elevation_gt:
             return False, None, tca, start_date + dt.timedelta(seconds=period_s), max_elevation
 
-        # Find AOS (that it might be past the start date)
+        # Find AOS
         try:
             if self.aos_at < start_elevation:
                 # AOS is past the start date
@@ -264,7 +265,7 @@ class SmartLocationPredictor(BaseLocationPredictor):
         # Ensure location is visible at AOS by adding atol
         aos = start_date + dt.timedelta(seconds=t_aos + self.tolerance_s)
 
-        # LOS must be between TCA and an elapsed time around TCA + (TCA - AOS)
+        # LOS must be between TCA and an elapsed time around (TCA - AOS)
         try:
             t_los = root_scalar(
                 lambda t: elevation(t) - self.aos_at,
