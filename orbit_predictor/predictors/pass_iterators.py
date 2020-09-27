@@ -22,6 +22,8 @@ from orbit_predictor.utils import (
     orbital_period,
 )
 
+from ._minimize import minimize_scalar_bounded_alt
+
 ONE_SECOND = dt.timedelta(seconds=1)
 
 logger = logging.getLogger(__name__)
@@ -231,7 +233,8 @@ class SmartLocationPredictor(BaseLocationPredictor):
 
         # Find date for maximum elevation within the next orbital period
         t_tca = minimize_scalar(
-            lambda t: -elevation(t), bounds=(0, period_s), method="bounded",
+            lambda t: -elevation(t), bounds=(0, period_s),
+            method=minimize_scalar_bounded_alt,
             options=dict(xatol=atol),
         ).x
         tca = start_date + dt.timedelta(seconds=t_tca)
