@@ -1,6 +1,10 @@
 # orbit-predictor changelog
 
-## 1.13.0 (2020-09-28)
+## 1.13.1 (2020-09-28)
+
+* Fix version number
+
+## 1.13.0 (Unreleased)
 
 * Add new `SmartLocationPredictor` which uses SciPy to achieve
   better performance and accuracy
