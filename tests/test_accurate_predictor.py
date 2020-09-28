@@ -294,3 +294,39 @@ class SkippedPassesRegressionTests(TestCase):
         ))
 
         assert predicted_passes
+
+
+class LOSComputationRegressionTests(TestCase):
+    """Check that we the LOS is computed correctly"""
+    # See https://github.com/satellogic/orbit-predictor/issues/104
+
+    def setUp(self):
+        tle_lines = (
+            "1 42760U 17034C   19070.46618549  .00000282  00000-0  30543-4 0  9995",
+            "2 42760  43.0166  56.1509 0009676 356.3576 146.0151 15.09909885 95848",
+        )
+        self.db = MemoryTLESource()
+        self.db.add_tle("42760U", tle_lines, dt.datetime.now())
+        self.predictor = TLEPredictor("42760U", self.db)
+
+    @pytest.mark.skipif(sys.version_info < (3, 5), reason="Not installing SciPy in Python 3.4")
+    def test_los_is_correctly_computed(self):
+        loc = Location(
+            name='loc',
+            latitude_deg=-34.61315,
+            longitude_deg=-58.37723,
+            elevation_m=30,
+        )
+
+        PASS_DATE = dt.datetime(2019, 1, 1, 0, 0)
+        LIMIT_DATE = dt.datetime(2019, 1, 15, 0, 0)
+
+        predicted_passes = list(self.predictor.passes_over(
+            loc,
+            when_utc=PASS_DATE,
+            limit_date=LIMIT_DATE,
+            aos_at_dg=0, max_elevation_gt=0,
+            location_predictor_class=SmartLocationPredictor,
+        ))
+
+        assert predicted_passes

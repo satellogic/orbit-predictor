@@ -264,11 +264,11 @@ class SmartLocationPredictor(BaseLocationPredictor):
         # Ensure location is visible at AOS by adding atol
         aos = start_date + dt.timedelta(seconds=t_aos + self.tolerance_s)
 
-        # LOS must be between TCA and an elapsed time around (TCA - AOS)
+        # LOS must be between TCA and half the next period
         try:
             t_los = root_scalar(
                 lambda t: elevation(t) - self.aos_at,
-                bracket=(t_tca, t_tca + (t_tca - t_aos) + 60),
+                bracket=(t_tca, t_tca + period_s / 2),
                 xtol=self.tolerance_s,
             ).root
         except ValueError as e:

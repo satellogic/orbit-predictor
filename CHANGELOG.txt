@@ -1,5 +1,9 @@
 # orbit-predictor changelog
 
+## 1.13.2 (2020-09-28)
+
+* Make LOS computation more robust in new pass predictor
+
 ## 1.13.1 (2020-09-28)
 
 * Fix version number
