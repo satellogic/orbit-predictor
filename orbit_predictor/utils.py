@@ -465,6 +465,11 @@ def mean_motion(sma_km):
     return sqrt(MU_E / sma_km ** 3)  # rad / s
 
 
+def orbital_period(mean_motion):
+    """Orbital period, in minutes"""
+    return 1 / mean_motion * 2 * pi
+
+
 class reify:
     """
     Use as a class method decorator.  It operates almost exactly like the

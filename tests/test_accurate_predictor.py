@@ -22,15 +22,18 @@
 
 import datetime as dt
 from unittest import TestCase, mock
+import sys
 
 import logassert
 from hypothesis import example, given, settings
 from hypothesis.strategies import floats, tuples, datetimes
+import pytest
 
 from orbit_predictor.predictors.base import ONE_SECOND
 from orbit_predictor.exceptions import PropagationError
 from orbit_predictor.locations import Location, ARG
 from orbit_predictor.predictors import TLEPredictor
+from orbit_predictor.predictors.pass_iterators import SmartLocationPredictor, LocationPredictor
 from orbit_predictor.sources import MemoryTLESource
 
 
@@ -44,6 +47,13 @@ BUGSAT_SATE_ID = 'BUGSAT-1'
 BUGSAT1_TLE_LINES = (
     "1 40014U 14033E   14294.41438078  .00003468  00000-0  34565-3 0  3930",
     "2 40014  97.9781 190.6418 0032692 299.0467  60.7524 14.91878099 18425")
+
+
+TRICKY_SAT_ID = "99999U"
+TRICKY_SAT_TLE_LINES = (
+    "1 99999U 20003C   20266.16335194  .00000680  00000-0  27888-4 0  9992",
+    "2 99999  97.3095 330.4275 0013971 101.1830 259.0981 15.27499258 38313"
+)
 
 
 class AccuratePredictorTests(TestCase):
@@ -206,9 +216,9 @@ class AccuratePredictorCalculationErrorTests(TestCase):
         # Predictor
         self.predictor = TLEPredictor(BUGSAT_SATE_ID, self.db)
         self.is_ascending_mock = self._patch(
-            'orbit_predictor.predictors.base.LocationPredictor.is_ascending')
+            'orbit_predictor.predictors.base.LocationPredictor._is_ascending')
         self.start = dt.datetime(2017, 3, 6, 7, 51)
-        logassert.setup(self,  'orbit_predictor.predictors.base')
+        logassert.setup(self,  'orbit_predictor.predictors.pass_iterators')
 
     def _patch(self, *args,  **kwargs):
         patcher = mock.patch(*args, **kwargs)
@@ -218,13 +228,69 @@ class AccuratePredictorCalculationErrorTests(TestCase):
     def test_ascending_failure(self):
         self.is_ascending_mock.return_value = False
         with self.assertRaises(PropagationError):
-            self.predictor.get_next_pass(ARG, self.start)
+            self.predictor.get_next_pass(ARG, self.start,
+                                         location_predictor_class=LocationPredictor)
 
         self.assertLoggedError(str(ARG), str(self.start), *BUGSAT1_TLE_LINES)
 
     def test_descending_failure(self):
         self.is_ascending_mock.return_value = True
         with self.assertRaises(PropagationError):
-            self.predictor.get_next_pass(ARG, self.start)
+            self.predictor.get_next_pass(ARG, self.start,
+                                         location_predictor_class=LocationPredictor)
 
         self.assertLoggedError(str(ARG), str(self.start), *BUGSAT1_TLE_LINES)
+
+
+class SkippedPassesRegressionTests(TestCase):
+    """Check that we do not skip passes"""
+    # See https://github.com/satellogic/orbit-predictor/issues/99
+
+    def setUp(self):
+        self.db = MemoryTLESource()
+        self.db.add_tle(TRICKY_SAT_ID, TRICKY_SAT_TLE_LINES, dt.datetime.now())
+        self.predictor = TLEPredictor(TRICKY_SAT_ID, self.db)
+
+    @pytest.mark.xfail(reason="Legacy LocationPredictor skips some passes")
+    def test_pass_is_not_skipped_old(self):
+        loc = Location(
+            name="loc",
+            latitude_deg=-15.137152171507697,
+            longitude_deg=-0.4276612055384211,
+            elevation_m=1.665102900005877e-05,
+        )
+
+        PASS_DATE = dt.datetime(2020, 9, 25, 9, 2, 6)
+        LIMIT_DATE = dt.datetime(2020, 9, 25, 10, 36, 0)
+
+        predicted_passes = list(self.predictor.passes_over(
+            loc,
+            when_utc=PASS_DATE,
+            limit_date=LIMIT_DATE,
+            aos_at_dg=0, max_elevation_gt=0,
+            location_predictor_class=LocationPredictor,
+        ))
+
+        assert predicted_passes
+
+    @pytest.mark.skipif(sys.version_info < (3, 5), reason="Not installing SciPy in Python 3.4")
+    def test_pass_is_not_skipped_smart(self):
+        loc = Location(
+            name="loc",
+            latitude_deg=-15.137152171507697,
+            longitude_deg=-0.4276612055384211,
+            elevation_m=1.665102900005877e-05,
+        )
+
+        PASS_DATE = dt.datetime(2020, 9, 25, 9, 2, 6)
+        LIMIT_DATE = dt.datetime(2020, 9, 25, 10, 36, 0)
+
+        predicted_passes = list(self.predictor.passes_over(
+            loc,
+            when_utc=PASS_DATE,
+            limit_date=LIMIT_DATE,
+            aos_at_dg=0, max_elevation_gt=0,
+            location_predictor_class=SmartLocationPredictor,
+        ))
+
+        assert predicted_passes
