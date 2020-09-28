@@ -1,5 +1,12 @@
 # orbit-predictor changelog
 
+## 1.13.0 (2020-09-28)
+
+* Add new `SmartLocationPredictor` which uses SciPy to achieve
+  better performance and accuracy
+* Allow change of tolerance for pass finding
+* Fix corner case in eclipse computation
+
 ## 1.12.0 (2020-03-04)
 
 * Require sgp4>=2.3
