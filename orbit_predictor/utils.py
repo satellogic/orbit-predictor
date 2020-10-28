@@ -203,6 +203,17 @@ def raan_from_ltan(when, ltan=12.0):
     return raan
 
 
+def ltan_from_raan(when, raan=0):
+    sun_eci = get_sun(when)
+
+    # convert equatorial rectangular coordinates to RA and Decl:
+    RA, _, _ = eci_to_radec(sun_eci)
+    RA = degrees(RA)
+
+    ltan = ((raan - RA) / 15.0 + 12.0) % 24
+    return ltan
+
+
 def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
     """
     Return (azimuth, elevation) of the Sun at ground point
