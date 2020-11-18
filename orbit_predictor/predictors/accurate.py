@@ -85,6 +85,7 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
     def __init__(self, sate_id, source):
         self._sate_id = sate_id
         self._source = source
+        self.tle = self._source.get_tle(self.sate_id, dt.datetime.utcnow())
 
     @property
     def sate_id(self):
@@ -93,10 +94,6 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
     @property
     def source(self):
         return self._source
-
-    @reify
-    def tle(self):
-        return self._source.get_tle(self.sate_id, dt.datetime.utcnow())
 
     @reify
     def _propagator(self):
