@@ -30,7 +30,7 @@ from urllib.parse import urlencode
 from sgp4.earth_gravity import wgs84
 from sgp4.io import twoline2rv
 
-from orbit_predictor.predictors import TLEPredictor
+from orbit_predictor.predictors import TLEPredictor, PersistedTLEPredictor
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +56,11 @@ class TLESource:
         lines = self._get_tle(sate_id, date)
         return TLE(sate_id=sate_id, date=date, lines=lines)
 
-    def get_predictor(self, sate_id):
+    def get_predictor(self, sate_id, persisted=False):
         """Return a Predictor instance using the current storage."""
-        return TLEPredictor(sate_id, self)
+        if not persisted:
+            return TLEPredictor(sate_id, self)
+        return PersistedTLEPredictor(sate_id, self)
 
 
 class MemoryTLESource(TLESource):
@@ -195,5 +197,5 @@ def get_predictor_from_tle_lines(tle_lines):
     db = MemoryTLESource()
     sgp4_sat = twoline2rv(tle_lines[0], tle_lines[1], wgs84)
     db.add_tle(sgp4_sat.satnum, tuple(tle_lines), sgp4_sat.epoch)
-    predictor = TLEPredictor(sgp4_sat.satnum, db)
+    predictor = PersistedTLEPredictor(sgp4_sat.satnum, db)
     return predictor
