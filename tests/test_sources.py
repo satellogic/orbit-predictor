@@ -77,6 +77,7 @@ class TestMemoryTLESource(unittest.TestCase):
         self.assertEqual(tle.date, date)
 
     def test_get_predictor(self):
+        self.db.add_tle(SATE_ID, SAMPLE_TLE, dt.datetime.utcnow())
         predictor = self.db.get_predictor(SATE_ID)
 
         self.assertIsInstance(predictor, TLEPredictor)
