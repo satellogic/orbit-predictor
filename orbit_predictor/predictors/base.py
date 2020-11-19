@@ -91,7 +91,10 @@ class Position(namedtuple(
         # Transform to more familiar semimajor axis
         sma = p / (1 - ecc ** 2)
 
-        return sma, ecc, degrees(inc), degrees(raan), degrees(argp), degrees(ta)
+        # NOTE: rv2coe already does % (2 * np.pi)
+        # but under some circumstances this might require another pass,
+        # see https://github.com/satellogic/orbit-predictor/pull/106#issuecomment-730177598
+        return sma, ecc, degrees(inc), degrees(raan), degrees(argp), degrees(ta) % 360
 
 
 class Predictor:
