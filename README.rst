@@ -1,8 +1,8 @@
 Orbit Predictor
 ===============
 
-.. image:: https://travis-ci.org/satellogic/orbit-predictor.svg?branch=master
-    :target: https://travis-ci.org/satellogic/orbit-predictor
+.. image:: https://github.com/satellogic/orbit-predictor/workflows/Python%20package/badge.svg
+    :target: https://github.com/satellogic/orbit-predictor/actions
 .. image:: https://coveralls.io/repos/github/satellogic/orbit-predictor/badge.svg?branch=master
     :target: https://coveralls.io/github/satellogic/orbit-predictor?branch=master
 
