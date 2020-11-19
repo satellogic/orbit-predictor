@@ -93,8 +93,8 @@ class EtcTLESource(TLESource):
     def add_tle(self, sate_id, tle, epoch):
         with open(self.filename, "w") as fd:
             fd.write(sate_id + "\n")
-            for l in tle:
-                fd.write(l + "\n")
+            for line in tle:
+                fd.write(line + "\n")
 
     def _get_tle(self, sate_id, date):
         with open(self.filename) as fd:
