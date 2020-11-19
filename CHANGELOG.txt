@@ -1,5 +1,10 @@
 # orbit-predictor changelog
 
+## 1.13.3 (2020-11-19)
+
+* Make TLEPredictor retrieve and store TLE immediately,
+  making it always pickle-safe
+
 ## 1.13.2 (2020-09-28)
 
 * Make LOS computation more robust in new pass predictor
