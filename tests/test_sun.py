@@ -11,6 +11,8 @@ from orbit_predictor.utils import (
     get_shadow,
     eclipse_duration,
     get_satellite_minus_penumbra_verticals,
+    raan_from_ltan,
+    ltan_from_raan,
 )
 
 
@@ -107,3 +109,35 @@ def test_satellite_minus_penumbra_consistent_with_discrete_witness_cases(when_ut
 ])
 def test_satellite_minus_penumbra_is_positive_in_illumination(when_utc, r_ecef):
     assert get_satellite_minus_penumbra_verticals(r_ecef, when_utc) > 0
+
+
+vernal_equinox = dt.datetime(2000, 3, 20, 7, 18, 15)
+winter_equinox = dt.datetime(2000, 9, 22, 17, 5, 5)
+
+
+@pytest.mark.parametrize("when_utc,raan,ltan", [
+    [vernal_equinox, 0, 12],
+    [vernal_equinox, 90, 18],
+    [vernal_equinox, 180, 24],
+    [vernal_equinox, 270, 6],
+    [winter_equinox, 0, 0],
+    [winter_equinox, 90, 6],
+    [winter_equinox, 180, 12],
+    [winter_equinox, 270, 18],
+])
+def test_ltan_from_raan(when_utc, raan, ltan):
+    assert pytest.approx(ltan_from_raan(when_utc, raan), abs=1/3600) == ltan
+
+
+@pytest.mark.parametrize("when_utc,raan,ltan", [
+    [vernal_equinox, 0, 12],
+    [vernal_equinox, 90, 18],
+    [vernal_equinox, 180, 24],
+    [vernal_equinox, 270, 6],
+    [winter_equinox, 360, 0],
+    [winter_equinox, 90, 6],
+    [winter_equinox, 180, 12],
+    [winter_equinox, 270, 18],
+])
+def test_ltan_from_raan(when_utc, raan, ltan):
+    assert pytest.approx(raan_from_ltan(when_utc, ltan), abs=1/3600) == raan
