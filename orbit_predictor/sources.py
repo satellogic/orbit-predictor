@@ -139,7 +139,7 @@ class WSTLESource(TLESource):
         url = urlparse.urlparse(url)
         qargs = {'satellite_number': sate_id}
         if date is not None:
-            date_str = date.strftime("%Y-%m-%d")
+            date_str = date.strftime("%Y-%m-%dT%H:%M:%S")
             qargs['date'] = date_str
 
         query_string = urlencode(qargs)
