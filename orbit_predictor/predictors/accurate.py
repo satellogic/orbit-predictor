@@ -48,13 +48,15 @@ from functools import lru_cache
 import warnings
 
 from sgp4 import ext, model
+from sgp4.api import Satrec, SGP4_ERRORS
 from sgp4.earth_gravity import wgs84
-from sgp4.io import twoline2rv
-from sgp4.propagation import _gstime
+from sgp4.model import WGS84
+from sgp4.propagation import gstime
 
 from orbit_predictor import coordinate_systems
+from ..exceptions import PropagationError
 
-from ..utils import reify, timetuple_from_dt
+from ..utils import reify, jday_from_datetime, unkozai
 from .base import CartesianPredictor
 
 # Hack Zone be warned
@@ -98,7 +100,7 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
     @reify
     def _propagator(self):
         tle_line_1, tle_line_2 = self.tle.lines
-        return twoline2rv(tle_line_1, tle_line_2, wgs84)
+        return Satrec.twoline2rv(tle_line_1, tle_line_2, WGS84)
 
     @reify
     def propagator(self):
@@ -111,24 +113,29 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
     @reify
     def mean_motion(self):
         """Mean motion, in radians per minute"""
-        return self._propagator.no_unkozai
+        return unkozai(
+            self._propagator.no_kozai, self._propagator.ecco, self._propagator.inclo, wgs84
+        )
 
     @lru_cache(maxsize=3600 * 24 * 7)  # Max cache, a week
-    def _propagate_only_position_ecef(self, timetuple):
+    def _propagate_only_position_ecef(self, when_utc):
         """Return position in the given date using ECEF coordinate system."""
-        position_eci, _ = self._propagator.propagate(*timetuple)
-        gmst = _gstime(jday(*timetuple))
+        jd, fr = jday_from_datetime(when_utc)
+        status, position_eci, _ = self._propagator.sgp4(jd, fr)
+        if status != 0:
+            raise PropagationError(SGP4_ERRORS[status])
+
+        gmst = gstime(jd + fr)
         return coordinate_systems.eci_to_ecef(position_eci, gmst)
 
     def propagate_eci(self, when_utc=None):
         if when_utc is None:
             when_utc = dt.datetime.utcnow()
 
-        timetuple = timetuple_from_dt(when_utc)
-
-        position_eci, velocity_eci = self._propagator.propagate(*timetuple)
-        if self._propagator.error != 0:
-            raise RuntimeError(self._propagator.error_message)
+        jd, fr = jday_from_datetime(when_utc)
+        status, position_eci, velocity_eci = self._propagator.sgp4(jd, fr)
+        if status != 0:
+            raise PropagationError(SGP4_ERRORS[status])
 
         return position_eci, velocity_eci
 
@@ -140,5 +147,4 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
         if when_utc is None:
             when_utc = dt.datetime.utcnow()
 
-        timetuple = timetuple_from_dt(when_utc)
-        return self._propagate_only_position_ecef(timetuple)
+        return self._propagate_only_position_ecef(when_utc)

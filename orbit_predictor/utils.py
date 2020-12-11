@@ -28,8 +28,9 @@ from math import (
 )
 
 import numpy as np
-from sgp4.ext import jday
-from sgp4.propagation import _gstime
+from sgp4.api import jday as jday_jd_fr
+from sgp4.ext import jday, invjday
+from sgp4.propagation import gstime
 
 from .constants import AU, R_E_MEAN_KM, MU_E, ALPHA_UMB, ALPHA_PEN
 from .coordinate_systems import eci_to_radec, ecef_to_eci
@@ -454,7 +455,25 @@ def sidereal_time(utc_tuple, local_lon, sun_lon):
 
 def gstime_from_datetime(when_utc):
     timetuple = timetuple_from_dt(when_utc)
-    return _gstime(jday(*timetuple))
+    return gstime(jday(*timetuple))
+
+
+def jday_from_datetime(when_utc):
+    return jday_jd_fr(
+        when_utc.year,
+        when_utc.month,
+        when_utc.day,
+        when_utc.hour,
+        when_utc.minute,
+        when_utc.second + when_utc.microsecond * 1e-6
+    )
+
+
+def datetime_from_jday(jd, fr):
+    year, mon, day, hr, minute, sec_float = invjday(jd + fr)
+    sec = int(sec_float)
+    microsec = int((sec_float - sec) * 1e6)
+    return dt.datetime(year, mon, day, hr, minute, sec, microsec)
 
 
 def float_to_hms(hour):
@@ -479,6 +498,16 @@ def mean_motion(sma_km):
 def orbital_period(mean_motion):
     """Orbital period, in minutes"""
     return 1 / mean_motion * 2 * pi
+
+
+def unkozai(no_kozai, ecco, inclo, whichconst):
+    """Undo Kozai transformation."""
+    _, _, _, xke, j2, _, _, _ = whichconst
+    ak = pow(xke / no_kozai, 2.0 / 3.0)
+    d1 = 0.75 * j2 * (3.0 * cos(inclo)**2 - 1.0) / (1.0 - ecco**2)**(3/2)
+    del_ = d1 / ak ** 2
+    adel = ak * (1.0 - del_ * del_ - del_ * (1.0 / 3.0 + 134.0 * del_ * del_ / 81.0))
+    return no_kozai / (1.0 + d1/adel**2)
 
 
 class reify:
