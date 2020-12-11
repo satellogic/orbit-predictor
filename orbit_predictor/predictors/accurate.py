@@ -48,7 +48,7 @@ from functools import lru_cache
 import warnings
 
 from sgp4 import ext, model
-from sgp4.api import Satrec, jday as jday_sep, SGP4_ERRORS
+from sgp4.api import Satrec, SGP4_ERRORS
 from sgp4.earth_gravity import wgs84
 from sgp4.model import WGS84
 from sgp4.propagation import gstime

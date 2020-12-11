@@ -194,6 +194,10 @@ class NoradTLESource(TLESource):
 def get_predictor_from_tle_lines(tle_lines):
     db = MemoryTLESource()
     sgp4_sat = Satrec.twoline2rv(tle_lines[0], tle_lines[1])
-    db.add_tle(sgp4_sat.satnum, tuple(tle_lines), datetime_from_jday(sgp4_sat.jdsatepoch, sgp4_sat.jdsatepochF))
+    db.add_tle(
+        sgp4_sat.satnum,
+        tuple(tle_lines),
+        datetime_from_jday(sgp4_sat.jdsatepoch, sgp4_sat.jdsatepochF),
+    )
     predictor = TLEPredictor(sgp4_sat.satnum, db)
     return predictor
