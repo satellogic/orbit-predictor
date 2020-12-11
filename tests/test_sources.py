@@ -233,4 +233,4 @@ class TestNoradTLESource(unittest.TestCase):
         predictor = sources.get_predictor_from_tle_lines(BUGSAT1_TLE_LINES)
         position = predictor.get_position(dt.datetime(2019, 1, 1))
         self.assertEqual(
-            position.position_ecef, (-5280.795613274576, -3977.487633239489, -2061.43227648734))
+            position.position_ecef, (-5280.795603846799, -3977.487631431403, -2061.4323039542546))
