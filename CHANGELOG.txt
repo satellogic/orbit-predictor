@@ -1,5 +1,10 @@
 # orbit-predictor changelog
 
+## 1.13.4 (2020-12-11)
+
+* Pass time information in WSTLESource
+* Add ltan_from_raan util
+
 ## 1.13.3 (2020-11-19)
 
 * Make TLEPredictor retrieve and store TLE immediately,
