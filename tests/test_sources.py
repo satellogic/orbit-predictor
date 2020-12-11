@@ -137,7 +137,7 @@ class TestWSTLESource(unittest.TestCase):
     @patch("requests.get")
     def test_get_tle(self, mocked_requests):
         expected_url = urlparse.urlparse(
-            "http://test.none/api/tle/closest/?date=2015-01-01&satellite_number=40014U")
+            "http://test.none/api/tle/closest/?date=2015-01-01T00:00:00&satellite_number=40014U")
         expected_qs = urlparse.parse_qs(expected_url.query)
 
         mocked_response = Mock()
