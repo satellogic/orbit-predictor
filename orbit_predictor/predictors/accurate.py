@@ -49,13 +49,14 @@ import warnings
 
 from sgp4 import ext, model
 from sgp4.api import Satrec, jday as jday_sep, SGP4_ERRORS
+from sgp4.earth_gravity import wgs84
 from sgp4.model import WGS84
 from sgp4.propagation import gstime
 
 from orbit_predictor import coordinate_systems
 from ..exceptions import PropagationError
 
-from ..utils import reify, jday_from_datetime
+from ..utils import reify, jday_from_datetime, unkozai
 from .base import CartesianPredictor
 
 # Hack Zone be warned
@@ -112,8 +113,9 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
     @reify
     def mean_motion(self):
         """Mean motion, in radians per minute"""
-        # return self._propagator.no_unkozai  # Does not exist!
-        return self._propagator.no_kozai
+        return unkozai(
+            self._propagator.no_kozai, self._propagator.ecco, self._propagator.inclo, wgs84
+        )
 
     @lru_cache(maxsize=3600 * 24 * 7)  # Max cache, a week
     def _propagate_only_position_ecef(self, when_utc):
