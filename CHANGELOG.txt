@@ -1,5 +1,12 @@
 # orbit-predictor changelog
 
+## 1.14.0 (2020-12-16)
+
+* Switch internally to new C++ wrapper coming from python-sgp4
+  for better performance
+* Rewrite `SmartLocationPredictor` so it is more exhaustive
+  at the cost of performance
+
 ## 1.13.4 (2020-12-11)
 
 * Pass time information in WSTLESource
