@@ -297,7 +297,7 @@ class SkippedPassesRegressionTests(TestCase):
 
 
 class LOSComputationRegressionTests(TestCase):
-    """Check that we the LOS is computed correctly"""
+    """Check that the LOS is computed correctly"""
     # See https://github.com/satellogic/orbit-predictor/issues/104
 
     def setUp(self):
