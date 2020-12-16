@@ -1,14 +1,17 @@
 import datetime as dt
+import sys
 from unittest import TestCase
 
 import numpy as np
 from numpy.testing import assert_allclose, assert_almost_equal
 import pytest
 
-from orbit_predictor.locations import ARG
+from orbit_predictor.locations import ARG, Location
+from orbit_predictor.predictors.base import ONE_SECOND
 from orbit_predictor.predictors.numerical import (
     J2Predictor, InvalidOrbitError, R_E_KM, is_sun_synchronous
 )
+from orbit_predictor.predictors.pass_iterators import SmartLocationPredictor
 
 
 class J2PredictorTests(TestCase):
@@ -134,3 +137,32 @@ def test_is_sun_sync_returns_true_for_sun_sync_orbit():
     assert is_sun_synchronous(pred1)
     assert is_sun_synchronous(pred2)
     assert is_sun_synchronous(pred3)
+
+
+class TCAComputationRegressionTests(TestCase):
+    """Check that the TCA is computed correctly"""
+    # See https://github.com/satellogic/orbit-predictor/issues/113
+
+    @pytest.mark.skipif(sys.version_info < (3, 5), reason="Not installing SciPy in Python 3.4")
+    def test_tca_is_correctly_computed(self):
+        start = dt.datetime(2020, 5, 9)
+        end = start + dt.timedelta(days=1)
+        location = Location(name="loc", latitude_deg=11, longitude_deg=0, elevation_m=0)
+        predictor = J2Predictor(
+            sma=475 + 6371, ecc=1.65e-3, inc=53.0, argp=90, raan=0, ta=300, epoch=start,
+        )
+        expected_tca = dt.datetime(2020, 5, 9, 9, 19, 15)
+
+        passes = list(
+            predictor.passes_over(
+                location,
+                start,
+                aos_at_dg=0,
+                max_elevation_gt=0,
+                limit_date=end,
+                location_predictor_class=SmartLocationPredictor,
+                tolerance_s=1e-3,
+            )
+        )
+
+        self.assertAlmostEqual(passes[1].max_elevation_date, expected_tca, delta=ONE_SECOND)
