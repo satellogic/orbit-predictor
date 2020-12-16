@@ -281,6 +281,77 @@ class SmartLocationPredictor(BaseLocationPredictor):
         return True, aos, tca, los, max_elevation
 
 
+class EscobalLocationPredictor(BaseLocationPredictor):
+
+    def _elevation_at(self, when_utc):
+        position = self.predictor.get_only_position(when_utc)
+        return self.location.elevation_for(position)
+
+    def iter_passes(self):
+        """Yields passes"""
+        import numpy as np
+        from scipy.signal import find_peaks
+
+        from orbit_predictor.angles import ta_to_E, E_to_M, M_to_E
+        from orbit_predictor.utils import gstime_from_datetime, mean_motion
+        from orbit_predictor.predictors.escobal import compute_F, solve_E
+
+        λ = self.location.longitude_rad
+        φ = self.location.latitude_rad
+        h = self.aos_at
+        H_m = self.location.elevation_m
+
+        θ_0 = gstime_from_datetime(self.start_date) + λ
+
+        # WARNING: This assumes that the elements are fixed during the period
+        # However, most notably the RAAN experiments a regression due to J2!
+        # Trying to account for all perturbations here might mean
+        # propagating the orbit at small intervals anyway,
+        # which defeats the purpose of having this method
+        sma, ecc, inc_deg, raan_deg, argp_deg, ta0_deg = self.predictor.get_position(self.start_date).osculating_elements
+
+        inc = np.radians(inc_deg)
+        Ω = np.radians(raan_deg)
+        ω = np.radians(argp_deg)
+        n = mean_motion(sma)
+        T = E_to_M(ta_to_E(np.radians(ta0_deg), ecc), ecc) / n
+
+        E_values = []
+        F_values = []
+        for t in np.arange(0, (self.limit_date - self.start_date).total_seconds(), 60):
+            E = M_to_E(n * (t - T), ecc)
+            E_values.append(E)
+            F_values.append(compute_F(θ_0, φ, H_m, sma, ecc, inc, Ω, ω, T, E))
+
+        peaks_idx, _ = find_peaks(F_values)
+
+        for peak_idx in peaks_idx:
+            if F_values[peak_idx] <= 0:
+                continue
+            else:
+                E0 = E_values[peak_idx]
+                E_rise = solve_E(θ_0, φ, H_m, sma, ecc, inc, Ω, ω, T, E0 - 0.1)
+                E_set = solve_E(θ_0, φ, H_m, sma, ecc, inc, Ω, ω, T, E0 + 0.1)
+                t_rise = E_to_M(E_rise, ecc) / n
+                t_set = E_to_M(E_set, ecc) / n
+                aos = self.start_date + dt.timedelta(seconds=t_rise)
+                los = self.start_date + dt.timedelta(seconds=t_set)
+                # Approximate
+                tca = aos + (los - aos) / 2
+                max_elevation = self._elevation_at(tca)
+
+                yield PredictedPass(
+                    self.location,
+                    self.predictor.sate_id,
+                    max_elevation_deg=degrees(max_elevation),
+                    aos=aos,
+                    los=los,
+                    duration_s=(los - aos).total_seconds(),
+                    max_elevation_position=self.predictor.get_position(tca),
+                    max_elevation_date=tca,
+                )
+
+
 class PredictedPass:
     def __init__(self, location, sate_id,
                  max_elevation_deg,
