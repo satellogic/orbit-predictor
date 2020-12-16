@@ -3,6 +3,7 @@ import logging
 from math import pi, acos, degrees, radians
 import warnings
 
+import numpy as np
 try:
     from scipy.signal import find_peaks
     from scipy.optimize import root_scalar, minimize_scalar
@@ -202,10 +203,8 @@ class SmartLocationPredictor(BaseLocationPredictor):
 
     def iter_passes(self):
         # Explore all values of t every 3 minutes
-        t_values = list(range(0, int((self.limit_date - self.start_date).total_seconds()), 180))
-        elev_values = []
-        for delta_seconds in t_values:
-            elev_values.append(self._elevation(delta_seconds))
+        t_values = np.arange(0, (self.limit_date - self.start_date).total_seconds(), 180)
+        elev_values = np.array([self._elevation(delta_seconds) for delta_seconds in t_values])
 
         peaks_idx, _ = find_peaks(elev_values)
 
