@@ -57,8 +57,12 @@ class BaseLocationPredictor:
 
 
 class LocationPredictor(BaseLocationPredictor):
-    """Predicts passes over a given location
-    Exposes an iterable interface
+    """Predicts passes over a given location.
+
+    Exposes an iterable interface.
+    Notice that this algorithm is not fully exhaustive,
+    see https://github.com/satellogic/orbit-predictor/issues/99 for details.
+
     """
 
     def iter_passes(self):
@@ -200,6 +204,14 @@ class LocationPredictor(BaseLocationPredictor):
 
 
 class SmartLocationPredictor(BaseLocationPredictor):
+    """Predicts passes over a given location using a different algorithm.
+
+    This uses a sampling interval of 3 minutes,
+    which seems like a good compromise for Low-Earth Orbits.
+    However, this means that, under certain circumstances, passes
+    shorter than this duration could theoretically be missed.
+
+    """
 
     def iter_passes(self):
         # Explore all values of t every 3 minutes
@@ -239,6 +251,7 @@ class SmartLocationPredictor(BaseLocationPredictor):
             lambda t: self._elevation(t) - self.aos_at,
             bracket=(t_approximate_tca - period_s / 2, t_approximate_tca),
             xtol=self.tolerance_s,
+            method="brentq",
         ).root
         aos = self.start_date + dt.timedelta(seconds=t_aos)
 
@@ -247,6 +260,7 @@ class SmartLocationPredictor(BaseLocationPredictor):
             lambda t: self._elevation(t) - self.aos_at,
             bracket=(t_approximate_tca, t_approximate_tca + period_s / 2),
             xtol=self.tolerance_s,
+            method="brentq",
         ).root
         los = self.start_date + dt.timedelta(seconds=t_los)
 
