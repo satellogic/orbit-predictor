@@ -1,5 +1,9 @@
 # orbit-predictor changelog
 
+## 1.14.1 (2020-12-18)
+
+* Fix `SmartLocationPredictor` again
+
 ## 1.14.0 (2020-12-16)
 
 * Switch internally to new C++ wrapper coming from python-sgp4
