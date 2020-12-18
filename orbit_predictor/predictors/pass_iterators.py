@@ -221,7 +221,7 @@ class SmartLocationPredictor(BaseLocationPredictor):
         peaks_idx, _ = find_peaks(elev_values)
 
         for peak_idx in peaks_idx:
-            if elev_values[peak_idx] <= 0:
+            if elev_values[peak_idx] < self.aos_at:
                 continue
             else:
                 t_approximate_tca = t_values[peak_idx]
@@ -265,11 +265,11 @@ class SmartLocationPredictor(BaseLocationPredictor):
         los = self.start_date + dt.timedelta(seconds=t_los)
 
         # Find date for maximum elevation between AOS and LOS
+        # NOTE: If the tolerance is too loose, wrong results might be returned!
         res_tca = minimize_scalar(
             lambda t: -self._elevation(t),
             bracket=(t_aos, (t_los + t_aos) / 2, t_los),
             method="brent",
-            options=dict(xtol=self.tolerance_s),
         )
         t_tca = res_tca.x
         max_elevation = -res_tca.fun
