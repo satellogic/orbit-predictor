@@ -221,7 +221,7 @@ class SmartLocationPredictor(BaseLocationPredictor):
         peaks_idx, _ = find_peaks(elev_values)
 
         for peak_idx in peaks_idx:
-            if elev_values[peak_idx] <= 0:
+            if elev_values[peak_idx] < self.aos_at:
                 continue
             else:
                 t_approximate_tca = t_values[peak_idx]
