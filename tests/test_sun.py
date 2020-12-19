@@ -139,5 +139,5 @@ def test_ltan_from_raan(when_utc, raan, ltan):
     [winter_equinox, 180, 12],
     [winter_equinox, 270, 18],
 ])
-def test_ltan_from_raan(when_utc, raan, ltan):
+def test_raan_from_ltan(when_utc, raan, ltan):
     assert pytest.approx(raan_from_ltan(when_utc, ltan), abs=1/3600) == raan
