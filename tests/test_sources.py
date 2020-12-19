@@ -92,8 +92,8 @@ class TestEtcTLESource(unittest.TestCase):
 
         with open(self.filename, "w") as fd:
             fd.write(SATE_ID + "\n")
-            for l in SAMPLE_TLE:
-                fd.write(l + "\n")
+            for line in SAMPLE_TLE:
+                fd.write(line + "\n")
 
     def test_add_tle(self):
         db = sources.EtcTLESource(self.filename)

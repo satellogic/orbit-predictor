@@ -30,7 +30,7 @@ jobs:
         if [ $(python -c "import sys; print(sys.version[:3])") != 3.4 ]; then python -m pip install --prefer-binary --editable .[fast]; fi
     - name: Lint with flake8
       run: |
-        flake8 orbit_predictor
+        flake8 orbit_predictor tests
     - name: Test with pytest
       run: |
         pytest -v --cov-report= --cov=orbit_predictor tests/
