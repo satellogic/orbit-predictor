@@ -1,5 +1,9 @@
 # orbit-predictor changelog
 
+## 1.14.2 (2020-12-19)
+
+* Make `TLEPredictor` pickleable again
+
 ## 1.14.1 (2020-12-18)
 
 * Fix `SmartLocationPredictor` again
