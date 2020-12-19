@@ -22,6 +22,9 @@
 
 import datetime as dt
 import unittest
+import os
+import pickle
+import tempfile
 from unittest.mock import patch
 
 from orbit_predictor.coordinate_systems import llh_to_ecef
@@ -200,6 +203,22 @@ class TLEPredictorTestCase(unittest.TestCase):
         date = dt.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
         pass_ = self.predictor.get_next_pass(ARG, date)
         self.assertLessEqual(abs(pass_.off_nadir_deg), 90)
+
+    def test_tle_predictor_is_pickleable(self):
+        # See https://github.com/satellogic/orbit-predictor/issues/117
+        with tempfile.TemporaryDirectory() as tmpdir:
+            pickle_file = os.path.join(tmpdir, "predictor.pkl")
+            with open(pickle_file, "wb") as fp:
+                pickle.dump(self.predictor, fp)
+
+            with open(pickle_file, "rb") as fp:
+                predictor = pickle.load(fp)
+
+            when_utc = dt.datetime.utcnow()
+
+            assert predictor.tle == self.predictor.tle
+            assert predictor.mean_motion == self.predictor.mean_motion
+            assert predictor.get_position(when_utc) == self.predictor.get_position(when_utc)
 
 
 class OffNadirAngleTests(unittest.TestCase):
