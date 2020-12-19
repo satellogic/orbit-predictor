@@ -88,6 +88,9 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
         self._source = source
         self.tle = self._source.get_tle(self.sate_id, dt.datetime.utcnow())
 
+        tle_line_1, tle_line_2 = self.tle.lines
+        self._propagator = Satrec.twoline2rv(tle_line_1, tle_line_2, WGS84)
+
     @property
     def sate_id(self):
         return self._sate_id
@@ -95,11 +98,6 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
     @property
     def source(self):
         return self._source
-
-    @reify
-    def _propagator(self):
-        tle_line_1, tle_line_2 = self.tle.lines
-        return Satrec.twoline2rv(tle_line_1, tle_line_2, WGS84)
 
     @reify
     def mean_motion(self):
