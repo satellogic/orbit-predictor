@@ -45,7 +45,6 @@ Some stuff won't be trivial to understand, but comments and fixes are welcome
 """
 import datetime as dt
 from functools import lru_cache
-import warnings
 
 from sgp4 import ext, model
 from sgp4.api import Satrec, SGP4_ERRORS
@@ -101,14 +100,6 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
     def _propagator(self):
         tle_line_1, tle_line_2 = self.tle.lines
         return Satrec.twoline2rv(tle_line_1, tle_line_2, WGS84)
-
-    @reify
-    def propagator(self):
-        warnings.warn(
-            "The .propagator property will be made private in a future release",
-            DeprecationWarning
-        )
-        return self._propagator
 
     @reify
     def mean_motion(self):
