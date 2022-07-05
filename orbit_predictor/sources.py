@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 import logging
+import os
 from collections import defaultdict, namedtuple
 
 import requests
@@ -106,10 +107,29 @@ class EtcTLESource(TLESource):
 
 
 class WSTLESource(TLESource):
+    AUTH_TOKEN_ENVVAR_NAME = 'ORBIT_PREDICTOR_WS_TLE_SOURCE_AUTH_TOKEN'
 
     def __init__(self, url):
         self.url = url
         self.cache = MemoryTLESource()
+        self.http_headers = self._get_http_headers()
+
+    @classmethod
+    def _get_http_headers(cls):
+        headers = {
+            'user-agent': 'orbit-predictor',
+            'Accept': 'application/json',
+        }
+        auth_header = cls._get_auth_header()
+        if auth_header:
+            headers.update(auth_header)
+        return headers
+
+    @classmethod
+    def _get_auth_header(cls):
+        auth_token = os.environ.get(cls.AUTH_TOKEN_ENVVAR_NAME)
+        if auth_token is not None:
+            return {'Authorization': 'Token %s' % auth_token}
 
     def add_tle(self, *args):
         raise ValueError("You can't add TLEs. The service has his own update task.")
@@ -144,9 +164,8 @@ class WSTLESource(TLESource):
 
         query_string = urlencode(qargs)
         url = urlparse.urlunsplit((url.scheme, url.netloc, url.path, query_string, url.fragment))
-        headers = {'user-agent': 'orbit-predictor', 'Accept': 'application/json'}
         try:
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=self.http_headers)
         except requests.exceptions.RequestException as error:
             logger.error("Exception requesting TLE: %s", error)
             raise
