@@ -70,7 +70,7 @@ def test_get_normal_vector_zero_inclination_always_z_aligned(predictor, when_utc
     assert normal_vector[2] == 1
 
 
-@settings(suppress_health_check=(HealthCheck.function_scoped_fixture))
+@settings(suppress_health_check=(HealthCheck.function_scoped_fixture, ))
 @given(datetimes())
 def test_get_beta_always_between_m_90_and_90(non_sun_synchronous, when_utc):
     assert -90 <= non_sun_synchronous.get_beta(when_utc) <= 90
