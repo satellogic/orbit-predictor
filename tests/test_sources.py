@@ -134,6 +134,19 @@ class TestWSTLESource(unittest.TestCase):
 
         self.headers = {'user-agent': 'orbit-predictor', 'Accept': 'application/json'}
 
+    def test_http_headers_no_auth(self):
+        source = sources.WSTLESource('http://ws.tle.server')
+        assert source.http_headers == self.headers
+
+    def test_http_headers_auth(self):
+        token = 'some-string'
+        expected_headers = self.headers.copy()
+        expected_headers['Authorization'] = 'Token %s' % token
+
+        with patch.dict(os.environ, {sources.WSTLESource.AUTH_TOKEN_ENVVAR_NAME: token}):
+            source = sources.WSTLESource('http://ws.tle.server')
+            self.assertEqual(source.http_headers, expected_headers)
+
     @patch("requests.get")
     def test_get_tle(self, mocked_requests):
         expected_url = urlparse.urlparse(
