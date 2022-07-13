@@ -6,6 +6,7 @@ python -m pip install build twine
 
 In that environment, and having the credentials for the PyPI user, you can then do a test release by following these steps:
 
+0. Clean the dist directory, if present: `rm dist/*`
 1. Edit the version in `version.py`, and commit it.
 2. Build the package with `python -m build`
 3. Upload the package to the test PyPI instance with `twine upload dist/* --repository-url https://test.pypi.org/legacy/`
