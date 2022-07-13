@@ -4,7 +4,7 @@ To be able to do a release, you will need an environment with the `twine` and `b
 python -m pip install build twine
 ```
 
-In that environment, and having the credentials for the PyPI user, you can then do a test release by following these steps:
+In that environment, and having the credentials for the PyPI user (both the normal PyPI and the testing one), you can then do a test release by following these steps:
 
 0. Clean the dist directory, if present: `rm dist/*`
 1. Edit the version in `version.py`, and commit it.
