@@ -8,8 +8,9 @@ In that environment, and having the credentials for the PyPI user (both the norm
 
 0. Clean the dist directory, if present: `rm dist/*`
 1. Edit the version in `version.py`, and commit it.
-2. Build the package with `python -m build`
-3. Upload the package to the test PyPI instance with `twine upload dist/* --repository-url https://test.pypi.org/legacy/`
+2. Create a git tag with the version number.
+3. Build the package with `python -m build`
+4. Upload the package to the test PyPI instance with `twine upload dist/* --repository-url https://test.pypi.org/legacy/`
 
 You should then test if everything went right, by installing that package in a new virtual environment using pip (pointing to that test index).
 
