@@ -32,7 +32,7 @@ def _euclidean_distance(*components):
 def llh_to_ecef(lat_deg, lon_deg, h_km):
     """
     Latitude is geodetic, height is above ellipsoid. Output is in km.
-    Formula from http://mathforum.org/library/drmath/view/51832.html
+    Formula from https://microem.ru/files/2012/08/GPS.G1-X-00006.pdf
     """
     f = 1 / 298.257224
     a = 6378.137
