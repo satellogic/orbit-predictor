@@ -83,7 +83,7 @@ AzimuthElevation = namedtuple('AzimuthElevation', 'azimuth elevation')
 @njit
 def euclidean_distance(*components):
     """Returns the norm of a vector"""
-    return sqrt(np.sum([c**2 for c in components]))
+    return sqrt(sum([c**2 for c in components]))
 
 
 @njit
@@ -102,7 +102,7 @@ def angle_between(a, b):
 @njit
 def dot_product(a, b):
     """Computes dot product between two vectors writen as tuples or lists"""
-    return np.sum([ai * bj for ai, bj in zip(a, b)])
+    return sum([ai * bj for ai, bj in zip(a, b)])
 
 
 def vector_diff(a, b):
@@ -122,7 +122,7 @@ def cross_product(a, b):
 @njit
 def vector_norm(components):
     """Returns the norm of a vector"""
-    return sqrt(np.sum([c**2 for c in components]))
+    return sqrt(sum([c**2 for c in components]))
 
 
 @njit
