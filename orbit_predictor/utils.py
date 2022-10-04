@@ -298,7 +298,7 @@ def _sun_eci(w, M, L, eccentricity, oblecl):
     # compute the ecliptic rectangular coordinates
     xeclip = r * cos_d(sun_lon)
     yeclip = r * sin_d(sun_lon)
-    zeclip = 0.0
+    # zeclip = 0.0  (not needed in the formulas)
 
     # rotate these coordinates to equatorial rectangular coordinates
     # There are two differences wrt matlab original code:
