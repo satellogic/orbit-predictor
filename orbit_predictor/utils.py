@@ -297,9 +297,10 @@ def _sun_eci(w, M, L, eccentricity, oblecl):
     zeclip = 0.0
 
     # rotate these coordinates to equatorial rectangular coordinates
+    # (skip the zeclip portion since zeclip == 0)
     xequat = xeclip
-    yequat = yeclip * cos_d(oblecl) + zeclip * sin_d(oblecl)
-    zequat = yeclip * sin_d(23.4406) + zeclip * cos_d(oblecl)
+    yequat = yeclip * cos_d(oblecl)
+    zequat = yeclip * sin_d(oblecl)
 
     return [xequat, yequat, zequat]
 
