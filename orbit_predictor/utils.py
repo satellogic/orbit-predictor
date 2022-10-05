@@ -277,6 +277,10 @@ def _sun_mean_ecliptic_elements(t_ut1):
 
 
 def _sun_eci(w, M, L, eccentricity, oblecl):
+    # Original algorithm seems to come from http://www.stargazing.net/kepler/altaz.html
+    # Current code seems to come from
+    # https://la.mathworks.com/matlabcentral/fileexchange/23051-vectorized-solar-azimuth-and-elevation-estimation
+
     # auxiliary angle
     auxiliary_angle = M + degrees(eccentricity * sin_d(M) * (1 + eccentricity * cos_d(M)))
 
@@ -294,12 +298,15 @@ def _sun_eci(w, M, L, eccentricity, oblecl):
     # compute the ecliptic rectangular coordinates
     xeclip = r * cos_d(sun_lon)
     yeclip = r * sin_d(sun_lon)
-    zeclip = 0.0
+    # zeclip = 0.0  (not needed in the formulas)
 
     # rotate these coordinates to equatorial rectangular coordinates
+    # There are two differences wrt matlab original code:
+    # 1. fix a hardcoded 23.4406 oblecl
+    # 2. skip the zeclip portion (since zeclip == 0)
     xequat = xeclip
-    yequat = yeclip * cos_d(oblecl) + zeclip * sin_d(oblecl)
-    zequat = yeclip * sin_d(23.4406) + zeclip * cos_d(oblecl)
+    yequat = yeclip * cos_d(oblecl)
+    zequat = yeclip * sin_d(oblecl)
 
     return [xequat, yequat, zequat]
 
