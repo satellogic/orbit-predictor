@@ -73,7 +73,7 @@ class KeplerianPredictor(CartesianPredictor):
         :param epoch: Epoch, datetime
         """
         if ecc >= 1.0:
-            raise NotImplementedError("Parabolic and elliptic orbits "
+            raise NotImplementedError("Parabolic and hyperbolic orbits "
                                       "are not implemented")
         self._sma = sma
         self._ecc = ecc
