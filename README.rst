@@ -90,7 +90,7 @@ Currently you have available these sources
 How to contribute
 -----------------
 
-- Write pep8 complaint code. 
-- Wrap the code on 100 collumns.
+- Write pep8 compliant code. 
+- Wrap the code on 100 columns.
 - Always use a branch for each feature and Merge Proposals.
 - Always run the tests before to push. (test implies pep8 validation)
