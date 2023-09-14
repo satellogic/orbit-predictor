@@ -402,7 +402,7 @@ def get_satellite_minus_penumbra_verticals(r, when_utc, r_p=R_E_MEAN_KM):
     The zeros of the function are only in the transitions from illuminated to
     penumbra (when going from positive to negative)
     and from penumbra to illuminated (when going from negative to positive).
-    BEWARE: it can have local minimuns with positive values.
+    BEWARE: it can have local minimums with positive values.
     Works for highly elliptical orbits too.
     The internals are the same as shadow function based on
     Algorithm 34 from Vallado, section 5.3.
