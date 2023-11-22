@@ -44,7 +44,7 @@ setup(
             "scipy>=0.16",
         ],
         "dev": [
-            "hypothesis<5.0.0",
+            "hypothesis",
             "flake8",
             "hypothesis[datetime]",
             "mock",
