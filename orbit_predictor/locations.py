@@ -30,6 +30,11 @@ from orbit_predictor import coordinate_systems
 from orbit_predictor.utils import reify, sun_azimuth_elevation
 
 
+def clamp(val, min_value, max_value):
+    """Clamp a value between min_value and max_value."""
+    return max(min(val, max_value), min_value)
+
+
 class Location:
     def __init__(self, name, latitude_deg, longitude_deg, elevation_m):
         """Location.
@@ -107,8 +112,9 @@ class Location:
         top_z = (a * rx) + (b * ry) + (c * rz)
 
         range_sat = sqrt((rx * rx) + (ry * ry) + (rz * rz))
-
-        return asin(top_z / range_sat)
+        # avoid float errors
+        sin_elev = clamp(top_z / range_sat, -1, 1)
+        return asin(sin_elev)
 
     def get_azimuth_elev(self, position):
         """Return azimuth and elevation of position_ecef from the current Location instance."""
