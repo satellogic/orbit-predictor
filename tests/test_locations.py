@@ -112,3 +112,15 @@ class LocationTestCase(unittest.TestCase):
         # https://github.com/satellogic/orbit-predictor/issues/52
         l1 = Location(latitude_deg=1, longitude_deg=2, elevation_m=3, name="location1")
         l1.sun_elevation_on_earth()
+
+    def test_elevation_for(self):
+        # choose a satellite position and check that the elevation from the point
+        # right below it is 90 degrees
+        date = dt.datetime.strptime("2014-10-21 22:47:29.147740", '%Y-%m-%d %H:%M:%S.%f')
+        position = self.predictor.get_position(date)
+        location = Location(latitude_deg=position.position_llh[0],
+                            longitude_deg=position.position_llh[1],
+                            elevation_m=0,
+                            name="location1")
+        elevation = location.elevation_for(position.position_ecef)
+        self.assertAlmostEqual(degrees(elevation), 90.0, delta=0.1)
