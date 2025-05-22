@@ -1,6 +1,6 @@
 from math import sqrt, copysign, isnan
 
-from scipy.optimize.optimize import OptimizeResult, _status_message
+from scipy.optimize._optimize import OptimizeResult, _status_message
 
 inf = float("inf")
 

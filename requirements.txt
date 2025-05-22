@@ -5,6 +5,7 @@ logassert
 mock
 pytest
 pytest-cov==2.5.0
+pytest-benchmark
 requests>=2.9.1
 sgp4>=1.4
 numpy
