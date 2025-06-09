@@ -30,7 +30,7 @@ from orbit_predictor.predictors import PredictedPass
 class PredictedPassTests(unittest.TestCase):
 
     def test_midpoint(self):
-        aos = dt.datetime.utcnow()
+        aos = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
         max_elevation_date = aos + dt.timedelta(minutes=5)
         los = aos + dt.timedelta(minutes=10)
         pass_ = PredictedPass(sate_id=1,

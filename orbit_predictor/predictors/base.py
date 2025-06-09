@@ -112,7 +112,7 @@ class Predictor:
     def get_shadow(self, when_utc=None):
         """Gives illumination at given time (2 for illuminated, 1 for penumbra, 0 for umbra)."""
         if when_utc is None:
-            when_utc = dt.datetime.utcnow()
+            when_utc = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
 
         return get_shadow(
             self.get_position(when_utc).position_ecef,
@@ -122,7 +122,7 @@ class Predictor:
     def get_normal_vector(self, when_utc=None):
         """Gets unitary normal vector (orthogonal to orbital plane) at given time."""
         if when_utc is None:
-            when_utc = dt.datetime.utcnow()
+            when_utc = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
 
         position, velocity = self.propagate_eci(when_utc)
         orbital_plane_normal = np.cross(position, velocity)
@@ -131,7 +131,7 @@ class Predictor:
     def get_beta(self, when_utc=None):
         """Gets angle between orbital plane and Sun direction (beta) at given time, in degrees."""
         if when_utc is None:
-            when_utc = dt.datetime.utcnow()
+            when_utc = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
 
         # Here we calculate the complementary angle of beta,
         # because we use the normal vector of the orbital plane
@@ -149,7 +149,7 @@ class CartesianPredictor(Predictor):
     def _propagate_ecef(self, when_utc=None):
         """Return position and velocity in the given date using ECEF coordinate system."""
         if when_utc is None:
-            when_utc = dt.datetime.utcnow()
+            when_utc = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
 
         position_eci, velocity_eci = self.propagate_eci(when_utc)
         gmst = gstime_from_datetime(when_utc)
@@ -170,7 +170,7 @@ class CartesianPredictor(Predictor):
     def get_position(self, when_utc=None):
         """Return a Position namedtuple in ECEF coordinate system"""
         if when_utc is None:
-            when_utc = dt.datetime.utcnow()
+            when_utc = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
 
         position_ecef, velocity_ecef = self._propagate_ecef(when_utc)
 
@@ -209,7 +209,7 @@ class CartesianPredictor(Predictor):
         possibly the current pass.
         """
         if when_utc is None:
-            when_utc = dt.datetime.utcnow()
+            when_utc = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
 
         for pass_ in self.passes_over(location, when_utc, limit_date,
                                       max_elevation_gt=max_elevation_gt,
@@ -240,7 +240,7 @@ class CartesianPredictor(Predictor):
             return result
 
         if when_utc is None:
-            when_utc = dt.datetime.utcnow()
+            when_utc = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
 
         orbital_period_s = self.period * 60
         # A third of the orbit period is used as the base window of the search.
