@@ -29,7 +29,8 @@ jobs:
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv venv && uv pip install hatch
-          uv pip install --editable . -r requirements.txt
+          uv pip install --editable .[dev]
+          uv pip install --editable .[fast]
       - name: Flake8
         run: |
           uv run flake8 orbit_predictor
