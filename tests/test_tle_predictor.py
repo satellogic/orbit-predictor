@@ -51,13 +51,13 @@ class TLEPredictorTestCase(unittest.TestCase):
     def setUpClass(cls):
         # Source
         cls.db = MemoryTLESource()
-        cls.db.add_tle(SATE_ID, BUGSAT1_TLE_LINES, dt.datetime.now(tz=dt.UTC).replace(tzinfo=None))
+        cls.db.add_tle(SATE_ID, BUGSAT1_TLE_LINES, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
         # Predictor
         cls.predictor = TLEPredictor(SATE_ID, cls.db)
 
     def test_predicted_pass_eq(self):
-        aos = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
-        max_elevation_date = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None) + dt.timedelta(minutes=5)
+        aos = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
+        max_elevation_date = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None) + dt.timedelta(minutes=5)
         los = dt.datetime.now() + dt.timedelta(minutes=10)
         max_elevation_position = Position(
             when_utc=max_elevation_date,
@@ -82,9 +82,9 @@ class TLEPredictorTestCase(unittest.TestCase):
         self.assertEqual(p2, p1)
 
     def test_predicted_pass_no_eq(self):
-        aos = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
-        max_elevation_date = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None) + dt.timedelta(minutes=5)
-        los = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None) + dt.timedelta(minutes=10)
+        aos = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
+        max_elevation_date = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None) + dt.timedelta(minutes=5)
+        los = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None) + dt.timedelta(minutes=10)
         max_elevation_position = Position(
             when_utc=max_elevation_date,
             position_ecef=(1, 1, 1),
@@ -112,9 +112,9 @@ class TLEPredictorTestCase(unittest.TestCase):
         class SubPredictedPass(PredictedPass):
             pass
 
-        aos = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
-        max_elevation_date = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None) + dt.timedelta(minutes=5)
-        los = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None) + dt.timedelta(minutes=10)
+        aos = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
+        max_elevation_date = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None) + dt.timedelta(minutes=5)
+        los = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None) + dt.timedelta(minutes=10)
         max_elevation_position = Position(
             when_utc=max_elevation_date,
             position_ecef=(1, 1, 1),
@@ -190,7 +190,7 @@ class TLEPredictorTestCase(unittest.TestCase):
     @patch("orbit_predictor.predictors.TLEPredictor._propagate_ecef")
     def test_get_position(self, mocked_propagate):
         mocked_propagate.return_value = ('foo', 'bar')
-        when_utc = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
+        when_utc = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
         position = self.predictor.get_position(when_utc)
 
         self.assertIsInstance(position, Position)
@@ -214,7 +214,7 @@ class TLEPredictorTestCase(unittest.TestCase):
             with open(pickle_file, "rb") as fp:
                 predictor = pickle.load(fp)
 
-            when_utc = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
+            when_utc = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
 
             assert predictor.tle == self.predictor.tle
             assert predictor.mean_motion == self.predictor.mean_motion

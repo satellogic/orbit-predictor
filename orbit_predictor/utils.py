@@ -226,7 +226,7 @@ def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
     :returns: an ``AzimuthElevation`` namedtuple
     """
     if when is None:
-        when = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
+        when = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
 
     utc_time_tuple = when.timetuple()
     jd = juliandate(timetuple_from_dt(when))

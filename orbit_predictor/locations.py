@@ -91,7 +91,7 @@ class Location:
     def sun_elevation_on_earth(self, when_utc=None):
         """Return Sun elevation on Earth of location at when_utc."""
         if when_utc is None:
-            when_utc = dt.datetime.now(tz=dt.UTC).replace(tzinfo=None)
+            when_utc = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
         _, elevation = sun_azimuth_elevation(self.latitude_deg, self.longitude_deg, when_utc)
         return elevation
 

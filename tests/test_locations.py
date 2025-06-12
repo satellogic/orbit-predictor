@@ -38,7 +38,7 @@ class LocationTestCase(unittest.TestCase):
     def setUp(self):
         # Source
         self.db = MemoryTLESource()
-        self.db.add_tle(SATE_ID, BUGSAT1_TLE_LINES, dt.datetime.now(tz=dt.UTC).replace(tzinfo=None))
+        self.db.add_tle(SATE_ID, BUGSAT1_TLE_LINES, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
         # Predictor
         self.predictor = TLEPredictor(SATE_ID, self.db)
         date = dt.datetime.strptime("2014-10-22 20:18:11.921921", '%Y-%m-%d %H:%M:%S.%f')
