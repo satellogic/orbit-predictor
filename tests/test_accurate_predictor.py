@@ -161,7 +161,7 @@ class AccurateVsGpredictTests(TestCase):
     def setUp(self):
         # Source
         self.db = MemoryTLESource()
-        self.db.add_tle(BUGSAT_SATE_ID, BUGSAT1_TLE_LINES, dt.datetime.utcnow())
+        self.db.add_tle(BUGSAT_SATE_ID, BUGSAT1_TLE_LINES, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
         # Predictor
         self.predictor = TLEPredictor(BUGSAT_SATE_ID, self.db)
 
@@ -212,7 +212,8 @@ class AccuratePredictorCalculationErrorTests(TestCase):
     def setUp(self):
         # Source
         self.db = MemoryTLESource()
-        self.db.add_tle(BUGSAT_SATE_ID, BUGSAT1_TLE_LINES, dt.datetime.utcnow())
+        now = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
+        self.db.add_tle(BUGSAT_SATE_ID, BUGSAT1_TLE_LINES, now)
         # Predictor
         self.predictor = TLEPredictor(BUGSAT_SATE_ID, self.db)
         self.is_ascending_mock = self._patch(

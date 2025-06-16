@@ -104,7 +104,7 @@ class KeplerianPredictor(CartesianPredictor):
         """
         # Get latest TLE, or the one corresponding to a specified date
         if date is None:
-            date = dt.datetime.utcnow()
+            date = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
 
         # Retrieve TLE position at given date as starting point
         pos = TLEPredictor(sate_id, source).get_position(date)
@@ -116,7 +116,7 @@ class KeplerianPredictor(CartesianPredictor):
 
         """
         if when_utc is None:
-            when_utc = dt.datetime.utcnow()
+            when_utc = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
 
         # Orbit parameters
         sma = self._sma

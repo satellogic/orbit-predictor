@@ -1,6 +1,5 @@
 flake8
 hypothesis
-hypothesis[datetime] 
 logassert
 mock
 pytest

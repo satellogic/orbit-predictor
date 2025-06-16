@@ -86,7 +86,8 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
     def __init__(self, sate_id, source):
         self._sate_id = sate_id
         self._source = source
-        self.tle = self._source.get_tle(self.sate_id, dt.datetime.utcnow())
+        now = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
+        self.tle = self._source.get_tle(self.sate_id, now)
         self._propagator = self._get_propagator()
 
     def _get_propagator(self):
@@ -132,7 +133,7 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
 
     def propagate_eci(self, when_utc=None):
         if when_utc is None:
-            when_utc = dt.datetime.utcnow()
+            when_utc = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
 
         jd, fr = jday_from_datetime(when_utc)
         status, position_eci, velocity_eci = self._propagator.sgp4(jd, fr)
@@ -147,6 +148,6 @@ class HighAccuracyTLEPredictor(CartesianPredictor):
         Code is optimized, dont complain too much!
         """
         if when_utc is None:
-            when_utc = dt.datetime.utcnow()
+            when_utc = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
 
         return self._propagate_only_position_ecef(when_utc)

@@ -47,29 +47,29 @@ class TestMemoryTLESource(unittest.TestCase):
         self.db = sources.MemoryTLESource()
 
     def test_add_tle(self):
-        self.db.add_tle(SATE_ID, SAMPLE_TLE, dt.datetime.utcnow())
-        tle = self.db._get_tle(SATE_ID, dt.datetime.utcnow())
+        self.db.add_tle(SATE_ID, SAMPLE_TLE, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
+        tle = self.db._get_tle(SATE_ID, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
         self.assertEqual(tle, SAMPLE_TLE)
 
     def test_add_tle_twice(self):
-        self.db.add_tle(SATE_ID, SAMPLE_TLE, dt.datetime.utcnow())
-        self.db.add_tle(SATE_ID, SAMPLE_TLE2, dt.datetime.utcnow())
-        tle = self.db._get_tle(SATE_ID, dt.datetime.utcnow())
+        self.db.add_tle(SATE_ID, SAMPLE_TLE, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
+        self.db.add_tle(SATE_ID, SAMPLE_TLE2, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
+        tle = self.db._get_tle(SATE_ID, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
         self.assertEqual(tle, SAMPLE_TLE2)
 
     def test_add_tle_two_id(self):
-        self.db.add_tle(SATE_ID, SAMPLE_TLE, dt.datetime.utcnow())
-        self.db.add_tle("fake_id", SAMPLE_TLE2, dt.datetime.utcnow())
-        tle = self.db._get_tle(SATE_ID, dt.datetime.utcnow())
+        self.db.add_tle(SATE_ID, SAMPLE_TLE, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
+        self.db.add_tle("fake_id", SAMPLE_TLE2, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
+        tle = self.db._get_tle(SATE_ID, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
         self.assertEqual(tle, SAMPLE_TLE)
 
     def test_empty(self):
         with self.assertRaises(LookupError):
-            self.db._get_tle(SATE_ID, dt.datetime.utcnow())
+            self.db._get_tle(SATE_ID, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
 
     # this methods are from TLESource()
     def test_get(self):
-        date = dt.datetime.utcnow()
+        date = dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None)
         self.db.add_tle(SATE_ID, SAMPLE_TLE, date)
         tle = self.db.get_tle(SATE_ID, date)
         self.assertEqual(tle.lines, SAMPLE_TLE)
@@ -77,7 +77,7 @@ class TestMemoryTLESource(unittest.TestCase):
         self.assertEqual(tle.date, date)
 
     def test_get_predictor(self):
-        self.db.add_tle(SATE_ID, SAMPLE_TLE, dt.datetime.utcnow())
+        self.db.add_tle(SATE_ID, SAMPLE_TLE, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
         predictor = self.db.get_predictor(SATE_ID)
 
         self.assertIsInstance(predictor, TLEPredictor)
@@ -98,21 +98,21 @@ class TestEtcTLESource(unittest.TestCase):
     def test_add_tle(self):
         db = sources.EtcTLESource(self.filename)
 
-        db.add_tle(SATE_ID, SAMPLE_TLE2, dt.datetime.utcnow())
-        tle = db._get_tle(SATE_ID, dt.datetime.utcnow())
+        db.add_tle(SATE_ID, SAMPLE_TLE2, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
+        tle = db._get_tle(SATE_ID, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
         self.assertEqual(tle, SAMPLE_TLE2)
 
     def test_read_tle(self):
         db = sources.EtcTLESource(self.filename)
 
-        tle = db._get_tle(SATE_ID, dt.datetime.utcnow())
+        tle = db._get_tle(SATE_ID, dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
         self.assertEqual(tle, SAMPLE_TLE)
 
     def test_wrong_sate(self):
         db = sources.EtcTLESource(self.filename)
 
         with self.assertRaises(LookupError):
-            db._get_tle("fake_id", dt.datetime.utcnow())
+            db._get_tle("fake_id", dt.datetime.now(tz=dt.timezone.utc).replace(tzinfo=None))
 
     def tearDown(self):
         shutil.rmtree(self.dirname)
