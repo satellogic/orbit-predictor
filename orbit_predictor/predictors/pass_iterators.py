@@ -349,6 +349,8 @@ class PredictedPass:
             sign = dot / abs(dot)
         except ZeroDivisionError:
             sign = 1
+        if np.isnan(sign):
+            sign = 1
 
         return degrees(angle) * sign
 

@@ -40,7 +40,7 @@ setup(
     ],
     extras_require={
         "fast": [
-            "numba>=0.38",
+            "numba>=0.54.0",
             "scipy>=0.16",
         ],
         "dev": [

@@ -57,27 +57,36 @@ except ImportError:
 DECEMBER_31TH_1999_MIDNIGHT_JD = 2451543.5
 
 
-def compose(*functions):
-    """Performs function composition with variadic arguments"""
-    return functools.reduce(lambda f, g: lambda *args: f(g(*args)),
-                            functions,
-                            lambda x: x)
+@njit
+def cos_d(angle_d):
+    return cos(radians(angle_d))
 
 
-cos_d = compose(cos, radians)
-sin_d = compose(sin, radians)
-atan2_d = compose(degrees, atan2)
-asin_d = compose(degrees, asin)
+@njit
+def sin_d(angle_d):
+    return sin(radians(angle_d))
+
+
+@njit
+def atan2_d(value1, value2):
+    return degrees(atan2(value1, value2))
+
+
+@njit
+def asin_d(value):
+    return degrees(asin(value))
 
 
 AzimuthElevation = namedtuple('AzimuthElevation', 'azimuth elevation')
 
 
+@njit
 def euclidean_distance(*components):
     """Returns the norm of a vector"""
-    return sqrt(sum(c**2 for c in components))
+    return sqrt(sum([c**2 for c in components]))
 
 
+@njit
 def angle_between(a, b):
     """
     Computes angle between two vectors in degrees.
@@ -87,12 +96,13 @@ def angle_between(a, b):
     Naïve algorithm, see https://scicomp.stackexchange.com/q/27689/782.
 
     """
-    return degrees(np.arccos(dot_product(a, b) / (vector_norm(a) * vector_norm(b))))
+    return degrees(acos(dot_product(a, b) / (vector_norm(a) * vector_norm(b))))
 
 
+@njit
 def dot_product(a, b):
     """Computes dot product between two vectors writen as tuples or lists"""
-    return sum(ai * bj for ai, bj in zip(a, b))
+    return sum([ai * bj for ai, bj in zip(a, b)])
 
 
 def vector_diff(a, b):
@@ -109,9 +119,10 @@ def cross_product(a, b):
     )
 
 
-def vector_norm(a):
+@njit
+def vector_norm(components):
     """Returns the norm of a vector"""
-    return euclidean_distance(*a)
+    return sqrt(sum([c**2 for c in components]))
 
 
 @njit
@@ -266,6 +277,7 @@ def sun_azimuth_elevation(latitude_deg, longitude_deg, when=None):
     return AzimuthElevation(azimuth, elevation)
 
 
+@njit
 def _sun_mean_ecliptic_elements(t_ut1):
     w = 282.9404 + 4.70935e-5 * t_ut1    # longitude of perihelion degrees
     eccentricity = 0.016709 - 1.151e-9 * t_ut1      # eccentricity
@@ -276,6 +288,7 @@ def _sun_mean_ecliptic_elements(t_ut1):
     return w, M, L, eccentricity, oblecl
 
 
+@njit
 def _sun_eci(w, M, L, eccentricity, oblecl):
     # Original algorithm seems to come from http://www.stargazing.net/kepler/altaz.html
     # Current code seems to come from
@@ -342,6 +355,7 @@ def get_shadow(r, when_utc):
     return shadow(r_sun, ecef_to_eci(r, gmst))
 
 
+@njit
 def shadow(r_sun, r, r_p=R_E_MEAN_KM):
     """
     Gives illumination of Earth satellite (2 for illuminated, 1 for penumbra, 0 for umbra).
@@ -365,8 +379,9 @@ def shadow(r_sun, r, r_p=R_E_MEAN_KM):
 
     if dot_product(r_sun, r) < 0:
         angle = angle_between(-r_sun, r)
-        sat_horiz = vector_norm(r) * cos_d(angle)
-        sat_vert = vector_norm(r) * sin_d(angle)
+        norm_r = vector_norm(r)
+        sat_horiz = norm_r * cos_d(angle)
+        sat_vert = norm_r * sin_d(angle)
         x = r_p / sin(ALPHA_PEN)
         pen_vert = tan(ALPHA_PEN) * (x + sat_horiz)
 
@@ -439,6 +454,7 @@ def eclipse_duration(beta, period, r_p=R_E_MEAN_KM):
     ) * period / pi
 
 
+@njit
 def juliandate(utc_tuple):
     year, month, day, hour, minute, sec = utc_tuple[:6]
     if month <= 2:
